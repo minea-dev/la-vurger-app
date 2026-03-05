@@ -1,0 +1,50 @@
+### 1. LOGIN (Get the token)
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@lavurger.com",
+  "password": "1234"
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+### 2. CREATE PRODUCT (Use the token)
+POST http://localhost:8080/api/products
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "La Quadruple Verda",
+  "description": "Quadruple de llentilles i espinacs",
+  "price": 13.50,
+  "category": "burgers",
+  "imageUrl": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+  "isAvailable": true
+}
+
+### 3. SEE ALL PRODUCTS (Public - No token)
+GET http://localhost:8080/api/products
+Accept: application/json
+
+### 4. SEE ONE PRODUCT BY ID (Public - No token)
+GET http://localhost:8080/api/products/2
+Accept: application/json
+
+### 5. UPDATE ONE PRODUCT (Protected - Usa the token)
+PUT http://localhost:8080/api/products/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "name": "La Doble Verda (Edició Especial)",
+  "description": "Doble de llentilles, extra de formatge vegà i ceba caramel·litzada",
+  "price": 14.00,
+  "category": "burgers",
+  "imageUrl": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+  "isAvailable": true
+}
+
+### 6. DELETE ONE PRODUCT (Protected - Use the token)
+DELETE http://localhost:8080/api/products/3
+Authorization: Bearer {{auth_token}}
