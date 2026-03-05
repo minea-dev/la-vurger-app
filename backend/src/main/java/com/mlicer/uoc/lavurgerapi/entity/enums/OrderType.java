@@ -1,4 +1,4 @@
-package com.mlicer.uoc.lavurgerapi.model.enums;
+package com.mlicer.uoc.lavurgerapi.entity.enums;
 
 public enum OrderType {
     DINE_IN,

@@ -1,4 +1,4 @@
-package com.mlicer.uoc.lavurgerapi.model;
+package com.mlicer.uoc.lavurgerapi.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -6,9 +6,9 @@ spring:
     name: la-vurger-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/la_vurger_db
+    url: jdbc:postgresql://lavurguer-db.cxwmi8oy0i7m.eu-south-2.rds.amazonaws.com:5432/postgres
     username: postgres
-    password: lavurger_password_123
+    password: LaLoL!mpo1BL86
     driver-class-name: org.postgresql.Driver
 
   jpa:

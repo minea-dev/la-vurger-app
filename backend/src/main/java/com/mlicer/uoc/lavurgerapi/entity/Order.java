@@ -1,7 +1,7 @@
-package com.mlicer.uoc.lavurgerapi.model;
+package com.mlicer.uoc.lavurgerapi.entity;
 
 
-import com.mlicer.uoc.lavurgerapi.model.enums.*;
+import com.mlicer.uoc.lavurgerapi.entity.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;

@@ -1,6 +1,6 @@
-package com.mlicer.uoc.lavurgerapi.model;
+package com.mlicer.uoc.lavurgerapi.entity;
 
-import com.mlicer.uoc.lavurgerapi.model.enums.Role;
+import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
