@@ -1,0 +1,9 @@
+### CREATE TABLE 1
+POST http://localhost:8080/api/tables
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "tableNumber": 1,
+  "qrCode": "QR_TABLE_01"
+}
