@@ -118,3 +118,30 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 "COMPLETED"
+
+### 14. TEST VALIDATION: NEGATIVE AMOUNT
+# Should return 400 Bad Request with "Total amount cannot be negative"
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "orderNumber": "#BAD-DATA",
+  "status": "RECEIVED",
+  "orderType": "TAKEAWAY",
+  "totalAmount": -50.00,
+  "tableId": 1
+}
+
+### 15. TEST VALIDATION: MISSING ORDER NUMBER
+# Should return 400 Bad Request with "Order number is required"
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "orderNumber": "",
+  "orderType": "DINE_IN",
+  "totalAmount": 10.00,
+  "tableId": 1
+}
