@@ -2,6 +2,7 @@ package com.mlicer.uoc.lavurgerapi.service;
 
 import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
+import com.mlicer.uoc.lavurgerapi.exception.ResourceNotFoundException;
 import com.mlicer.uoc.lavurgerapi.mapper.ProductMapper;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +27,10 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<ProductDTO> getProductById(Long id) {
+    public ProductDTO getProductById(Long id) {
         return productRepository.findById(id)
-                .map(productMapper::toDTO);
+                .map(productMapper::toDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
     public List<ProductDTO> getProductsByCategory(String category) {
@@ -44,6 +46,9 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Cannot delete: Product not found with id: " + id);
+        }
         productRepository.deleteById(id);
     }
 }

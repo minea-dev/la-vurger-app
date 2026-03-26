@@ -19,7 +19,8 @@ public class RestaurantTableController {
 
     @GetMapping
     public ResponseEntity<List<RestaurantTableDTO>> getAllTables() {
-        return ResponseEntity.ok(tableService.findAll());
+        List<RestaurantTableDTO> tables = tableService.findAll();
+        return ResponseEntity.ok(tables);
     }
 
     @PostMapping
