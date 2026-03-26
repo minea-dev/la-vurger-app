@@ -19,13 +19,12 @@ public class Order {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String orderNumber; // Ej: #050, #051
+    private String orderNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderType orderType; // DINE_IN o TAKEAWAY
+    private OrderType orderType;
 
-    // Relación opcional: solo si es DINE_IN (en mesa)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")
     private RestaurantTable restaurantTable;

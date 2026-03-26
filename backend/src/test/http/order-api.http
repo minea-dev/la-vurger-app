@@ -1,0 +1,56 @@
+### 1. LOGIN (Get the JWT token)
+# Uses the admin credentials to authenticate and store the token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@lavurger.com",
+  "password": "1234"
+}
+
+> {%
+    // Captures the token from response and sets it as a global variable for the session
+    client.global.set("auth_token", response.body.token);
+%}
+
+
+### 2. CREATE TAKEAWAY ORDER (Paid via APP)
+# Scenario: Customer orders online and pays through the application
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "id": null,
+  "orderNumber": "#APP-101",
+  "status": "RECEIVED",
+  "orderType": "TAKEAWAY",
+  "paymentMethod": "APP",
+  "paymentStatus": "PAID",
+  "totalAmount": 24.50,
+  "customerComment": "Pagat per l'app. Arribaré en 15 minuts, moltes gràcies!",
+  "customerId": null,
+  "tableId": null,
+  "items": [],
+  "createdAt": "2026-03-26T13:00:00"
+}
+
+### STEP 3: CREATE THE DINE-IN ORDER
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "id": null,
+  "orderNumber": "#TAB-05",
+  "status": "RECEIVED",
+  "orderType": "DINE_IN",
+  "paymentMethod": "COUNTER",
+  "paymentStatus": "PENDING",
+  "totalAmount": 42.00,
+  "customerComment": "Taula prop de la finestra. Pagarem en barra.",
+  "customerId": null,
+  "tableId": 1,
+  "items": [],
+  "createdAt": "2026-03-26T13:15:00"
+}
