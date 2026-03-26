@@ -54,3 +54,67 @@ Content-Type: application/json
   "items": [],
   "createdAt": "2026-03-26T13:15:00"
 }
+
+### 4. GET ALL ORDERS (Management/Kitchen view)
+# Returns every order in the database without filters
+GET http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### 5. FILTER: ORDERS RECEIVED (Kitchen Display System)
+# Used by chefs to see only new incoming orders
+GET http://localhost:8080/api/orders?status=RECEIVED
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### 6. FILTER: ORDERS PREPARING
+# Shows orders currently being cooked
+GET http://localhost:8080/api/orders?status=PREPARING
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### 7. FILTER: TEST WITH NO RESULTS
+# Example of filtering by a state that doesn't exist or has no records
+GET http://localhost:8080/api/orders?status=CANCELLED
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### 8. FILTER: ORDERS COMPLETED
+# Shows orders currently being cooked
+GET http://localhost:8080/api/orders?status=COMPLETED
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### 11. CREATE A CANCELLED ORDER
+# Scenario: Order was cancelled (e.g., out of stock or customer changed their mind)
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "orderNumber": "#VURG-ERR-405",
+  "status": "CANCELLED",
+  "orderType": "TAKEAWAY",
+  "paymentMethod": "APP",
+  "paymentStatus": "PAID",
+  "totalAmount": 0.00,
+  "customerComment": "Falta pa sense gluten.",
+  "tableId": null,
+  "items": []
+}
+
+### 12. UPDATE ORDER STATUS TO PREPARING
+# Moves order #9 to the kitchen queue
+PATCH http://localhost:8080/api/orders/9/status
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+"PREPARING"
+
+### 13. UPDATE ORDER STATUS TO COMPLETED
+# Mark order #9 as finished
+PATCH http://localhost:8080/api/orders/9/status
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+"COMPLETED"
