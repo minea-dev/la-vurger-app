@@ -20,12 +20,12 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password; // Encriptat amb BCrypt per Spring Security
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
     @Column(nullable = false)
-    private boolean isActive = true; // Actiu / Inactiu
+    private boolean isActive = true;
 }

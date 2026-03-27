@@ -2,6 +2,7 @@ package com.mlicer.uoc.lavurgerapi.controller;
 
 import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
 import com.mlicer.uoc.lavurgerapi.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +35,12 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> create(@RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductDTO> create(@Valid @RequestBody ProductDTO productDTO) {
         return new ResponseEntity<>(productService.saveProduct(productDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductDTO> update(@PathVariable Long id, @Valid @RequestBody ProductDTO productDTO) {
         productService.getProductById(id);
 
         ProductDTO toUpdate = new ProductDTO(
