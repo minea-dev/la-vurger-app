@@ -22,6 +22,11 @@ jobs:
 
       - name: Backend Tests (Spring Boot)
         working-directory: ./backend
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: mvn test
 
       - name: Setup Node.js
