@@ -4,6 +4,32 @@ import { PaymentMethod } from '../enums/payment-method.enum';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { ProductDTO } from './product.dto';
 
+// ==========================================
+// Creation DTOs (Front -> Back Contract)
+// ==========================================
+
+export interface OrderItemRequest {
+  productId: number;
+  quantity: number;
+}
+
+export interface OrderRequest {
+  tableId: number;
+  items: OrderItemRequest[];
+}
+
+export interface OrderResponse {
+  id: number;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+}
+
+// ==========================================
+// Full DTOs (For Kitchen/Admin views)
+// ==========================================
+
 export interface OrderItemDTO {
   id?: number;
   productId: number;
@@ -26,7 +52,6 @@ export interface OrderDTO {
   customerComment?: string;
   createdAt: string;
   updatedAt: string;
-
   items: OrderItemDTO[];
   tableId?: number | null;
 }
