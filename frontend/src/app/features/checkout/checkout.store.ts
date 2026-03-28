@@ -1,6 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
 import { ProductDTO } from '../../shared/models/dtos/product.dto';
+import { ApiService } from '../../core/services/api.service';
+import { OrderRequest } from '../../shared/models/dtos/order.dto';
 
 export interface CartItem {
   product: ProductDTO;
@@ -18,8 +20,8 @@ type CheckoutState = {
 
 const initialState: CheckoutState = {
   products: [],
-  categories: ['🍔 Vurguers', '🌯 Vurritos', '🍟 Acompanyaments', '🥤 Begudes'],
-  selectedCategory: '🍔 Vurguers',
+  categories: ['burgers', 'burritos', 'sides', 'drinks'],
+  selectedCategory: 'burgers',
   cart: [],
   isLoading: false,
   tableId: null,
@@ -43,7 +45,7 @@ export const CheckoutStore = signalStore(
     )
   })),
 
-  withMethods((store) => ({
+  withMethods((store, apiService = inject(ApiService)) => ({
 
     setTableId(id: number) {
       patchState(store, { tableId: id });
@@ -93,9 +95,21 @@ export const CheckoutStore = signalStore(
       patchState(store, { cart: [] });
     },
 
-    // Mock products
     loadProducts() {
       patchState(store, { isLoading: true });
+
+      apiService.getProducts().subscribe({
+        next: (productsFromDB) => {
+          patchState(store, { products: productsFromDB, isLoading: false });
+        },
+        error: (err) => {
+          console.error('❌ Error loading products from Back:', err);
+          patchState(store, { isLoading: false });
+        }
+      });
+
+      // MOCK DATA
+      /*
       setTimeout(() => {
         patchState(store, {
           products: [
@@ -136,6 +150,44 @@ export const CheckoutStore = signalStore(
           isLoading: false
         });
       }, 500);
+      */
+    },
+
+    sendOrder() {
+      const currentTableId = store.tableId();
+      const currentCart = store.cart();
+
+      if (!currentTableId) {
+        alert('⚠️ Error: No hi ha cap taula assignada. Torna a escanejar el codi QR.');
+        return;
+      }
+      if (currentCart.length === 0) {
+        alert('⚠️ La cistella està buida!');
+        return;
+      }
+
+      patchState(store, { isLoading: true });
+
+      const orderRequest: OrderRequest = {
+        tableId: currentTableId,
+        items: currentCart.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity
+        }))
+      };
+
+      apiService.createOrder(orderRequest).subscribe({
+        next: (response) => {
+          console.log('✅ Order created in Back:', response);
+          alert(`🎉 Comanda enviada a cuina!`);
+          patchState(store, { cart: [], isLoading: false });
+        },
+        error: (err) => {
+          console.error('❌ Error sending order:', err);
+          alert('Ha fallat l\'enviament de la comanda. Avisa a un cambrer.');
+          patchState(store, { isLoading: false });
+        }
+      });
     }
   }))
 );

@@ -13,6 +13,13 @@ export class CheckoutComponent implements OnInit {
   store = inject(CheckoutStore);
   private route = inject(ActivatedRoute);
 
+  categoryNames: Record<string, string> = {
+    'burgers': '🍔 Vurguers',
+    'burritos': '🌯 Vurritos',
+    'sides': '🍟 Acompanyaments',
+    'drinks': '🥤 Begudes'
+  };
+
   ngOnInit() {
     this.store.loadProducts();
 
