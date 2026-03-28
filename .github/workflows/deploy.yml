@@ -27,13 +27,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Frontend Tests (Angular)
         working-directory: ./frontend
-        run: |
-          npm install
-          npx ng test --watch=false --browsers=ChromeHeadless
+        run: npm test -- --watch=false --browsers=ChromeHeadless
 
   deploy:
     name: 🚀 Deploy to AWS EC2
