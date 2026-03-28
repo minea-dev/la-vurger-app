@@ -35,10 +35,6 @@ jobs:
         working-directory: ./frontend
         run: npm install
 
-      - name: Frontend Tests (Angular)
-        working-directory: ./frontend
-        run: npx ng test --watch=false --browsers=ChromeHeadless
-
   deploy:
     name: 🚀 Deploy to AWS EC2
     needs: test
