@@ -1,5 +1,5 @@
-### 1. LOGIN (Get the JWT token)
-# Uses the admin credentials to authenticate and store the token
+### 1. LOGIN (Get JWT Token)
+# Authenticates and stores the token in an IntelliJ global variable
 POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
@@ -9,139 +9,105 @@ Content-Type: application/json
 }
 
 > {%
-    // Captures the token from response and sets it as a global variable for the session
     client.global.set("auth_token", response.body.token);
 %}
 
 
-### 2. CREATE TAKEAWAY ORDER (Paid via APP)
-# Scenario: Customer orders online and pays through the application
+### 2. CREATE ORDER (DINE_IN via QR)
+# Main flow: Customer sends only tableId and items.
+# The server calculates total, generates ID, and creates the order number.
 POST http://localhost:8080/api/orders
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "id": null,
-  "orderNumber": "#APP-101",
-  "status": "RECEIVED",
-  "orderType": "TAKEAWAY",
-  "paymentMethod": "APP",
-  "paymentStatus": "PAID",
-  "totalAmount": 24.50,
-  "customerComment": "Pagat per l'app. Arribaré en 15 minuts, moltes gràcies!",
-  "customerId": null,
-  "tableId": null,
-  "items": [],
-  "createdAt": "2026-03-26T13:00:00"
-}
-
-### STEP 3: CREATE THE DINE-IN ORDER
-POST http://localhost:8080/api/orders
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "id": null,
-  "orderNumber": "#TAB-05",
-  "status": "RECEIVED",
-  "orderType": "DINE_IN",
-  "paymentMethod": "COUNTER",
-  "paymentStatus": "PENDING",
-  "totalAmount": 42.00,
-  "customerComment": "Taula prop de la finestra. Pagarem en barra.",
-  "customerId": null,
   "tableId": 1,
-  "items": [],
-  "createdAt": "2026-03-26T13:15:00"
+  "items": [
+    { "productId": 1, "quantity": 2 },
+    { "productId": 4, "quantity": 1 }
+  ]
 }
 
-### 4. GET ALL ORDERS (Management/Kitchen view)
-# Returns every order in the database without filters
+> {%
+    // Capture the created order ID for subsequent update tests
+    client.global.set("created_order_id", response.body.id);
+%}
+
+
+### 3. GET ALL ORDERS
+# General view for administration/management
 GET http://localhost:8080/api/orders
 Authorization: Bearer {{auth_token}}
 Accept: application/json
 
-### 5. FILTER: ORDERS RECEIVED (Kitchen Display System)
-# Used by chefs to see only new incoming orders
+
+### 4. FILTER BY STATUS: RECEIVED
+# Kitchen Monitor: View only new incoming orders
 GET http://localhost:8080/api/orders?status=RECEIVED
 Authorization: Bearer {{auth_token}}
 Accept: application/json
 
-### 6. FILTER: ORDERS PREPARING
-# Shows orders currently being cooked
+
+### 5. FILTER BY STATUS: PREPARING
+# View orders currently being cooked
 GET http://localhost:8080/api/orders?status=PREPARING
 Authorization: Bearer {{auth_token}}
 Accept: application/json
 
-### 7. FILTER: TEST WITH NO RESULTS
-# Example of filtering by a state that doesn't exist or has no records
-GET http://localhost:8080/api/orders?status=CANCELLED
-Authorization: Bearer {{auth_token}}
-Accept: application/json
 
-### 8. FILTER: ORDERS COMPLETED
-# Shows orders currently being cooked
-GET http://localhost:8080/api/orders?status=COMPLETED
-Authorization: Bearer {{auth_token}}
-Accept: application/json
-
-### 11. CREATE A CANCELLED ORDER
-# Scenario: Order was cancelled (e.g., out of stock or customer changed their mind)
-POST http://localhost:8080/api/orders
-Authorization: Bearer {{auth_token}}
-Content-Type: application/json
-
-{
-  "orderNumber": "#VURG-ERR-405",
-  "status": "CANCELLED",
-  "orderType": "TAKEAWAY",
-  "paymentMethod": "APP",
-  "paymentStatus": "PAID",
-  "totalAmount": 0.00,
-  "customerComment": "Falta pa sense gluten.",
-  "tableId": null,
-  "items": []
-}
-
-### 12. UPDATE ORDER STATUS TO PREPARING
-# Moves order #9 to the kitchen queue
-PATCH http://localhost:8080/api/orders/9/status
+### 6. UPDATE STATUS TO "PREPARING"
+# Uses the ID captured in Step 2
+PATCH http://localhost:8080/api/orders/{{created_order_id}}/status
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 "PREPARING"
 
-### 13. UPDATE ORDER STATUS TO COMPLETED
-# Mark order #9 as finished
-PATCH http://localhost:8080/api/orders/9/status
+
+### 7. UPDATE STATUS TO "COMPLETED"
+# Marks the order as finished/delivered
+PATCH http://localhost:8080/api/orders/{{created_order_id}}/status
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 "COMPLETED"
 
-### 14. TEST VALIDATION: NEGATIVE AMOUNT
-# Should return 400 Bad Request with "Total amount cannot be negative"
+
+### 8. VALIDATION TEST: NON-EXISTENT TABLE
+# Should return 404 Resource Not Found
 POST http://localhost:8080/api/orders
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "orderNumber": "#BAD-DATA",
-  "status": "RECEIVED",
-  "orderType": "TAKEAWAY",
-  "totalAmount": -50.00,
-  "tableId": 1
+  "tableId": 999,
+  "items": [
+    { "productId": 1, "quantity": 1 }
+  ]
 }
 
-### 15. TEST VALIDATION: MISSING ORDER NUMBER
-# Should return 400 Bad Request with "Order number is required"
+
+### 9. VALIDATION TEST: NON-EXISTENT PRODUCT
+# Should return 404 Resource Not Found
 POST http://localhost:8080/api/orders
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 
 {
-  "orderNumber": "",
-  "orderType": "DINE_IN",
-  "totalAmount": 10.00,
-  "tableId": 1
+  "tableId": 1,
+  "items": [
+    { "productId": 9999, "quantity": 1 }
+  ]
+}
+
+
+### 10. VALIDATION TEST: EMPTY CART
+# Should return 400 Bad Request
+POST http://localhost:8080/api/orders
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "tableId": 1,
+  "items": []
 }
