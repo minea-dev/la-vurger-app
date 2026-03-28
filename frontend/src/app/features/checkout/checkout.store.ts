@@ -13,6 +13,7 @@ type CheckoutState = {
   selectedCategory: string;
   cart: CartItem[];
   isLoading: boolean;
+  tableId: number | null;
 };
 
 const initialState: CheckoutState = {
@@ -21,6 +22,7 @@ const initialState: CheckoutState = {
   selectedCategory: '🍔 Vurguers',
   cart: [],
   isLoading: false,
+  tableId: null,
 };
 
 export const CheckoutStore = signalStore(
@@ -42,6 +44,10 @@ export const CheckoutStore = signalStore(
   })),
 
   withMethods((store) => ({
+
+    setTableId(id: number) {
+      patchState(store, { tableId: id });
+    },
 
     setCategory(category: string) {
       patchState(store, { selectedCategory: category });
