@@ -1,0 +1,58 @@
+<div>
+  <h1>TPV - Mode Lògica (Sense Estils)</h1>
+
+  <div>
+
+    <div>
+      <h2>1. Menú i Categories</h2>
+
+      @if (store.isLoading()) {
+        <p>Carregant catàleg des de l'API...</p>
+      }
+
+      <div>
+        @for (category of store.categories(); track category) {
+          <button (click)="store.setCategory(category)">
+            {{ category }}
+          </button>
+        }
+      </div>
+
+      <div>
+        @for (product of store.filteredProducts(); track product.id) {
+          <div>
+            <span><b>{{ product.name }}</b> - {{ product.price }}€</span>
+            <button (click)="store.addToCart(product)">+ Afegir</button>
+          </div>
+        }
+        @empty {
+          <p>No hi ha productes en aquesta categoria o l'API està apagada.</p>
+        }
+      </div>
+    </div>
+
+    <div>
+      <h2>2. Tiquet de Compra</h2>
+
+      <ul>
+        @for (item of store.cart(); track item.product.id) {
+          <li>
+            {{ item.quantity }}x {{ item.product.name }}
+            <span>{{ item.product.price * item.quantity }}€</span>
+          </li>
+        }
+        @empty {
+          <p>El carret està buit.</p>
+        }
+      </ul>
+
+      <hr>
+      <h3>TOTAL: {{ store.cartTotal() }}€</h3>
+
+      <button [disabled]="store.cart().length === 0">
+        ENVIAR A CUINA
+      </button>
+    </div>
+
+  </div>
+</div>

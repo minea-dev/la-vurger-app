@@ -1,14 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CheckoutStore } from './checkout.store';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [],
-  template: `
-    <div class="p-4">
-      <h1 class="text-2xl font-bold">Checkout (TPV)</h1>
-      <p>Ací estaran el carret i els productes</p>
-    </div>
-  `
+  templateUrl: './checkout.component.html'
 })
-export class CheckoutComponent {}
+export class CheckoutComponent implements OnInit {
+  store = inject(CheckoutStore);
+
+  ngOnInit() {
+    this.store.loadProducts();
+  }
+}
