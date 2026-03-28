@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ProductDTO } from '../../../shared/models/dtos/product.dto';
+import { environment } from '../../../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/products';
+  private apiUrl = `${environment.apiUrl}/products`;
 
   getAllProducts() {
     return this.http.get<ProductDTO[]>(this.apiUrl);

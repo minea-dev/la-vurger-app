@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProductDTO } from '../../shared/models/dtos/product.dto';
 import { OrderRequest, OrderResponse } from '../../shared/models/dtos/order.dto';
+import { environment } from '../../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { OrderRequest, OrderResponse } from '../../shared/models/dtos/order.dto'
 export class ApiService {
   private http = inject(HttpClient);
 
-  private readonly API_URL = 'http://localhost:8080/api';
+  private readonly API_URL = environment.apiUrl;
 
   getProducts(): Observable<ProductDTO[]> {
     return this.http.get<ProductDTO[]>(`${this.API_URL}/products`);
