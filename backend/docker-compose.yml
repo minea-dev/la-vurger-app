@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   postgres:
     image: postgres:15
@@ -9,4 +10,24 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: lavurger_password_123
       POSTGRES_DB: la_vurger_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     restart: always
+
+  api:
+    build: .
+    container_name: lavurger-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/la_vurger_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=lavurger_password_123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: always
+
+volumes:
+  postgres_data:
