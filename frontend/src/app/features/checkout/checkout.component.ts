@@ -7,17 +7,24 @@ import { CheckoutStore } from './checkout.store';
   selector: 'app-checkout',
   standalone: true,
   imports: [CurrencyPipe, NgClass],
-  templateUrl: './checkout.component.html'
+  templateUrl: './checkout.component.html',
 })
 export class CheckoutComponent implements OnInit {
   store = inject(CheckoutStore);
   private route = inject(ActivatedRoute);
 
   categoryNames: Record<string, string> = {
-    'burgers': '🍔 Vurguers',
-    'burritos': '🌯 Vurritos',
-    'sides': '🍟 Acompanyaments',
-    'drinks': '🥤 Begudes'
+    burgers: '🍔 Vurguers',
+    burritos: '🌯 Vurritos',
+    sides: '🍟 Acompanyaments',
+    drinks: '🥤 Begudes',
+  };
+
+  categoryLabels: Record<string, string> = {
+    burgers: 'Les nostres clàssiques',
+    burritos: "Vurritos de l'horta",
+    sides: 'Per acompanyar',
+    drinks: 'Begudes fresques',
   };
 
   ngOnInit() {
@@ -34,7 +41,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   getQuantity(productId: number): number {
-    const item = this.store.cart().find(i => i.product.id === productId);
+    const item = this.store.cart().find((i) => i.product.id === productId);
     return item ? item.quantity : 0;
   }
 }

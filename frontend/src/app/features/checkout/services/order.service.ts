@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { OrderDTO } from '../../../shared/models/dtos/order.dto';
 import { OrderStatus } from '../../../shared/models/enums/order-status.enum';
-import { environment } from '../../../../environments/environment.prod';
+import { environment } from '../../../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
