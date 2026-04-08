@@ -1,12 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MenuStore } from './menu.store';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CurrencyPipe, NgClass],
+  imports: [CurrencyPipe, NgClass, RouterLink],
   templateUrl: './menu.component.html',
 })
 export class MenuComponent implements OnInit {

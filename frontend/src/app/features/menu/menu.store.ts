@@ -128,14 +128,10 @@ export const MenuStore = signalStore(
       });
     },
 
-    sendOrder() {
+    sendOrder(checkoutData: { paymentMethod: string; customerComment: string }) {
       const currentTableId = store.tableId();
       const currentCart = store.cart();
 
-      if (!currentTableId) {
-        alert('⚠️ Error: No hi ha cap taula assignada. Torna a escanejar el codi QR.');
-        return;
-      }
       if (currentCart.length === 0) {
         alert('⚠️ La cistella està buida!');
         return;
@@ -145,6 +141,9 @@ export const MenuStore = signalStore(
 
       const orderRequest: OrderRequest = {
         tableId: currentTableId,
+        orderType: currentTableId ? 'DINE_IN' : 'TAKE_AWAY',
+        paymentMethod: checkoutData.paymentMethod,
+        customerComment: checkoutData.customerComment,
         items: currentCart.map((item) => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -156,6 +155,7 @@ export const MenuStore = signalStore(
           console.log('✅ Order created in Back:', response);
           alert(`🎉 Comanda enviada a cuina!`);
           patchState(store, { cart: [], isLoading: false });
+          // Opcional: Aquí podrías inyectar el Router y navegar a una página de éxito
         },
         error: (err) => {
           console.error('❌ Error sending order:', err);

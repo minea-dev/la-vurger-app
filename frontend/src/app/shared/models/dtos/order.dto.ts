@@ -14,7 +14,10 @@ export interface OrderItemRequest {
 }
 
 export interface OrderRequest {
-  tableId: number;
+  tableId?: number | null;
+  orderType: string;
+  paymentMethod: string;
+  customerComment?: string;
   items: OrderItemRequest[];
 }
 

@@ -135,16 +135,16 @@
   @if (store.cartItemsCount() > 0) {
     <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm lg:max-w-md z-10">
       <button
-        (click)="store.sendOrder()"
-        [disabled]="store.isLoading()"
-        class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl flex items-center px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
+        routerLink="/checkout"
+        queryParamsHandling="preserve"
+        class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover rounded-2xl flex items-center px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
 
         <div class="w-8 h-8 bg-vurger-bg rounded-xl flex items-center justify-center text-xs font-bold text-vurger-primary shrink-0">
           {{ store.cartItemsCount() }}
         </div>
 
         <span class="flex-1 text-center text-sm font-medium text-vurger-bg tracking-wide">
-          {{ store.isLoading() ? 'Enviant...' : 'Confirmar Comanda' }}
+          Anar a pagar
         </span>
 
         <span class="text-sm font-medium text-vurger-pale">
