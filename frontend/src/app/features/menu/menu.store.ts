@@ -17,7 +17,7 @@ export interface CartItem {
   quantity: number;
 }
 
-type CheckoutState = {
+type MenuState = {
   products: ProductDTO[];
   categories: string[];
   selectedCategory: string;
@@ -27,7 +27,7 @@ type CheckoutState = {
   searchQuery: string;
 };
 
-const initialState: CheckoutState = {
+const initialState: MenuState = {
   products: [],
   categories: ['burgers', 'burritos', 'sides', 'drinks'],
   selectedCategory: 'burgers',
@@ -37,7 +37,7 @@ const initialState: CheckoutState = {
   searchQuery: '',
 };
 
-export const CheckoutStore = signalStore(
+export const MenuStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
 

@@ -1,16 +1,16 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { CheckoutStore } from './checkout.store';
+import { MenuStore } from './menu.store';
 
 @Component({
-  selector: 'app-checkout',
+  selector: 'app-menu',
   standalone: true,
   imports: [CurrencyPipe, NgClass],
-  templateUrl: './checkout.component.html',
+  templateUrl: './menu.component.html',
 })
-export class CheckoutComponent implements OnInit {
-  store = inject(CheckoutStore);
+export class MenuComponent implements OnInit {
+  store = inject(MenuStore);
   private route = inject(ActivatedRoute);
 
   categoryNames: Record<string, string> = {

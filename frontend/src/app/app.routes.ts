@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'checkout',
+    redirectTo: 'menu',
     pathMatch: 'full'
   },
   {
@@ -11,8 +11,8 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent)
   },
   {
-    path: 'checkout',
-    loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
+    path: 'menu',
+    loadComponent: () => import('./features/menu/menu.component').then(m => m.MenuComponent)
   },
   {
     path: 'kitchen',
@@ -24,6 +24,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'checkout'
+    redirectTo: 'menu'
   }
 ];

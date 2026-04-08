@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { CheckoutStore } from './checkout.store';
+import { MenuStore } from './menu.store';
 import { ProductDTO } from '../../shared/models/dtos/product.dto';
 
-describe('CheckoutStore', () => {
+describe('MenuStore', () => {
   let store: any;
 
   const mockProduct1: ProductDTO = {
@@ -12,9 +12,9 @@ describe('CheckoutStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [CheckoutStore]
+      providers: [MenuStore]
     });
-    store = TestBed.inject(CheckoutStore);
+    store = TestBed.inject(MenuStore);
   });
 
   it('should initialize with an empty cart and null tableId', () => {
