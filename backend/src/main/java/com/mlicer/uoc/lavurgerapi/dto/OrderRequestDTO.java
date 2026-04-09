@@ -1,16 +1,16 @@
 package com.mlicer.uoc.lavurgerapi.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.mlicer.uoc.lavurgerapi.entity.enums.OrderType;
+import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentMethod;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record OrderRequestDTO(
         Long tableId,
-        String orderType,
-        @NotBlank(message = "Payment method is required")
-        String paymentMethod,
+        OrderType orderType,
+        PaymentMethod paymentMethod,
         String customerComment,
+
         @NotEmpty(message = "The order must contain at least one item")
         List<OrderItemRequestDTO> items
 ) {}

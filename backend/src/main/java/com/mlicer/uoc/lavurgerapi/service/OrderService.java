@@ -53,23 +53,14 @@ public class OrderService {
             order.setRestaurantTable(null);
         }
 
+        order.setOrderType(orderRequest.orderType() != null ? orderRequest.orderType() : OrderType.DINE_IN);
+        order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
+
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-
-        order.setOrderType(orderRequest.tableId() != null ? OrderType.DINE_IN : OrderType.TAKEAWAY);
-
-        if (orderRequest.paymentMethod() != null) {
-            order.setPaymentMethod(PaymentMethod.valueOf(orderRequest.paymentMethod().toUpperCase()));
-        } else {
-            order.setPaymentMethod(PaymentMethod.COUNTER);
-        }
-
-        if (orderRequest.customerComment() != null && !orderRequest.customerComment().isBlank()) {
-            order.setCustomerComment(orderRequest.customerComment());
-        }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> items = new ArrayList<>();
