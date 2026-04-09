@@ -44,15 +44,19 @@ class OrderServiceTest {
     private OrderService orderService;
 
     @Test
-    @DisplayName("Hauria de crear una comanda correctament")
+    @DisplayName("Hauria de crear una comanda de TAULA correctament")
     void shouldCreateOrderAndReturnDTO() {
         // GIVEN
         Long tableId = 1L;
         Long productId = 10L;
 
-        // Request  item
+        // Request item
         OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(productId, 2);
-        OrderRequestDTO request = new OrderRequestDTO(tableId, List.of(itemRequest));
+
+        // Ara afegim els nous paràmetres (orderType, paymentMethod, customerComment)
+        OrderRequestDTO request = new OrderRequestDTO(
+                tableId, "DINE_IN", "CARD", "Sense ceba si us plau", List.of(itemRequest)
+        );
 
         RestaurantTable mockTable = new RestaurantTable();
         mockTable.setId(tableId);
@@ -88,10 +92,49 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("Hauria de crear una comanda TAKE AWAY quan la taula és null")
+    void shouldCreateTakeAwayOrder() {
+        // GIVEN
+        Long productId = 10L;
+
+        OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(productId, 1);
+
+        // Passem tableId com a null
+        OrderRequestDTO request = new OrderRequestDTO(
+                null, "TAKE_AWAY", "CASH", null, List.of(itemRequest)
+        );
+
+        Product mockProduct = new Product();
+        mockProduct.setId(productId);
+        mockProduct.setPrice(new BigDecimal("5.00"));
+        mockProduct.setName("Fries");
+
+        Order savedOrder = new Order();
+        OrderDTO expectedResponse = mock(OrderDTO.class);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
+        when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
+        when(orderMapper.toDTO(savedOrder)).thenReturn(expectedResponse);
+
+        // WHEN
+        OrderDTO result = orderService.createOrder(request);
+
+        // THEN
+        assertNotNull(result);
+        verify(tableRepository, never()).findById(anyLong());
+        verify(productRepository).findById(productId);
+        verify(orderRepository).save(any(Order.class));
+
+        System.out.println("✅ Test superat: Comanda Take Away creada sense interactuar amb les taules.");
+    }
+
+    @Test
     @DisplayName("Hauria de llançar ResourceNotFoundException quan la taula NO existeix")
     void shouldThrowExceptionWhenTableDoesNotExist() {
         // GIVEN
-        OrderRequestDTO request = new OrderRequestDTO(99L, List.of());
+        OrderRequestDTO request = new OrderRequestDTO(
+                99L, "DINE_IN", "APP", null, List.of()
+        );
         when(tableRepository.findById(99L)).thenReturn(Optional.empty());
 
         // WHEN & THEN
@@ -109,7 +152,9 @@ class OrderServiceTest {
         // GIVEN
         Long tableId = 1L;
         OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(500L, 1);
-        OrderRequestDTO request = new OrderRequestDTO(tableId, List.of(itemRequest));
+        OrderRequestDTO request = new OrderRequestDTO(
+                tableId, "DINE_IN", "COUNTER", null, List.of(itemRequest)
+        );
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(new RestaurantTable()));
         when(productRepository.findById(500L)).thenReturn(Optional.empty());

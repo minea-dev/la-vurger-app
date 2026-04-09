@@ -43,20 +43,33 @@ public class OrderService {
 
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderRequest) {
-        RestaurantTable table = tableRepository.findById(orderRequest.tableId())
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found with ID: " + orderRequest.tableId()));
-
         Order order = new Order();
-        order.setRestaurantTable(table);
+
+        if (orderRequest.tableId() != null) {
+            RestaurantTable table = tableRepository.findById(orderRequest.tableId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Table not found with ID: " + orderRequest.tableId()));
+            order.setRestaurantTable(table);
+        } else {
+            order.setRestaurantTable(null);
+        }
+
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
-
-        order.setOrderType(OrderType.DINE_IN);
         order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setPaymentMethod(PaymentMethod.COUNTER);
-
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+
+        order.setOrderType(orderRequest.tableId() != null ? OrderType.DINE_IN : OrderType.TAKEAWAY);
+
+        if (orderRequest.paymentMethod() != null) {
+            order.setPaymentMethod(PaymentMethod.valueOf(orderRequest.paymentMethod().toUpperCase()));
+        } else {
+            order.setPaymentMethod(PaymentMethod.COUNTER);
+        }
+
+        if (orderRequest.customerComment() != null && !orderRequest.customerComment().isBlank()) {
+            order.setCustomerComment(orderRequest.customerComment());
+        }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> items = new ArrayList<>();
