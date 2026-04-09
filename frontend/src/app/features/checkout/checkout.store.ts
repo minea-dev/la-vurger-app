@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { OrderService } from '../../core/services/order.service'; // Tu servicio unificado
+import { OrderService } from '../../core/services/order.service';
 import { CartStore } from '../../core/store/cart.store';
 import { OrderRequest } from '../../shared/models/dtos/order.dto';
 

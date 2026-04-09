@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { checkoutGuard } from './core/guards/checkout.guard';
 
 export const routes: Routes = [
   {
@@ -18,6 +19,7 @@ export const routes: Routes = [
     path: 'checkout',
     loadComponent: () =>
       import('./features/checkout/checkout.component').then((m) => m.CheckoutComponent),
+    canActivate: [checkoutGuard],
   },
   {
     path: 'kitchen',
