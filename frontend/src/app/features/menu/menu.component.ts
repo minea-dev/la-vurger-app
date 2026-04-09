@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MenuStore } from './menu.store';
+import { CartStore } from '../../core/store/cart.store';
 
 @Component({
   selector: 'app-menu',
@@ -10,7 +11,9 @@ import { MenuStore } from './menu.store';
   templateUrl: './menu.component.html',
 })
 export class MenuComponent implements OnInit {
-  store = inject(MenuStore);
+  menuStore = inject(MenuStore);
+  cartStore = inject(CartStore);
+
   private route = inject(ActivatedRoute);
 
   categoryNames: Record<string, string> = {
@@ -28,20 +31,20 @@ export class MenuComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.store.loadProducts();
+    this.menuStore.loadProducts();
 
     const tableParam = this.route.snapshot.queryParamMap.get('table');
     if (tableParam) {
       const id = parseInt(tableParam, 10);
       if (!isNaN(id)) {
-        this.store.setTableId(id);
+        this.cartStore.setTableId(id);
         console.log(`✅ Context detected: Table ${id}`);
       }
     }
   }
 
   getQuantity(productId: number): number {
-    const item = this.store.cart().find((i) => i.product.id === productId);
+    const item = this.cartStore.cart().find((i) => i.product.id === productId);
     return item ? item.quantity : 0;
   }
 }

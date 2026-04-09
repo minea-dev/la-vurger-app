@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ProductDTO } from '../../../shared/models/dtos/product.dto';
-import { environment } from '../../../../environments/environment';
+import { ProductDTO } from '../../shared/models/dtos/product.dto';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {

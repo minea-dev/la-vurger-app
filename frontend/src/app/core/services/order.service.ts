@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { OrderDTO } from '../../../shared/models/dtos/order.dto';
-import { OrderStatus } from '../../../shared/models/enums/order-status.enum';
-import { environment } from '../../../../environments/environment';
-
+import { OrderDTO, OrderRequest, OrderResponse } from '../../shared/models/dtos/order.dto';
+import { OrderStatus } from '../../shared/models/enums/order-status.enum';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -14,8 +13,8 @@ export class OrderService {
     return this.http.get<OrderDTO[]>(this.apiUrl);
   }
 
-  createOrder(orderData: Partial<OrderDTO>) {
-    return this.http.post<OrderDTO>(this.apiUrl, orderData);
+  createOrder(orderData: OrderRequest) {
+    return this.http.post<OrderResponse>(this.apiUrl, orderData);
   }
 
   updateOrderStatus(id: number, status: OrderStatus) {
