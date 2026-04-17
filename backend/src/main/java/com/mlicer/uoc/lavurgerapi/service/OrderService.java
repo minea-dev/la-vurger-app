@@ -16,6 +16,7 @@ import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,9 @@ public class OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderRequest) {
@@ -88,7 +92,11 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        return orderMapper.toDTO(savedOrder);
+        OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
+
+        messagingTemplate.convertAndSend("/topic/orders", orderDTO);
+
+        return orderDTO;
     }
 
     public List<OrderDTO> getAllOrders(String status) {
@@ -113,10 +121,17 @@ public class OrderService {
 
         try {
             order.setStatus(OrderStatus.valueOf(newStatus.toUpperCase().trim()));
+            order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
         }
 
-        return orderMapper.toDTO(orderRepository.save(order));
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
+
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
+
+        return updatedOrderDTO;
     }
 }
