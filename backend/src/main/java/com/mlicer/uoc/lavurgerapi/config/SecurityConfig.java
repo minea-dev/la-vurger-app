@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders", "/api/orders/**").permitAll()
+                        .requestMatchers("/ws-la-vurger/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
