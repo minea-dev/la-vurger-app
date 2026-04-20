@@ -114,6 +114,13 @@ public class OrderService {
         return orders.stream().map(orderMapper::toDTO).collect(Collectors.toList());
     }
 
+    public OrderDTO getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        return orderMapper.toDTO(order);
+    }
+
     @Transactional
     public OrderDTO updateOrderStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)

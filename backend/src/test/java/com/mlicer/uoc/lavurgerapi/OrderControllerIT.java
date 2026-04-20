@@ -2,13 +2,17 @@ package com.mlicer.uoc.lavurgerapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mlicer.uoc.lavurgerapi.dto.OrderDTO;
+import com.mlicer.uoc.lavurgerapi.dto.OrderItemDTO;
+import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
 import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.OrderItemRepository;
+import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
 import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
+import com.mlicer.uoc.lavurgerapi.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -31,6 +37,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 public class OrderControllerIT {
+
+    @MockitoBean
+    private JwtUtils jwtUtils;
+
+    @MockitoBean
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,8 +62,12 @@ public class OrderControllerIT {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     private Long savedTableId;
     private Long savedUserId;
+    private Long savedProductId;
 
     @BeforeEach
     void setUp() {
@@ -59,6 +75,7 @@ public class OrderControllerIT {
         orderRepository.deleteAll();
         tableRepository.deleteAll();
         userRepository.deleteAll();
+        productRepository.deleteAll();
 
         RestaurantTable table = new RestaurantTable();
         table.setTableNumber(1);
@@ -72,52 +89,75 @@ public class OrderControllerIT {
         user.setRole(Role.valueOf("CUSTOMER"));
         user.setActive(true);
         this.savedUserId = userRepository.save(user).getId();
+
+        Product product = new Product();
+        product.setName("Classic Burger");
+        product.setPrice(new BigDecimal("12.75"));
+        product.setCategory("Burgers");
+        product.setAvailable(true);
+        this.savedProductId = productRepository.save(product).getId();
     }
 
     @Test
     @DisplayName("Should create order successfully with 201 Created")
     void shouldCreateOrderSuccessfully() throws Exception {
+
+        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 2, "No onions");
+
         OrderDTO validOrder = new OrderDTO(
-                null, "#VURG-OK-01", "RECEIVED", "DINE_IN",
+                null, null, "RECEIVED", "DINE_IN",
                 "COUNTER", "PENDING", new BigDecimal("25.50"),
-                "No onions", this.savedUserId, this.savedTableId, List.of(), null
+                "No onions", this.savedUserId, this.savedTableId,
+                List.of(mockItem),
+                null
         );
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(validOrder)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.orderNumber").value("#VURG-OK-01"));
+                .andExpect(jsonPath("$.orderNumber").isNotEmpty());
     }
 
     @Test
     @DisplayName("Should filter orders by status RECEIVED")
     void shouldFilterOrdersByStatus() throws Exception {
+
+        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 1, null);
+
         OrderDTO newOrder = new OrderDTO(
-                null, "#FILT-01", "RECEIVED", "DINE_IN",
+                null, null, "RECEIVED", "DINE_IN",
                 "COUNTER", "PAID", new BigDecimal("15.00"),
-                null, this.savedUserId, this.savedTableId, List.of(), null
+                null, this.savedUserId, this.savedTableId,
+                List.of(mockItem),
+                null
         );
 
-        mockMvc.perform(post("/api/orders")
+        String responseBody = mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newOrder)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        OrderDTO savedOrder = objectMapper.readValue(responseBody, OrderDTO.class);
+        String generatedOrderNumber = savedOrder.orderNumber();
 
         mockMvc.perform(get("/api/orders")
                         .param("status", "RECEIVED"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value("RECEIVED"))
-                .andExpect(jsonPath("$[0].orderNumber").value("#FILT-01"));
+                .andExpect(jsonPath("$[0].orderNumber").value(generatedOrderNumber));
     }
 
     @Test
-    @DisplayName("Should return 400 when amount is negative")
-    void shouldReturn400WhenAmountIsNegative() throws Exception {
+    @DisplayName("Should return 400 when order items list is empty")
+    void shouldReturn400WhenItemsListIsEmpty() throws Exception {
+
         OrderDTO badOrder = new OrderDTO(
-                null, "#TEST-ERR", "RECEIVED", "DINE_IN",
-                "COUNTER", "PENDING", new BigDecimal("-10.00"),
-                "Negative amount test", this.savedUserId, this.savedTableId, List.of(), null
+                null, null, "RECEIVED", "DINE_IN",
+                "COUNTER", "PENDING", new BigDecimal("0.00"),
+                "Empty Items Test", this.savedUserId, this.savedTableId,
+                List.of(),
+                null
         );
 
         mockMvc.perform(post("/api/orders")
@@ -151,5 +191,35 @@ public class OrderControllerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(emptyOrder))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return order by ID successfully with 200 OK")
+    void shouldReturnOrderByIdSuccessfully() throws Exception {
+
+        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 2, null);
+
+        OrderDTO newOrder = new OrderDTO(
+                null, null, "RECEIVED", "DINE_IN",
+                "COUNTER", "PENDING", new BigDecimal("20.00"),
+                null, this.savedUserId, this.savedTableId,
+                List.of(mockItem),
+                null
+        );
+
+        String responseBody = mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newOrder)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        OrderDTO savedOrder = objectMapper.readValue(responseBody, OrderDTO.class);
+        Long createdId = savedOrder.id();
+        String generatedOrderNumber = savedOrder.orderNumber();
+
+        mockMvc.perform(get("/api/orders/" + createdId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(createdId.intValue()))
+                .andExpect(jsonPath("$.orderNumber").value(generatedOrderNumber));
     }
 }

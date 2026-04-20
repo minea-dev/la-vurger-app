@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,11 +41,14 @@ class OrderServiceTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private SimpMessagingTemplate messagingTemplate;
+
     @InjectMocks
     private OrderService orderService;
 
     @Test
-    @DisplayName("Hauria de crear una comanda correctament")
+    @DisplayName("Should create order successfully and return DTO")
     void shouldCreateOrderAndReturnDTO() {
         // GIVEN
         Long tableId = 1L;
@@ -56,7 +60,7 @@ class OrderServiceTest {
                 tableId,
                 null,
                 null,
-                "Comentari de prova",
+                "Test comment",
                 List.of(itemRequest)
         );
 
@@ -70,7 +74,10 @@ class OrderServiceTest {
 
         Order savedOrder = new Order();
 
-        OrderDTO expectedResponse = null;
+        OrderDTO expectedResponse = new OrderDTO(
+                1L, "#VURG-TEST", "RECEIVED", "DINE_IN", "COUNTER",
+                "PENDING", new BigDecimal("21.00"), null, null, tableId, List.of(), null
+        );
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(mockTable));
         when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
@@ -86,10 +93,11 @@ class OrderServiceTest {
         verify(tableRepository).findById(tableId);
         verify(productRepository).findById(productId);
         verify(orderRepository).save(any(Order.class));
+        verify(messagingTemplate).convertAndSend(eq("/topic/orders"), any(OrderDTO.class));
     }
 
     @Test
-    @DisplayName("Hauria de llançar ResourceNotFoundException quan la taula NO existeix")
+    @DisplayName("Should throw ResourceNotFoundException when table does not exist")
     void shouldThrowExceptionWhenTableDoesNotExist() {
         // GIVEN
         OrderRequestDTO request = new OrderRequestDTO(99L, null, null, null, List.of());
@@ -102,7 +110,7 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("Hauria de llançar ResourceNotFoundException quan un producte NO existeix")
+    @DisplayName("Should throw ResourceNotFoundException when product does not exist")
     void shouldThrowExceptionWhenProductDoesNotExist() {
         // GIVEN
         Long tableId = 1L;
@@ -117,5 +125,45 @@ class OrderServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(request));
 
         verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should return order by ID successfully")
+    void shouldReturnOrderByIdSuccessfully() {
+        // GIVEN
+        Long orderId = 1L;
+        Order mockOrder = new Order();
+        mockOrder.setId(orderId);
+
+        OrderDTO expectedDTO = new OrderDTO(
+                orderId, "#VURG-123", "RECEIVED", "DINE_IN", "COUNTER",
+                "PENDING", new BigDecimal("15.50"), null, null, null, List.of(), null
+        );
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+        when(orderMapper.toDTO(mockOrder)).thenReturn(expectedDTO);
+
+        // WHEN
+        OrderDTO result = orderService.getOrderById(orderId);
+
+        // THEN
+        assertNotNull(result);
+        assertEquals(expectedDTO, result);
+        verify(orderRepository).findById(orderId);
+        verify(orderMapper).toDTO(mockOrder);
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when order does not exist")
+    void shouldThrowExceptionWhenOrderDoesNotExist() {
+        // GIVEN
+        Long orderId = 99L;
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        // WHEN & THEN
+        assertThrows(ResourceNotFoundException.class, () -> orderService.getOrderById(orderId));
+
+        verify(orderRepository).findById(orderId);
+        verifyNoInteractions(orderMapper);
     }
 }

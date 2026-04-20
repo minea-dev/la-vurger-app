@@ -59,4 +59,16 @@ public class OrderController {
         OrderDTO updatedOrder = orderService.updateOrderStatus(id, cleanStatus);
         return ResponseEntity.ok(updatedOrder);
     }
+
+    @Operation(summary = "Get order by ID", description = "Retrieves a specific order by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDTO> getOrderById(
+            @Parameter(description = "ID of the order") @PathVariable Long id) {
+        OrderDTO order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order);
+    }
 }
