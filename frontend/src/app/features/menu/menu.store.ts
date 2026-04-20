@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
 import { ProductDTO } from '../../shared/models/dtos/product.dto';
-import { ApiService } from '../../core/services/api.service'; // Asegúrate de la ruta
+import { ApiService } from '../../core/services/api.service';
 
 type MenuState = {
   products: ProductDTO[];

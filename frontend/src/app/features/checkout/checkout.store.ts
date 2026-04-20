@@ -32,7 +32,7 @@ export const CheckoutStore = signalStore(
         patchState(store, { isLoading: true });
 
         const orderRequest: OrderRequest = {
-          orderType: currentTableId ? 'DINE_IN' : 'TAKE_AWAY',
+          orderType: currentTableId ? 'DINE_IN' : 'TAKEAWAY',
           paymentMethod: checkoutData.paymentMethod,
           customerComment: checkoutData.customerComment || '',
           items: currentCart.map((item) => ({
