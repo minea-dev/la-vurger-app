@@ -17,6 +17,10 @@ export class OrderService {
     return this.http.post<OrderResponse>(this.apiUrl, orderData);
   }
 
+  getOrderById(id: number) {
+    return this.http.get<OrderDTO>(`${this.apiUrl}/${id}`);
+  }
+
   updateOrderStatus(id: number, status: OrderStatus) {
     return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/status`, { status });
   }

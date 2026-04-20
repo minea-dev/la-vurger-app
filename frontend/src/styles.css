@@ -19,3 +19,8 @@ app-checkout {
   display: block;
   width: 100%;
 }
+
+app-order-status {
+  display: block;
+  width: 100%;
+}
