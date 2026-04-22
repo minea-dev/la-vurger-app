@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MenuStore } from './menu.store';
-import { CartStore } from '../../core/store/cart.store';
+import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
 
 @Component({
   selector: 'app-menu',

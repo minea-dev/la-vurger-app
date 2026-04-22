@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
-import { PaymentMethod } from '../../shared/models/enums/payment-method.enum';
+import { PaymentMethod } from '../../../../../shared/src/lib/models/enums/payment-method.enum';
 import { CheckoutStore } from './checkout.store';
-import { CartStore } from '../../core/store/cart.store';
+import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
 
 @Component({
   selector: 'app-checkout',

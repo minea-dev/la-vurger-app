@@ -8,7 +8,7 @@ import {
   patchState,
   withHooks,
 } from '@ngrx/signals';
-import { ProductDTO } from '../../shared/models/dtos/product.dto';
+import { ProductDTO } from '../../models/dtos/product.dto';
 
 export interface CartItem {
   product: ProductDTO;

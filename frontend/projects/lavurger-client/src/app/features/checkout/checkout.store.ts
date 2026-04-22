@@ -1,9 +1,9 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { OrderService } from '../../core/services/order.service';
-import { CartStore } from '../../core/store/cart.store';
-import { OrderRequest } from '../../shared/models/dtos/order.dto';
+import { OrderService } from '../../../../../shared/src/lib/core/services/order.service';
+import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
+import { OrderRequest } from '../../../../../shared/src/lib/models/dtos/order.dto';
 
 type CheckoutState = {
   isLoading: boolean;

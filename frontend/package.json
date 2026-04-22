@@ -3,10 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "start:client": "ng serve lavurger-client",
+    "start:admin": "ng serve lavurger-admin --port 4201",
+    "build:client": "ng build lavurger-client",
+    "build:admin": "ng build lavurger-admin",
+    "test:client": "ng test lavurger-client",
+    "test:admin": "ng test lavurger-admin",
+    "watch:client": "ng build lavurger-client --watch --configuration development",
+    "watch:admin": "ng build lavurger-admin --watch --configuration development"
   },
   "private": true,
   "packageManager": "npm@11.7.0",

@@ -7,47 +7,34 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "frontend": {
+    "lavurger-client": {
       "projectType": "application",
       "schematics": {},
-      "root": "",
-      "sourceRoot": "src",
+      "root": "projects/lavurger-client",
+      "sourceRoot": "projects/lavurger-client/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "src/main.ts",
-            "tsConfig": "tsconfig.app.json",
+            "browser": "projects/lavurger-client/src/main.ts",
+            "index": "projects/lavurger-client/src/index.html",
+            "tsConfig": "projects/lavurger-client/tsconfig.app.json",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "projects/lavurger-client/public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["projects/lavurger-client/src/styles.css"]
           },
           "configurations": {
             "production": {
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
+                { "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" },
+                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
               ],
-              "outputHashing": "all",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ]
+              "outputHashing": "all"
             },
             "development": {
               "optimization": false,
@@ -60,12 +47,57 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
+            "production": { "buildTarget": "lavurger-client:build:production" },
+            "development": { "buildTarget": "lavurger-client:build:development" }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "lavurger-admin": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/lavurger-admin",
+      "sourceRoot": "projects/lavurger-admin/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/lavurger-admin/src/main.ts",
+            "tsConfig": "projects/lavurger-admin/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/lavurger-admin/public"
+              }
+            ],
+            "styles": ["projects/lavurger-admin/src/styles.css"]
+          },
+          "configurations": {
             "production": {
-              "buildTarget": "frontend:build:production"
+              "budgets": [
+                { "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" },
+                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+              ],
+              "outputHashing": "all"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": { "buildTarget": "lavurger-admin:build:production" },
+            "development": { "buildTarget": "lavurger-admin:build:development" }
           },
           "defaultConfiguration": "development"
         },

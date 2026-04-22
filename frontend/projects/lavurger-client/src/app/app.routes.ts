@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { checkoutGuard } from './core/guards/checkout.guard';
+import { checkoutGuard } from '@shared/core/guards/checkout.guard';
 
 export const routes: Routes = [
   {
@@ -20,16 +20,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/checkout/checkout.component').then((m) => m.CheckoutComponent),
     canActivate: [checkoutGuard],
-  },
-  {
-    path: 'kitchen',
-    loadComponent: () =>
-      import('./features/kitchen/kitchen.component').then((m) => m.KitchenComponent),
-  },
-  {
-    path: 'orders',
-    loadComponent: () =>
-      import('./features/orders/orders.component').then((m) => m.OrdersComponent),
   },
   {
     path: 'order-status/:id',

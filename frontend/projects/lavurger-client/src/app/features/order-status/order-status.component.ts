@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { OrderStatusStore } from './order-status.store';
-import { OrderStatus } from '../../shared/models/enums/order-status.enum';
+import { OrderStatus } from '../../../../../shared/src/lib/models/enums/order-status.enum';
 
 @Component({
   selector: 'app-order-status',

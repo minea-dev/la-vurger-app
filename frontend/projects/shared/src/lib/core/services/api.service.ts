@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ProductDTO } from '../../shared/models/dtos/product.dto';
-import { OrderRequest, OrderResponse } from '../../shared/models/dtos/order.dto';
-import { environment } from '../../../environments/environment';
+import { ProductDTO } from '../../models/dtos/product.dto';
+import { OrderRequest, OrderResponse } from '../../models/dtos/order.dto';
+import { environment } from '../../../../../lavurger-client/src/environments/environment';
 
 @Injectable({
   providedIn: 'root'

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MenuStore } from './menu.store';
-import { ProductDTO } from '../../shared/models/dtos/product.dto';
+import { ProductDTO } from '../../../../../shared/src/lib/models/dtos/product.dto';
 
 describe('MenuStore', () => {
   let store: any;

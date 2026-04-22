@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { OrderService } from '../../core/services/order.service';
-import { OrderDTO } from '../../shared/models/dtos/order.dto';
+import { OrderService } from '../../../../../shared/src/lib/core/services/order.service';
+import { OrderDTO } from '../../../../../shared/src/lib/models/dtos/order.dto';
 
 type OrderStatusState = {
   order: OrderDTO | null;

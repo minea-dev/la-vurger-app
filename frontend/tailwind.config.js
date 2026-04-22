@@ -1,7 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./src/**/*.{html,ts}",
+    "./projects/lavurger-client/src/**/*.{html,ts}",
+    "./projects/lavurger-admin/src/**/*.{html,ts}",
+    "./projects/shared/src/**/*.{html,ts}"
   ],
   theme: {
     extend: {

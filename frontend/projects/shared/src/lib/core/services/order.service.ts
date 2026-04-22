@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { OrderDTO, OrderRequest, OrderResponse } from '../../shared/models/dtos/order.dto';
-import { OrderStatus } from '../../shared/models/enums/order-status.enum';
-import { environment } from '../../../environments/environment';
+import { OrderDTO, OrderRequest, OrderResponse } from '../../models/dtos/order.dto';
+import { OrderStatus } from '../../models/enums/order-status.enum';
+import { environment } from '../../../../../lavurger-client/src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
