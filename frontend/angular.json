@@ -68,6 +68,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "projects/lavurger-admin/src/main.ts",
+            "index": "projects/lavurger-admin/src/index.html",
             "tsConfig": "projects/lavurger-admin/tsconfig.app.json",
             "assets": [
               {
