@@ -1,22 +1,27 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ProductDTO } from '../../models/dtos/product.dto';
-import { environment } from '../../../../../lavurger-client/src/environments/environment';
+import { ProductDTO } from '@shared/models/dtos/product.dto';
+import { API_URL } from '../config/api.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/products`;
+  private baseUrl = inject(API_URL);
+  private apiUrl = `${this.baseUrl}/products`;
 
   getAllProducts() {
     return this.http.get<ProductDTO[]>(this.apiUrl);
   }
 
-  getProductById(id: number) {
-    return this.http.get<ProductDTO>(`${this.apiUrl}/${id}`);
+  toggleAvailability(id: number, isAvailable: boolean) {
+    return this.http.patch<ProductDTO>(`${this.apiUrl}/${id}/availability`, { isAvailable });
   }
 
-  getProductsByCategory(category: string) {
-    return this.http.get<ProductDTO[]>(`${this.apiUrl}/category/${category}`);
+  createProduct(product: Partial<ProductDTO>) {
+    return this.http.post<ProductDTO>(this.apiUrl, product);
+  }
+
+  updateProduct(id: number, product: Partial<ProductDTO>) {
+    return this.http.put<ProductDTO>(`${this.apiUrl}/${id}`, product);
   }
 }
