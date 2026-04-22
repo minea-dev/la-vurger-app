@@ -7,9 +7,9 @@ import com.mlicer.uoc.lavurgerapi.mapper.ProductMapper;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,5 +50,15 @@ public class ProductService {
             throw new ResourceNotFoundException("Cannot delete: Product not found with id: " + id);
         }
         productRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ProductDTO toggleAvailability(Long id, Boolean isAvailable) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+
+        product.setAvailable(isAvailable);
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toDTO(savedProduct);
     }
 }

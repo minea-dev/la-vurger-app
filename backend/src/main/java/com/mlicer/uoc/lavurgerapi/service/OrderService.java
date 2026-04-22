@@ -73,6 +73,10 @@ public class OrderService {
             Product product = productRepository.findById(itemReq.productId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemReq.productId()));
 
+            if (!product.isAvailable()) {
+                throw new IllegalArgumentException("Product '" + product.getName() + "' is currently unavailable.");
+            }
+
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
@@ -91,7 +95,6 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
-
         OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", orderDTO);
@@ -127,7 +130,8 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
         try {
-            order.setStatus(OrderStatus.valueOf(newStatus.toUpperCase().trim()));
+            OrderStatus statusEnum = OrderStatus.valueOf(newStatus.toUpperCase().trim());
+            order.setStatus(statusEnum);
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
@@ -136,7 +140,6 @@ public class OrderService {
         OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
-
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
 
         return updatedOrderDTO;
