@@ -1,0 +1,38 @@
+<div class="min-h-screen bg-admin-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="text-center">
+      <div class="text-[24px] font-bold text-admin-text tracking-tight">
+        La Vurger <span class="text-admin-blue">·</span> Cuina 🍳
+      </div>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-[400px]">
+      <div class="bg-admin-white py-8 px-6 shadow-sm border border-admin-border mx-4 sm:mx-0 rounded-[10px]">
+        <form (ngSubmit)="onSubmit()" class="space-y-5">
+
+          <div *ngIf="errorMessage" class="p-3 rounded-md bg-admin-red-lt border border-admin-red/20 text-[13px] font-semibold text-admin-red flex items-center gap-2">
+            <svg class="w-4 h-4 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ errorMessage }}
+          </div>
+
+          <div>
+            <label class="block text-[13px] font-semibold text-admin-text2 mb-1.5">Correu electrònic</label>
+            <input type="email" [(ngModel)]="credentials.email" name="email" required
+                   class="w-full h-[40px] px-3 border border-admin-border rounded-[6px] text-[14px] text-admin-text bg-admin-white outline-none focus:border-admin-blue transition-colors">
+          </div>
+
+          <div>
+            <label class="block text-[13px] font-semibold text-admin-text2 mb-1.5">Contrasenya</label>
+            <input type="password" [(ngModel)]="credentials.password" name="password" required
+                   class="w-full h-[40px] px-3 border border-admin-border rounded-[6px] text-[14px] text-admin-text bg-admin-white outline-none focus:border-admin-blue transition-colors">
+          </div>
+
+          <button type="submit" [disabled]="isLoading"
+                  class="w-full h-[40px] flex justify-center items-center rounded-[6px] bg-admin-blue text-white text-[14px] font-semibold hover:bg-[#084f9a] transition-colors disabled:opacity-70">
+            {{ isLoading ? 'Iniciant sessió...' : 'Iniciar sessió' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

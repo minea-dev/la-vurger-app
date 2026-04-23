@@ -5,16 +5,29 @@ import { KitchenDashboardComponent } from './features/kitchen-dashboard/kitchen-
 import { MonitorComponent } from './features/monitor/monitor.component';
 import { UsersComponent } from './features/users/users.component';
 
+import { authGuard } from './core/guards/auth.guard';
+import { LoginComponent } from './features/login/login.component';
+
 export const routes: Routes = [
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
   {
     path: '',
     component: AdminLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'kitchen', component: KitchenDashboardComponent },
       { path: 'menu', component: MenuManagerComponent },
       { path: 'monitor', component: MonitorComponent },
       { path: 'users', component: UsersComponent },
-      { path: '', redirectTo: 'kitchen', pathMatch: 'full' }
-    ]
-  }
+      { path: '', redirectTo: 'kitchen', pathMatch: 'full' },
+    ],
+  },
+
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
 ];
