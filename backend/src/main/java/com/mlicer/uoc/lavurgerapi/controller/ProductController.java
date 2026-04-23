@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "*")
 @Tag(name = "Products", description = "Endpoints for the product catalog")
 public class ProductController {
 
@@ -90,8 +89,8 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Update product availability", description = "Changes the availability status of a product (e.g., mark as out of stock).")
-    @PatchMapping("/{id}/availability")
+    @Operation(summary = "Update product availability", description = "Changes the availability status of a product.")
+    @PutMapping("/{id}/availability")
     public ResponseEntity<ProductDTO> toggleAvailability(
             @Parameter(description = "Product ID") @PathVariable Long id,
             @Valid @RequestBody ProductAvailabilityDTO availabilityDTO) {
