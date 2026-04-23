@@ -1,0 +1,32 @@
+### Crear un nou usuari (Staff o Customer)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Marta Cuinera",
+  "email": "marta.cuina@lavurger.com",
+  "password": "password123",
+  "role": "KITCHEN"
+}
+
+### Crear un altre usuari (Manager)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Carles Manager",
+  "email": "carles.manager@lavurger.com",
+  "password": "password123",
+  "role": "MANAGER"
+}
+
+### Crear un Client (Per comprovar que el login el bloqueja al no tenir permís)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Client de Prova",
+  "email": "client@gmail.com",
+  "password": "password123",
+  "role": "CUSTOMER"
+}
