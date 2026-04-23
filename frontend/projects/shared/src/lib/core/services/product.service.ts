@@ -14,7 +14,7 @@ export class ProductService {
   }
 
   toggleAvailability(id: number, isAvailable: boolean) {
-    return this.http.patch<ProductDTO>(`${this.apiUrl}/${id}/availability`, { isAvailable });
+    return this.http.put<ProductDTO>(`${this.apiUrl}/${id}/availability`, { isAvailable });
   }
 
   createProduct(product: Partial<ProductDTO>) {

@@ -1,23 +1,19 @@
 <div class="flex flex-col h-screen w-full overflow-hidden bg-admin-bg">
 
   <header class="h-[56px] bg-admin-white border-b border-admin-border flex items-center px-5 shrink-0 shadow-sm z-10 relative">
-    <div class="text-[15px] font-bold text-admin-text mr-6 tracking-tight shrink-0 whitespace-nowrap hidden sm:block">
+
+    <div class="text-[15px] font-bold text-admin-text mr-6 tracking-tight shrink-0 whitespace-nowrap">
       La Vurger <span class="text-admin-blue">·</span> Admin
     </div>
 
     <div class="ml-auto flex items-center gap-3">
-      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full border border-admin-green bg-admin-green-lt text-[11px] font-semibold text-admin-green">
-        <div class="w-1.5 h-1.5 rounded-full bg-admin-green animate-pulse-slow"></div>
-        WebSocket · Actiu
-      </div>
-
-      <div class="text-[13px] font-semibold text-admin-text2 tracking-wide">
+      <div class="text-[13px] font-semibold text-admin-text2 tracking-wide hidden sm:block">
         {{ currentTime | date:'HH:mm:ss' }}
       </div>
 
       <div class="flex items-center gap-2 py-1 pr-2.5 pl-1.5 rounded-md border border-admin-border cursor-pointer bg-admin-white hover:bg-admin-bg transition-colors">
-        <div class="w-7 h-7 rounded-full bg-admin-blue text-white text-[11px] font-bold flex items-center justify-center">AD</div>
-        <div class="text-xs font-medium text-admin-text2">Admin</div>
+        <div class="w-7 h-7 rounded-full bg-admin-blue text-white text-[11px] font-bold flex items-center justify-center shrink-0">AD</div>
+        <div class="text-xs font-medium text-admin-text2 hidden sm:block">Admin</div>
       </div>
     </div>
   </header>

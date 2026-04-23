@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 
 import { API_URL } from '@shared/core/config/api.tokens';
 import { RX_STOMP_CONFIG } from '@shared';
-import { environment } from '../../environments/environment';
+import { environment } from '../environments/environment';
 import { authInterceptor } from './core/auth-interceptor';
 
 
