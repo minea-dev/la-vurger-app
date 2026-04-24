@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ProductDTO } from '@shared/models/dtos/product.dto';
-import { API_URL } from '../config/api.tokens';
+import { API_URL, APP_CONFIG } from '../config/api.tokens';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
   private baseUrl = inject(API_URL);
-  private apiUrl = `${this.baseUrl}/products`;
+  private config = inject(APP_CONFIG);
+  private apiUrl = `${this.config.apiUrl}/products`;
 
   getAllProducts() {
     return this.http.get<ProductDTO[]>(this.apiUrl);
