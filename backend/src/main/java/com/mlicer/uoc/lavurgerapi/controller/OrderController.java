@@ -70,6 +70,26 @@ public class OrderController {
         return ResponseEntity.ok(updatedOrder);
     }
 
+    @Operation(summary = "Update payment status", description = "Updates the payment status of an existing order by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Payment status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @PatchMapping("/{id}/payment-status")
+    public ResponseEntity<OrderDTO> updatePaymentStatus(
+            @Parameter(description = "ID of the order to update") @PathVariable Long id,
+            @RequestBody String paymentStatus) {
+
+        String cleanStatus = paymentStatus.replace("\"", "").trim();
+
+        OrderDTO updatedOrder = orderService.updatePaymentStatus(id, cleanStatus);
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrder);
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrder);
+
+        return ResponseEntity.ok(updatedOrder);
+    }
+
     @Operation(summary = "Get order by ID", description = "Retrieves a specific order by its ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order retrieved successfully"),

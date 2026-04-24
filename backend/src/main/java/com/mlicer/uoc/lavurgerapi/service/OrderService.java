@@ -65,7 +65,11 @@ public class OrderService {
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
-        order.setPaymentStatus(PaymentStatus.PENDING);
+        if (order.getPaymentMethod() == PaymentMethod.APP) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        } else {
+            order.setPaymentStatus(PaymentStatus.PENDING);
+        }
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -139,6 +143,29 @@ public class OrderService {
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
+        }
+
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
+
+        return updatedOrderDTO;
+    }
+
+    @Transactional
+    public OrderDTO updatePaymentStatus(Long id, String newPaymentStatus) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        try {
+            String cleanStatus = newPaymentStatus.replace("\"", "").toUpperCase().trim();
+            PaymentStatus statusEnum = PaymentStatus.valueOf(cleanStatus);
+
+            order.setPaymentStatus(statusEnum);
+            order.setUpdatedAt(LocalDateTime.now());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid payment status value: " + newPaymentStatus);
         }
 
         OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
