@@ -22,6 +22,10 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   roleColorClass = 'bg-admin-blue';
   roleDisplayName = 'Admin';
 
+  canSeeKitchen = false;
+  canSeeMenu = false;
+  canSeeUsers = false;
+
   ngOnInit() {
     this.timerId = setInterval(() => {
       this.currentTime = new Date();
@@ -30,9 +34,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.timerId) {
-      clearInterval(this.timerId);
-    }
+    if (this.timerId) clearInterval(this.timerId);
   }
 
   toggleUserDropdown() {
@@ -48,9 +50,14 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     if (profile) {
       this.userEmail = profile.email;
       this.userRole = profile.role;
-
       this.userInitials = this.userEmail.substring(0, 2).toUpperCase();
       this.setRoleVisuals(this.userRole);
+
+      const staffRoles = ['ADMIN', 'MANAGER', 'KITCHEN'];
+
+      this.canSeeKitchen = staffRoles.includes(this.userRole);
+      this.canSeeMenu = ['ADMIN', 'MANAGER'].includes(this.userRole);
+      this.canSeeUsers = this.userRole === 'ADMIN';
     }
   }
 
@@ -67,11 +74,6 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       case 'KITCHEN':
         this.roleColorClass = 'bg-orange-500';
         this.roleDisplayName = 'Cuina';
-        break;
-      case 'CASHIER':
-      case 'WAIT_STAFF':
-        this.roleColorClass = 'bg-emerald-600';
-        this.roleDisplayName = 'Sala / Caixa';
         break;
       default:
         this.roleColorClass = 'bg-gray-500';

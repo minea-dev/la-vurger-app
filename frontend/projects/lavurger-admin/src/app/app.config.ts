@@ -3,17 +3,14 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 
-import { API_URL } from '@shared/core/config/api.tokens';
-import { RX_STOMP_CONFIG } from '@shared/core/config/stomp.config';
+import { API_URL, APP_CONFIG, RX_STOMP_CONFIG } from '@shared';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
-
-
 
 export function rxStompConfigFactory() {
   const token = localStorage.getItem('token');
   return {
-    brokerURL: environment.wsUrl,
+    brokerURL: environment.wsUrl, // ✅ Usamos la del env de admin
     connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
     heartbeatIncoming: 0,
     heartbeatOutgoing: 20000,
@@ -26,8 +23,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
 
+    { provide: APP_CONFIG, useValue: environment },
     { provide: API_URL, useValue: environment.apiUrl },
-
-    { provide: RX_STOMP_CONFIG, useFactory: rxStompConfigFactory }
-  ]
+    { provide: RX_STOMP_CONFIG, useFactory: rxStompConfigFactory },
+  ],
 };

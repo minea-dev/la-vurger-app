@@ -2,15 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { OrderDTO, OrderRequest, OrderResponse } from '../../models/dtos/order.dto';
 import { OrderStatus } from '../../models/enums/order-status.enum';
-import { environment } from '../../../../../lavurger-client/src/environments/environment';
+import { PaymentStatus } from '../../models/enums/payment-status.enum';
+import { APP_CONFIG } from '@shared/core/config/api.tokens';
+
+
+
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/orders`;
+  private config = inject(APP_CONFIG);
+  private apiUrl = `${this.config.apiUrl}/orders`;
 
   getOrders() {
-    return this.http.get<OrderDTO[]>(this.apiUrl);
+    return this.http.get<OrderDTO[]>(`${this.apiUrl}?t=${new Date().getTime()}`);
   }
 
   createOrder(orderData: OrderRequest) {
@@ -23,5 +28,9 @@ export class OrderService {
 
   updateOrderStatus(id: number, status: OrderStatus) {
     return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/status`, `"${status}"`);
+  }
+
+  updatePaymentStatus(id: number, status: PaymentStatus) {
+    return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/payment-status`, `"${status}"`);
   }
 }
