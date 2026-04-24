@@ -60,6 +60,8 @@ public class OrderService {
         order.setOrderType(orderRequest.orderType() != null ? orderRequest.orderType() : OrderType.DINE_IN);
         order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
 
+        order.setCustomerComment(orderRequest.customerComment());
+
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
@@ -81,6 +83,8 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.quantity());
+
+            orderItem.setNotes(itemReq.notes());
 
             BigDecimal itemPrice = product.getPrice();
             orderItem.setPrice(itemPrice);

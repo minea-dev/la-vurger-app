@@ -53,9 +53,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
                         .requestMatchers("/ws-la-vurger/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "STAFF", "ROLE_STAFF")
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "STAFF", "ROLE_STAFF")
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "STAFF", "ROLE_STAFF")
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
 
                         .anyRequest().authenticated()
                 )
