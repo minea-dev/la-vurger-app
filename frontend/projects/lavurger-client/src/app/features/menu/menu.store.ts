@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { signalStore, withState, withComputed, withMethods, patchState } from '@ngrx/signals';
-import { ProductDTO } from '../../../../../shared/src/lib/models/dtos/product.dto';
-import { ApiService } from '../../../../../shared/src/lib/core/services/api.service';
+import { ProductDTO } from '@shared';
+import { ApiService } from '@shared';
 
 type MenuState = {
   products: ProductDTO[];
@@ -13,7 +13,7 @@ type MenuState = {
 
 const initialState: MenuState = {
   products: [],
-  categories: ['burgers', 'burritos', 'sides', 'drinks'],
+  categories: ['burgers', 'burritos', 'sides', 'drinks', 'desserts'],
   selectedCategory: 'burgers',
   isLoading: false,
   searchQuery: '',
@@ -29,13 +29,15 @@ export const MenuStore = signalStore(
       const query = searchQuery().toLowerCase().trim();
 
       return products().filter((p) => {
-        const matchesCategory = p.category === category;
+        const catDB = (p.category || '').toLowerCase();
+        const matchesCategory = catDB === category;
+
         const matchesQuery =
           query === ''
             ? true
             : p.name.toLowerCase().includes(query) ||
               (p.description?.toLowerCase().includes(query) ?? false);
-        return matchesCategory && matchesQuery;
+        return matchesCategory && matchesQuery && p.isAvailable;
       });
     }),
   })),

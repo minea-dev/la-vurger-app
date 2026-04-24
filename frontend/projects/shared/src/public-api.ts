@@ -15,7 +15,6 @@ export * from './lib/core/services/api.service';
 export * from './lib/core/services/order.service';
 export * from './lib/core/services/product.service';
 export * from './lib/core/services/stomp.service';
-export * from './lib/core/config/stomp.config';
 export * from './lib/core/services/stomp.service';
 
 // Store

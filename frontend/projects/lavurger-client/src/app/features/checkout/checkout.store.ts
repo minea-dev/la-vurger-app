@@ -1,9 +1,9 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
-import { OrderService } from '../../../../../shared/src/lib/core/services/order.service';
-import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
-import { OrderRequest } from '../../../../../shared/src/lib/models/dtos/order.dto';
+import { OrderService } from '@shared';
+import { CartStore } from '@shared';
+import { OrderRequest } from '@shared';
 
 type CheckoutState = {
   isLoading: boolean;
@@ -38,6 +38,7 @@ export const CheckoutStore = signalStore(
           items: currentCart.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
+            notes: item.notes || '',
           })),
         };
 

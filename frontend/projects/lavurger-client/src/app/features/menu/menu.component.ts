@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MenuStore } from './menu.store';
-import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
+import { CartStore } from '@shared';
 
 @Component({
   selector: 'app-menu',
@@ -21,6 +21,7 @@ export class MenuComponent implements OnInit {
     burritos: '🌯 Vurritos',
     sides: '🍟 Acompanyaments',
     drinks: '🥤 Begudes',
+    desserts: '🍨 Postres',
   };
 
   categoryLabels: Record<string, string> = {
@@ -28,6 +29,7 @@ export class MenuComponent implements OnInit {
     burritos: "Vurritos de l'horta",
     sides: 'Per acompanyar',
     drinks: 'Begudes fresques',
+    desserts: 'Postres vegans'
   };
 
   ngOnInit() {

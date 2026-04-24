@@ -13,6 +13,7 @@ import { ProductDTO } from '../../models/dtos/product.dto';
 export interface CartItem {
   product: ProductDTO;
   quantity: number;
+  notes?: string;
 }
 
 type CartState = {

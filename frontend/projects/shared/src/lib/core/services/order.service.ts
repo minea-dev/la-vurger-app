@@ -22,6 +22,6 @@ export class OrderService {
   }
 
   updateOrderStatus(id: number, status: OrderStatus) {
-    return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/status`, { status });
+    return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/status`, `"${status}"`);
   }
 }

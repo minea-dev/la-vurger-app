@@ -61,6 +61,8 @@ export class MenuManagerComponent implements OnInit {
     const search = (this.searchTerm || '').toLowerCase();
 
     let result = this.allProducts.filter((p) => {
+      if (!p.isAvailable) return false;
+
       const name = (p.name || '').toLowerCase();
       const cat = (p.category || '').toLowerCase();
 
@@ -105,8 +107,15 @@ export class MenuManagerComponent implements OnInit {
     });
   }
 
+  deactivateProduct(product: ProductDTO) {
+    if (confirm(`Estàs segur que vols eliminar "${product.name}" del catàleg?`)) {
+      product.isAvailable = true;
+      this.toggleProduct(product);
+    }
+  }
+
   openAddModal() {
-    this.selectedProduct = { isAvailable: true, price: 0, category: 'BURGERS' };
+    this.selectedProduct = { isAvailable: true, price: 0, category: 'burgers' };
     this.modalError = '';
     this.isAddModalOpen = true;
   }
@@ -114,7 +123,7 @@ export class MenuManagerComponent implements OnInit {
   openEditDrawer(product: ProductDTO) {
     this.selectedProduct = {
       ...product,
-      category: product.category ? product.category.toUpperCase() : 'BURGERS',
+      category: product.category ? product.category.toLowerCase() : 'burgers',
     };
     this.modalError = '';
     this.isEditDrawerOpen = true;

@@ -11,6 +11,7 @@ import { ProductDTO } from './product.dto';
 export interface OrderItemRequest {
   productId: number;
   quantity: number;
+  notes?: string;
 }
 
 export interface OrderRequest {
@@ -45,6 +46,7 @@ export interface OrderItemDTO {
 
 export interface OrderDTO {
   id: number;
+  orderNumber: string;
   orderType: OrderType;
   status: OrderStatus;
   paymentMethod: PaymentMethod;

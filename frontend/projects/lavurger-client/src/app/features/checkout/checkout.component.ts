@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
-import { PaymentMethod } from '../../../../../shared/src/lib/models/enums/payment-method.enum';
+import { PaymentMethod } from '@shared';
 import { CheckoutStore } from './checkout.store';
-import { CartStore } from '../../../../../shared/src/lib/core/store/cart.store';
+import { CartStore } from '@shared';
 
 @Component({
   selector: 'app-checkout',
@@ -23,18 +23,10 @@ export class CheckoutComponent implements OnInit {
   PaymentMethod = PaymentMethod;
 
   ngOnInit() {
-    const tableParam = this.route.snapshot.queryParamMap.get('table');
-
-    if (tableParam) {
-      const id = parseInt(tableParam, 10);
-      if (!isNaN(id)) {
-        this.cartStore.setTableId(id);
-      }
-    } else {
+    if (!this.cartStore.tableId()) {
       this.paymentMethod.set(PaymentMethod.APP);
     }
   }
-
   submitOrder() {
     this.checkoutStore.sendOrder({
       paymentMethod: this.paymentMethod(),
