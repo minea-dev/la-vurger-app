@@ -31,7 +31,12 @@ export class LoginComponent {
     this.isLoading = true;
     this.authService.login(this.credentials).subscribe({
       next: () => {
-        this.router.navigate(['/']);
+        const userRole = this.authService.getUserProfile()?.role;
+        if (userRole === 'CASHIER') {
+          this.router.navigate(['/monitor']);
+        } else {
+          this.router.navigate(['/kitchen']);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;

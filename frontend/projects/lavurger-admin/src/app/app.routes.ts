@@ -9,6 +9,8 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { LoginComponent } from './features/login/login.component';
 
+import { Role } from '@shared';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   {
@@ -20,31 +22,31 @@ export const routes: Routes = [
         path: 'kitchen',
         component: KitchenDashboardComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'MANAGER', 'KITCHEN'] },
+        data: { roles: [Role.ADMIN, Role.MANAGER, Role.KITCHEN] },
       },
       {
         path: 'monitor',
         component: MonitorComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'MANAGER', 'KITCHEN'] },
+        data: { roles: [Role.ADMIN, Role.MANAGER, Role.CASHIER] },
       },
       {
         path: 'history',
         component: HistoryComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'MANAGER', 'KITCHEN'] },
+        data: { roles: [Role.ADMIN, Role.MANAGER, Role.CASHIER] },
       },
       {
         path: 'menu',
         component: MenuManagerComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'MANAGER'] },
+        data: { roles: [Role.ADMIN, Role.MANAGER] },
       },
       {
         path: 'users',
         component: UsersComponent,
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN'] },
+        data: { roles: [Role.ADMIN] },
       },
       { path: '', redirectTo: 'kitchen', pathMatch: 'full' },
     ],

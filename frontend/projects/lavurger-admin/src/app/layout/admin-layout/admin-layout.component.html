@@ -2,15 +2,20 @@
 
   <header class="h-[56px] bg-admin-white border-b border-admin-border flex items-center px-5 shrink-0 shadow-sm z-40 relative">
     <div class="text-[15px] font-bold text-admin-text mr-6 tracking-tight shrink-0 whitespace-nowrap">
-      La Vurger <span class="text-admin-blue">·</span> {{ roleDisplayName }} 🍳
+      La Vurger <span class="text-admin-blue">·</span> Cuina 🍔
     </div>
 
     <div class="ml-auto flex items-center gap-3">
       <div class="relative">
         <div (click)="toggleUserDropdown()" class="flex items-center gap-2 py-1.5 pr-3 pl-1.5 rounded-md border border-admin-border cursor-pointer bg-admin-white hover:bg-admin-bg transition-colors select-none">
-          <div [ngClass]="roleColorClass" class="w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center shrink-0">
-            {{ userInitials }}
-          </div>
+
+          <app-user-avatar
+            [name]="userEmail"
+            [role]="userRole"
+            [isActive]="true"
+            [size]="28">
+          </app-user-avatar>
+
           <div class="text-xs font-medium text-admin-text2 hidden sm:block">
             {{ roleDisplayName }}
           </div>
@@ -34,10 +39,11 @@
   <div class="flex-1 flex overflow-hidden">
     <aside class="w-[52px] bg-admin-white border-r border-admin-border flex flex-col items-center py-2.5 gap-0.5 shrink-0">
 
-      <ng-container *ngIf="canSeeKitchen">
-        <a routerLink="/kitchen" title="Cuina" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
-          <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        </a>
+      <a *ngIf="canSeeKitchen" routerLink="/kitchen" title="Cuina" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </a>
+
+      <ng-container *ngIf="canSeeMonitor">
         <a routerLink="/monitor" title="Monitor" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
           <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
         </a>

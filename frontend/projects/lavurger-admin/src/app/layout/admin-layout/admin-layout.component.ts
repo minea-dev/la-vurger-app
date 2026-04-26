@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { UserAvatarComponent } from '../../shared/components/user-avatar/user-avatar.component';
+import { Role } from '@shared'; //
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, UserAvatarComponent],
   templateUrl: './admin-layout.component.html',
 })
 export class AdminLayoutComponent implements OnInit, OnDestroy {
@@ -17,12 +19,11 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   isDropdownOpen = false;
 
   userEmail = '';
-  userRole = '';
-  userInitials = '';
-  roleColorClass = 'bg-admin-blue';
-  roleDisplayName = 'Admin';
+  userRole: Role | '' = '';
+  roleDisplayName = 'Staff';
 
   canSeeKitchen = false;
+  canSeeMonitor = false;
   canSeeMenu = false;
   canSeeUsers = false;
 
@@ -49,34 +50,31 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     const profile = this.authService.getUserProfile();
     if (profile) {
       this.userEmail = profile.email;
-      this.userRole = profile.role;
-      this.userInitials = this.userEmail.substring(0, 2).toUpperCase();
-      this.setRoleVisuals(this.userRole);
+      this.userRole = profile.role as Role;
+      this.setRoleDisplayName(this.userRole);
 
-      const staffRoles = ['ADMIN', 'MANAGER', 'KITCHEN'];
-
-      this.canSeeKitchen = staffRoles.includes(this.userRole);
-      this.canSeeMenu = ['ADMIN', 'MANAGER'].includes(this.userRole);
-      this.canSeeUsers = this.userRole === 'ADMIN';
+      this.canSeeKitchen = [Role.ADMIN, Role.MANAGER, Role.KITCHEN].includes(this.userRole);
+      this.canSeeMonitor = [Role.ADMIN, Role.MANAGER, Role.CASHIER].includes(this.userRole);
+      this.canSeeMenu = [Role.ADMIN, Role.MANAGER].includes(this.userRole);
+      this.canSeeUsers = this.userRole === Role.ADMIN;
     }
   }
 
-  setRoleVisuals(role: string) {
+  setRoleDisplayName(role: Role) {
     switch (role) {
-      case 'ADMIN':
-        this.roleColorClass = 'bg-admin-blue';
+      case Role.ADMIN:
         this.roleDisplayName = 'Admin';
         break;
-      case 'MANAGER':
-        this.roleColorClass = 'bg-purple-600';
+      case Role.MANAGER:
         this.roleDisplayName = 'Manager';
         break;
-      case 'KITCHEN':
-        this.roleColorClass = 'bg-orange-500';
+      case Role.KITCHEN:
         this.roleDisplayName = 'Cuina';
         break;
+      case Role.CASHIER:
+        this.roleDisplayName = 'Sala';
+        break;
       default:
-        this.roleColorClass = 'bg-gray-500';
         this.roleDisplayName = 'Staff';
     }
   }
