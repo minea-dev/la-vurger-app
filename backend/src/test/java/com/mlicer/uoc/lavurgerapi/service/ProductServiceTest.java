@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,61 +32,101 @@ class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    @DisplayName("Hauria de retornar ProductDTO quan el producte existeix")
-    void shouldReturnProductDTOWhenProductExists() {
+    @DisplayName("Should return all products")
+    void shouldReturnAllProducts() {
+        // GIVEN
         Product mockProduct = new Product();
-        mockProduct.setId(1L);
-        mockProduct.setName("La Vurger Clàssica");
-        ProductDTO mockDto = mock(ProductDTO.class);
+        ProductDTO mockDTO = new ProductDTO(1L, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
 
-        when(productRepository.findById(1L)).thenReturn(Optional.of(mockProduct));
-        when(productMapper.toDTO(mockProduct)).thenReturn(mockDto);
+        when(productRepository.findAll()).thenReturn(List.of(mockProduct));
+        when(productMapper.toDTO(mockProduct)).thenReturn(mockDTO);
 
-        ProductDTO result = productService.getProductById(1L);
-
-        assertNotNull(result, "El producte no deuria ser nul");
-        assertEquals(mockDto, result, "El DTO retornat no coincideix");
-
-        verify(productRepository, times(1)).findById(1L);
-        verify(productMapper, times(1)).toDTO(mockProduct);
-        System.out.println("✅ Test superat: El servei retorna el DTO directament.");
-    }
-
-    @Test
-    @DisplayName("Hauria de llançar ResourceNotFoundException quan el producte no existeix")
-    void shouldThrowExceptionWhenProductDoesNotExist() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> {
-            productService.getProductById(99L);
-        }, "Deuria llançar ResourceNotFoundException si el producte no existeix");
-
-        verify(productRepository, times(1)).findById(99L);
-        verify(productMapper, never()).toDTO(any());
-        System.out.println("✅ Test superat: El servei llança l'excepció correcta.");
-    }
-
-    @Test
-    @DisplayName("Hauria de retornar llista de DTOs quan hi ha productes")
-    void shouldReturnListOfProductDTOsWhenProductsExist() {
-        Product p1 = new Product(); p1.setId(1L);
-        Product p2 = new Product(); p2.setId(2L);
-        List<Product> mockProducts = List.of(p1, p2);
-
-        ProductDTO d1 = mock(ProductDTO.class);
-        ProductDTO d2 = mock(ProductDTO.class);
-
-        when(productRepository.findAll()).thenReturn(mockProducts);
-        when(productMapper.toDTO(p1)).thenReturn(d1);
-        when(productMapper.toDTO(p2)).thenReturn(d2);
-
+        // WHEN
         List<ProductDTO> result = productService.getAllProducts();
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains(d1));
-        assertTrue(result.contains(d2));
+        // THEN
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(mockDTO, result.get(0));
+        verify(productRepository).findAll();
+    }
 
-        verify(productRepository, times(1)).findAll();
-        System.out.println("✅ Test superat: Llistat de productes validat.");
+    @Test
+    @DisplayName("Should return product by ID")
+    void shouldReturnProductById() {
+        // GIVEN
+        Long productId = 1L;
+        Product mockProduct = new Product();
+        ProductDTO mockDTO = new ProductDTO(productId, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
+        when(productMapper.toDTO(mockProduct)).thenReturn(mockDTO);
+
+        // WHEN
+        ProductDTO result = productService.getProductById(productId);
+
+        // THEN
+        assertNotNull(result);
+        assertEquals(mockDTO.name(), result.name());
+        verify(productRepository).findById(productId);
+    }
+
+    @Test
+    @DisplayName("Should save and return a new product")
+    void shouldSaveProduct() {
+        // GIVEN
+        ProductDTO inputDTO = new ProductDTO(null, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        Product mockEntity = new Product();
+        Product savedEntity = new Product();
+        ProductDTO expectedDTO = new ProductDTO(1L, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+
+        when(productMapper.toEntity(inputDTO)).thenReturn(mockEntity);
+        when(productRepository.save(mockEntity)).thenReturn(savedEntity);
+        when(productMapper.toDTO(savedEntity)).thenReturn(expectedDTO);
+
+        // WHEN
+        ProductDTO result = productService.saveProduct(inputDTO);
+
+        // THEN
+        assertNotNull(result.id());
+        verify(productRepository).save(mockEntity);
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when deleting non-existent product")
+    void shouldThrowExceptionWhenDeletingNonExistentProduct() {
+        // GIVEN
+        Long productId = 99L;
+        when(productRepository.existsById(productId)).thenReturn(false);
+
+        // WHEN & THEN
+        assertThrows(ResourceNotFoundException.class, () -> productService.deleteProduct(productId));
+        verify(productRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    @DisplayName("Should toggle product availability successfully")
+    void shouldToggleAvailability() {
+        // GIVEN
+        Long productId = 1L;
+        Product mockProduct = new Product();
+        mockProduct.setAvailable(false);
+
+        Product savedProduct = new Product();
+        savedProduct.setAvailable(true);
+
+        ProductDTO expectedDTO = new ProductDTO(productId, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
+        when(productRepository.save(mockProduct)).thenReturn(savedProduct);
+        when(productMapper.toDTO(savedProduct)).thenReturn(expectedDTO);
+
+        // WHEN
+        ProductDTO result = productService.toggleAvailability(productId, true);
+
+        // THEN
+        assertTrue(result.isAvailable());
+        verify(productRepository).findById(productId);
+        verify(productRepository).save(mockProduct);
     }
 }

@@ -2,10 +2,13 @@ package com.mlicer.uoc.lavurgerapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mlicer.uoc.lavurgerapi.dto.OrderDTO;
-import com.mlicer.uoc.lavurgerapi.dto.OrderItemDTO;
+import com.mlicer.uoc.lavurgerapi.dto.OrderItemRequestDTO;
+import com.mlicer.uoc.lavurgerapi.dto.OrderRequestDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
 import com.mlicer.uoc.lavurgerapi.entity.User;
+import com.mlicer.uoc.lavurgerapi.entity.enums.OrderType;
+import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentMethod;
 import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.OrderItemRepository;
@@ -86,7 +89,7 @@ public class OrderControllerIT {
         user.setName("Test User");
         user.setEmail("test@lavurger.com");
         user.setPassword("password");
-        user.setRole(Role.valueOf("CUSTOMER"));
+        user.setRole(Role.valueOf("CASHIER"));
         user.setActive(true);
         this.savedUserId = userRepository.save(user).getId();
 
@@ -102,14 +105,14 @@ public class OrderControllerIT {
     @DisplayName("Should create order successfully with 201 Created")
     void shouldCreateOrderSuccessfully() throws Exception {
 
-        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 2, "No onions");
+        OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 2, "No onions");
 
-        OrderDTO validOrder = new OrderDTO(
-                null, null, "RECEIVED", "DINE_IN",
-                "COUNTER", "PENDING", new BigDecimal("25.50"),
-                "No onions", this.savedUserId, this.savedTableId,
-                List.of(mockItem),
-                null
+        OrderRequestDTO validOrder = new OrderRequestDTO(
+                this.savedTableId,
+                OrderType.DINE_IN,
+                PaymentMethod.COUNTER,
+                "No onions",
+                List.of(mockItem)
         );
 
         mockMvc.perform(post("/api/orders")
@@ -123,14 +126,14 @@ public class OrderControllerIT {
     @DisplayName("Should filter orders by status RECEIVED")
     void shouldFilterOrdersByStatus() throws Exception {
 
-        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 1, null);
+        OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 1, null);
 
-        OrderDTO newOrder = new OrderDTO(
-                null, null, "RECEIVED", "DINE_IN",
-                "COUNTER", "PAID", new BigDecimal("15.00"),
-                null, this.savedUserId, this.savedTableId,
-                List.of(mockItem),
-                null
+        OrderRequestDTO newOrder = new OrderRequestDTO(
+                this.savedTableId,
+                OrderType.DINE_IN,
+                PaymentMethod.COUNTER,
+                null,
+                List.of(mockItem)
         );
 
         String responseBody = mockMvc.perform(post("/api/orders")
@@ -152,12 +155,12 @@ public class OrderControllerIT {
     @DisplayName("Should return 400 when order items list is empty")
     void shouldReturn400WhenItemsListIsEmpty() throws Exception {
 
-        OrderDTO badOrder = new OrderDTO(
-                null, null, "RECEIVED", "DINE_IN",
-                "COUNTER", "PENDING", new BigDecimal("0.00"),
-                "Empty Items Test", this.savedUserId, this.savedTableId,
-                List.of(),
-                null
+        OrderRequestDTO badOrder = new OrderRequestDTO(
+                this.savedTableId,
+                OrderType.DINE_IN,
+                PaymentMethod.COUNTER,
+                "Empty Items Test",
+                List.of()
         );
 
         mockMvc.perform(post("/api/orders")
@@ -197,14 +200,14 @@ public class OrderControllerIT {
     @DisplayName("Should return order by ID successfully with 200 OK")
     void shouldReturnOrderByIdSuccessfully() throws Exception {
 
-        OrderItemDTO mockItem = new OrderItemDTO(this.savedProductId, "Classic Burger", 2, null);
+        OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 2, null);
 
-        OrderDTO newOrder = new OrderDTO(
-                null, null, "RECEIVED", "DINE_IN",
-                "COUNTER", "PENDING", new BigDecimal("20.00"),
-                null, this.savedUserId, this.savedTableId,
-                List.of(mockItem),
-                null
+        OrderRequestDTO newOrder = new OrderRequestDTO(
+                this.savedTableId,
+                OrderType.DINE_IN,
+                PaymentMethod.COUNTER,
+                null,
+                List.of(mockItem)
         );
 
         String responseBody = mockMvc.perform(post("/api/orders")

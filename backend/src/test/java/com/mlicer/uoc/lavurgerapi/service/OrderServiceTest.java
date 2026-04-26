@@ -54,7 +54,7 @@ class OrderServiceTest {
         Long tableId = 1L;
         Long productId = 10L;
 
-        OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(productId, 2);
+        OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(productId, 2, "Sense ceba");
 
         OrderRequestDTO request = new OrderRequestDTO(
                 tableId,
@@ -71,6 +71,7 @@ class OrderServiceTest {
         mockProduct.setId(productId);
         mockProduct.setPrice(new BigDecimal("10.50"));
         mockProduct.setName("Burger");
+        mockProduct.setAvailable(true);
 
         Order savedOrder = new Order();
 
@@ -114,7 +115,7 @@ class OrderServiceTest {
     void shouldThrowExceptionWhenProductDoesNotExist() {
         // GIVEN
         Long tableId = 1L;
-        OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(500L, 1);
+        OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(500L, 1, null);
 
         OrderRequestDTO request = new OrderRequestDTO(tableId, null, null, null, List.of(itemRequest));
 
