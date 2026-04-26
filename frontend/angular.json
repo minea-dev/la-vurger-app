@@ -30,9 +30,23 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/lavurger-client/src/environments/environment.ts",
+                  "with": "projects/lavurger-client/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
-                { "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" },
-                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
               ],
               "outputHashing": "all"
             },
@@ -47,8 +61,12 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": { "buildTarget": "lavurger-client:build:production" },
-            "development": { "buildTarget": "lavurger-client:build:development" }
+            "production": {
+              "buildTarget": "lavurger-client:build:production"
+            },
+            "development": {
+              "buildTarget": "lavurger-client:build:development"
+            }
           },
           "defaultConfiguration": "development"
         },
@@ -80,9 +98,23 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/lavurger-admin/src/environments/environment.ts",
+                  "with": "projects/lavurger-admin/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
-                { "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" },
-                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
               ],
               "outputHashing": "all"
             },
@@ -97,8 +129,12 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": { "buildTarget": "lavurger-admin:build:production" },
-            "development": { "buildTarget": "lavurger-admin:build:development" }
+            "production": {
+              "buildTarget": "lavurger-admin:build:production"
+            },
+            "development": {
+              "buildTarget": "lavurger-admin:build:development"
+            }
           },
           "defaultConfiguration": "development"
         },
