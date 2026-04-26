@@ -73,3 +73,4 @@ jobs:
             sudo docker system prune -f
             
             sudo docker compose up -d --build --force-recreate
+            sleep 5 && sudo docker logs lavurger-front
