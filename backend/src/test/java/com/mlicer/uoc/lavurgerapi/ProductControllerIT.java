@@ -2,6 +2,9 @@ package com.mlicer.uoc.lavurgerapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
+import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
+import com.mlicer.uoc.lavurgerapi.security.JwtUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -22,11 +26,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 public class ProductControllerIT {
 
+    @MockitoBean
+    private JwtUtils jwtUtils;
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @BeforeEach
+    void setUp() {
+        productRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("Should create a product successfully")

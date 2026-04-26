@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { MenuManagerComponent } from './menu-manager.component';
+
+describe('MenuManagerComponent', () => {
+  let component: MenuManagerComponent;
+  let fixture: ComponentFixture<MenuManagerComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MenuManagerComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(MenuManagerComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

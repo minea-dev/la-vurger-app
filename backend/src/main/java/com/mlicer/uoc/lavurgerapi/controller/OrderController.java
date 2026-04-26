@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,9 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Operation(summary = "Create a new order", description = "Receives a table ID and a list of items to create a new order.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Order created successfully"),
@@ -32,6 +36,9 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderRequestDTO orderRequest) {
         OrderDTO savedOrder = orderService.createOrder(orderRequest);
+
+        messagingTemplate.convertAndSend("/topic/orders", savedOrder);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
 
@@ -57,6 +64,41 @@ public class OrderController {
         String cleanStatus = status.replace("\"", "").trim();
 
         OrderDTO updatedOrder = orderService.updateOrderStatus(id, cleanStatus);
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrder);
+
         return ResponseEntity.ok(updatedOrder);
+    }
+
+    @Operation(summary = "Update payment status", description = "Updates the payment status of an existing order by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Payment status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @PatchMapping("/{id}/payment-status")
+    public ResponseEntity<OrderDTO> updatePaymentStatus(
+            @Parameter(description = "ID of the order to update") @PathVariable Long id,
+            @RequestBody String paymentStatus) {
+
+        String cleanStatus = paymentStatus.replace("\"", "").trim();
+
+        OrderDTO updatedOrder = orderService.updatePaymentStatus(id, cleanStatus);
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrder);
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrder);
+
+        return ResponseEntity.ok(updatedOrder);
+    }
+
+    @Operation(summary = "Get order by ID", description = "Retrieves a specific order by its ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderDTO> getOrderById(
+            @Parameter(description = "ID of the order") @PathVariable Long id) {
+        OrderDTO order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order);
     }
 }

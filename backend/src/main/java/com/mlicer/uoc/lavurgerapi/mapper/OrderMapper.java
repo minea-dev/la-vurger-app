@@ -1,6 +1,7 @@
 package com.mlicer.uoc.lavurgerapi.mapper;
 
 import com.mlicer.uoc.lavurgerapi.dto.OrderDTO;
+import com.mlicer.uoc.lavurgerapi.dto.OrderItemDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Order;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
 import com.mlicer.uoc.lavurgerapi.entity.User;
@@ -10,16 +11,21 @@ import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentMethod;
 import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentStatus;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class OrderMapper {
 
-    /**
-     * Converts an Order entity to an OrderDTO.
-     * Used for sending data to the frontend or IntelliJ HTTP Client.
-     */
+    private final ProductMapper productMapper;
+
+    public OrderMapper(ProductMapper productMapper) {
+        this.productMapper = productMapper;
+    }
+
     public OrderDTO toDTO(Order entity) {
         if (entity == null) {
             return null;
@@ -27,6 +33,17 @@ public class OrderMapper {
 
         Long customerId = (entity.getCustomer() != null) ? entity.getCustomer().getId() : null;
         Long tableId = (entity.getRestaurantTable() != null) ? entity.getRestaurantTable().getId() : null;
+
+        List<OrderItemDTO> itemsDTO = entity.getItems() != null ?
+                entity.getItems().stream().map(item -> new OrderItemDTO(
+                        item.getId(),
+                        item.getProduct().getId(),
+                        productMapper.toDTO(item.getProduct()),
+                        item.getQuantity(),
+                        item.getPrice(),
+                        item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())),
+                        item.getNotes()
+                )).collect(Collectors.toList()) : new ArrayList<>();
 
         return new OrderDTO(
                 entity.getId(),
@@ -39,15 +56,11 @@ public class OrderMapper {
                 entity.getCustomerComment(),
                 customerId,
                 tableId,
-                new ArrayList<>(),
+                itemsDTO,
                 entity.getCreatedAt()
         );
     }
 
-    /**
-     * Converts an OrderDTO to an Order entity.
-     * Includes safe Enum conversion and handles relationships for Customer and Table.
-     */
     public Order toEntity(OrderDTO dto) {
         if (dto == null) return null;
 
@@ -58,36 +71,19 @@ public class OrderMapper {
         try {
             if (dto.status() != null)
                 entity.setStatus(OrderStatus.valueOf(dto.status().toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            System.err.println("Mapping Error: Invalid OrderStatus - " + dto.status());
-        }
-
-        try {
             if (dto.orderType() != null)
                 entity.setOrderType(OrderType.valueOf(dto.orderType().toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            System.err.println("Mapping Error: Invalid OrderType - " + dto.orderType());
-        }
-
-        try {
             if (dto.paymentMethod() != null)
                 entity.setPaymentMethod(PaymentMethod.valueOf(dto.paymentMethod().toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            System.err.println("Mapping Error: Invalid PaymentMethod - " + dto.paymentMethod());
-        }
-
-        try {
             if (dto.paymentStatus() != null)
                 entity.setPaymentStatus(PaymentStatus.valueOf(dto.paymentStatus().toUpperCase()));
         } catch (IllegalArgumentException e) {
-            System.err.println("Mapping Error: Invalid PaymentStatus - " + dto.paymentStatus());
+            System.err.println("Mapping Error");
         }
 
         entity.setTotalAmount(dto.totalAmount());
         entity.setCustomerComment(dto.customerComment());
-
         entity.setCreatedAt(dto.createdAt() != null ? dto.createdAt() : LocalDateTime.now());
-
 
         if (dto.customerId() != null) {
             User customer = new User();

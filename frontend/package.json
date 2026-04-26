@@ -3,10 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "start:client": "ng serve lavurger-client",
+    "start:admin": "ng serve lavurger-admin --port 4201",
+    "build:client": "ng build lavurger-client",
+    "build:admin": "ng build lavurger-admin",
+    "test:client": "ng test lavurger-client",
+    "test:admin": "ng test lavurger-admin",
+    "watch:client": "ng build lavurger-client --watch --configuration development",
+    "watch:admin": "ng build lavurger-admin --watch --configuration development"
   },
   "private": true,
   "packageManager": "npm@11.7.0",
@@ -18,6 +22,8 @@
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
     "@ngrx/signals": "^21.0.1",
+    "@stomp/rx-stomp": "^2.3.0",
+    "@stomp/stompjs": "^7.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "^0.16.1"

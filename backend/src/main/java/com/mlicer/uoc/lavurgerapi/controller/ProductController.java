@@ -1,5 +1,6 @@
 package com.mlicer.uoc.lavurgerapi.controller;
 
+import com.mlicer.uoc.lavurgerapi.dto.ProductAvailabilityDTO;
 import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
 import com.mlicer.uoc.lavurgerapi.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "*")
 @Tag(name = "Products", description = "Endpoints for the product catalog")
 public class ProductController {
 
@@ -87,5 +87,15 @@ public class ProductController {
     public ResponseEntity<Void> delete(@Parameter(description = "ID of the product to delete") @PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Update product availability", description = "Changes the availability status of a product.")
+    @PutMapping("/{id}/availability")
+    public ResponseEntity<ProductDTO> toggleAvailability(
+            @Parameter(description = "Product ID") @PathVariable Long id,
+            @Valid @RequestBody ProductAvailabilityDTO availabilityDTO) {
+
+        ProductDTO updatedProduct = productService.toggleAvailability(id, availabilityDTO.isAvailable());
+        return ResponseEntity.ok(updatedProduct);
     }
 }

@@ -1,0 +1,153 @@
+<div class="min-h-screen w-full bg-vurger-bg font-sans text-vurger-dark pb-32 lg:pb-10">
+
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+
+    <header class="flex items-center gap-4 mb-8">
+      <button routerLink="/menu" class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors shrink-0">
+        <svg class="w-5 h-5 stroke-vurger-dark fill-none" stroke-width="2" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+      </button>
+      <div>
+        <h1 class="font-serif text-3xl font-black tracking-tight text-vurger-primary leading-none">
+          La <span class="text-vurger-muted">Vurger</span>
+        </h1>
+        <p class="text-[11px] font-semibold text-vurger-muted tracking-[1.5px] uppercase mt-2">
+          Comanda #{{ store.order()?.id || '...' }}
+        </p>
+      </div>
+    </header>
+
+    @if (store.isLoading()) {
+      <div class="flex justify-center items-center py-20">
+        <div class="w-12 h-12 border-4 border-vurger-pale border-t-vurger-primary rounded-full animate-spin"></div>
+      </div>
+    }
+
+    @if (store.error()) {
+      <div class="p-4 bg-[#FFF3CD] border-2 border-[#856404] rounded-2xl text-[#856404] font-medium text-sm">
+        {{ store.error() }}
+      </div>
+    }
+
+    @if (store.order(); as order) {
+
+      <div class="relative w-full rounded-[32px] p-8 flex flex-col items-center text-center overflow-hidden transition-colors duration-500 shadow-xl shadow-vurger-primary/10"
+           [ngClass]="{
+             'bg-vurger-primary': order.status === OrderStatus.RECEIVED || order.status === OrderStatus.PREPARING,
+             'bg-[#1A5C38]': order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED,
+             'bg-red-700': order.status === OrderStatus.CANCELLED
+           }">
+
+        <div class="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style="background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+
+        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6 backdrop-blur-md z-10">
+          <div class="w-2 h-2 rounded-full"
+               [ngClass]="{
+                 'bg-yellow-400 animate-pulse': order.status === OrderStatus.PREPARING,
+                 'bg-white': order.status === OrderStatus.RECEIVED,
+                 'bg-green-400': order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED,
+                 'bg-red-300': order.status === OrderStatus.CANCELLED
+               }"></div>
+          <span class="text-xs font-bold text-white tracking-[1px] uppercase">
+            @if (order.status === OrderStatus.RECEIVED) { REBUDA }
+            @else if (order.status === OrderStatus.PREPARING) { PREPARANT-SE }
+            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) { LLEST }
+            @else if (order.status === OrderStatus.CANCELLED) { CANCEL·LADA }
+            @else { {{ order.status }} }
+          </span>
+        </div>
+
+        <div class="w-28 h-28 mb-6 relative z-10 flex items-center justify-center">
+          <div class="absolute inset-0 bg-white/10 rounded-full animate-[spin_8s_linear_infinite]"
+               style="border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%"></div>
+
+          <span class="text-6xl drop-shadow-2xl relative z-10 animate-bounce" style="animation-duration: 3s;">
+            @if (order.status === OrderStatus.RECEIVED) { 📝 }
+            @else if (order.status === OrderStatus.PREPARING) { 🍔 }
+            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) { ✨ }
+            @else if (order.status === OrderStatus.CANCELLED) { ❌ }
+            @else { 📦 }
+          </span>
+        </div>
+
+        <h2 class="font-serif text-3xl font-black text-white leading-tight mb-3 z-10">
+          @if (order.status === OrderStatus.RECEIVED) { Comanda rebuda! }
+          @else if (order.status === OrderStatus.PREPARING) { Marxant una de Vurguers! }
+          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) {
+            @if (order.orderType === 'TAKEAWAY') { Ja pots recollir-la! }
+            @else { Ja anem cap allà! }
+          }
+          @else if (order.status === OrderStatus.CANCELLED) { Comanda cancel·lada }
+        </h2>
+
+        <p class="text-sm text-white/90 z-10 max-w-[280px] mx-auto font-medium">
+          @if (order.status === OrderStatus.RECEIVED) { Hem rebut la teua comanda i estem esperant confirmació de cuina. }
+          @else if (order.status === OrderStatus.PREPARING) { Els nostres cuiners estan preparant la teua comanda amb molt d'amor. }
+          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) {
+            @if (order.orderType === 'TAKEAWAY') { Pots passar a recollir-la al taulell. Bon profit! }
+            @else { Ara mateix un cambrer te la portarà a la taula. Bon profit! }
+          }
+          @else if (order.status === OrderStatus.CANCELLED) {
+            Poseu-vos en contacte amb el restaurant. Si ja heu pagat, se us retornaran els diners.
+          }
+        </p>
+
+      </div>
+
+      @if (order.status !== OrderStatus.CANCELLED) {
+        <div class="mt-8 mb-10">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <span class="text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
+                  [ngClass]="getStepStatus(order.status, 0) !== 'pending' ? 'text-vurger-primary' : 'text-vurger-muted'">Rebuda</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
+                  [ngClass]="getStepStatus(order.status, 1) !== 'pending' ? 'text-vurger-primary' : 'text-vurger-muted'">Preparant</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
+                  [ngClass]="getStepStatus(order.status, 2) !== 'pending' ? 'text-vurger-primary' : 'text-vurger-muted'">Llest</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="h-1.5 flex-1 rounded-full transition-colors duration-500"
+                 [ngClass]="{
+                   'bg-vurger-primary': getStepStatus(order.status, 0) === 'done',
+                   'bg-vurger-primary/60 animate-pulse': getStepStatus(order.status, 0) === 'active',
+                   'bg-vurger-border': getStepStatus(order.status, 0) === 'pending'
+                 }"></div>
+
+            <div class="h-1.5 flex-1 rounded-full transition-colors duration-500"
+                 [ngClass]="{
+                   'bg-vurger-primary': getStepStatus(order.status, 1) === 'done',
+                   'bg-vurger-primary/60 animate-pulse': getStepStatus(order.status, 1) === 'active',
+                   'bg-vurger-border': getStepStatus(order.status, 1) === 'pending'
+                 }"></div>
+
+            <div class="h-1.5 flex-1 rounded-full transition-colors duration-500"
+                 [ngClass]="{
+                   'bg-vurger-primary': getStepStatus(order.status, 2) === 'done' || getStepStatus(order.status, 2) === 'active',
+                   'bg-vurger-border': getStepStatus(order.status, 2) === 'pending'
+                 }"></div>
+          </div>
+        </div>
+      }
+
+      <h2 class="text-xs font-semibold text-vurger-muted tracking-[1.5px] uppercase mb-4 mt-8">Informació de la comanda</h2>
+      <div class="bg-vurger-surface border-2 border-vurger-border rounded-2xl mb-8 p-5">
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-vurger-border">
+          <span class="text-sm font-medium text-vurger-muted">Pagament</span>
+          <span class="text-sm font-bold text-vurger-dark">
+            {{ order.paymentMethod === 'APP' ? "Pagat per l'App" : 'Pendent a la barra' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-vurger-muted">Total pagat</span>
+          <span class="font-serif text-2xl font-bold text-vurger-primary"
+                [ngClass]="{'line-through text-vurger-muted': order.status === OrderStatus.CANCELLED}">
+            {{ order.totalAmount | currency:'EUR' }}
+          </span>
+        </div>
+      </div>
+
+    }
+
+  </div>
+</div>

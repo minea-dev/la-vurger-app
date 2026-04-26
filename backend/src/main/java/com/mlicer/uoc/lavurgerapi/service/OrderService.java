@@ -16,6 +16,7 @@ import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,21 +42,34 @@ public class OrderService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderRequest) {
-        RestaurantTable table = tableRepository.findById(orderRequest.tableId())
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found with ID: " + orderRequest.tableId()));
-
         Order order = new Order();
-        order.setRestaurantTable(table);
+
+        if (orderRequest.tableId() != null) {
+            RestaurantTable table = tableRepository.findById(orderRequest.tableId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Table not found with ID: " + orderRequest.tableId()));
+            order.setRestaurantTable(table);
+        } else {
+            order.setRestaurantTable(null);
+        }
+
+        order.setOrderType(orderRequest.orderType() != null ? orderRequest.orderType() : OrderType.DINE_IN);
+        order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
+
+        order.setCustomerComment(orderRequest.customerComment());
+
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
-
-        order.setOrderType(OrderType.DINE_IN);
-        order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setPaymentMethod(PaymentMethod.COUNTER);
-
+        if (order.getPaymentMethod() == PaymentMethod.APP) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        } else {
+            order.setPaymentStatus(PaymentStatus.PENDING);
+        }
         order.setOrderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -65,10 +79,16 @@ public class OrderService {
             Product product = productRepository.findById(itemReq.productId())
                     .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemReq.productId()));
 
+            if (!product.isAvailable()) {
+                throw new IllegalArgumentException("Product '" + product.getName() + "' is currently unavailable.");
+            }
+
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.quantity());
+
+            orderItem.setNotes(itemReq.notes());
 
             BigDecimal itemPrice = product.getPrice();
             orderItem.setPrice(itemPrice);
@@ -83,8 +103,11 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
+        OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
 
-        return orderMapper.toDTO(savedOrder);
+        messagingTemplate.convertAndSend("/topic/orders", orderDTO);
+
+        return orderDTO;
     }
 
     public List<OrderDTO> getAllOrders(String status) {
@@ -102,17 +125,54 @@ public class OrderService {
         return orders.stream().map(orderMapper::toDTO).collect(Collectors.toList());
     }
 
+    public OrderDTO getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        return orderMapper.toDTO(order);
+    }
+
     @Transactional
     public OrderDTO updateOrderStatus(Long id, String newStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
         try {
-            order.setStatus(OrderStatus.valueOf(newStatus.toUpperCase().trim()));
+            OrderStatus statusEnum = OrderStatus.valueOf(newStatus.toUpperCase().trim());
+            order.setStatus(statusEnum);
+            order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
         }
 
-        return orderMapper.toDTO(orderRepository.save(order));
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
+
+        return updatedOrderDTO;
+    }
+
+    @Transactional
+    public OrderDTO updatePaymentStatus(Long id, String newPaymentStatus) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        try {
+            String cleanStatus = newPaymentStatus.replace("\"", "").toUpperCase().trim();
+            PaymentStatus statusEnum = PaymentStatus.valueOf(cleanStatus);
+
+            order.setPaymentStatus(statusEnum);
+            order.setUpdatedAt(LocalDateTime.now());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid payment status value: " + newPaymentStatus);
+        }
+
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+
+        messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
+        messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
+
+        return updatedOrderDTO;
     }
 }

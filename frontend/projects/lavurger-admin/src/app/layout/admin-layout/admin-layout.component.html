@@ -1,0 +1,75 @@
+<div class="flex flex-col h-screen w-full overflow-hidden bg-admin-bg">
+
+  <header class="h-[56px] bg-admin-white border-b border-admin-border flex items-center px-5 shrink-0 shadow-sm z-40 relative">
+    <div class="text-[15px] font-bold text-admin-text mr-6 tracking-tight shrink-0 whitespace-nowrap">
+      La Vurger <span class="text-admin-blue">·</span> Cuina 🍔
+    </div>
+
+    <div class="ml-auto flex items-center gap-3">
+      <div class="relative">
+        <div (click)="toggleUserDropdown()" class="flex items-center gap-2 py-1.5 pr-3 pl-1.5 rounded-md border border-admin-border cursor-pointer bg-admin-white hover:bg-admin-bg transition-colors select-none">
+
+          <app-user-avatar
+            [name]="userEmail"
+            [role]="userRole"
+            [isActive]="true"
+            [size]="28">
+          </app-user-avatar>
+
+          <div class="text-xs font-medium text-admin-text2 hidden sm:block">
+            {{ roleDisplayName }}
+          </div>
+        </div>
+
+        <div *ngIf="isDropdownOpen" class="absolute right-0 mt-1.5 w-[160px] bg-admin-white rounded-md shadow-lg border border-admin-border py-1 z-50">
+          <div class="px-3 py-2 border-b border-admin-border mb-1">
+            <div class="text-[12px] text-admin-text3">Connectat com</div>
+            <div class="text-[13px] font-bold text-admin-text truncate" [title]="userEmail">{{ userEmail }}</div>
+          </div>
+          <button (click)="logout()" class="w-full text-left px-3 py-2 text-[13px] font-semibold text-admin-red hover:bg-admin-red-lt transition-colors flex items-center gap-2">
+            <svg class="w-3.5 h-3.5 stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Tancar sessió
+          </button>
+        </div>
+      </div>
+      <div *ngIf="isDropdownOpen" (click)="isDropdownOpen = false" class="fixed inset-0 z-40"></div>
+    </div>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden">
+    <aside class="w-[52px] bg-admin-white border-r border-admin-border flex flex-col items-center py-2.5 gap-0.5 shrink-0">
+
+      <a *ngIf="canSeeKitchen" routerLink="/kitchen" title="Cuina" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </a>
+
+      <ng-container *ngIf="canSeeMonitor">
+        <a routerLink="/monitor" title="Monitor" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+          <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        </a>
+        <a routerLink="/history" title="Històric" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+          <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+        </a>
+      </ng-container>
+
+      <a *ngIf="canSeeMenu" routerLink="/menu" title="Productes" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+      </a>
+
+      <a *ngIf="canSeeUsers" routerLink="/users" title="Usuaris" routerLinkActive="bg-admin-blue-lt !text-admin-blue" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </a>
+
+      <div class="w-[28px] h-[1px] bg-admin-border my-1"></div>
+      <div class="flex-1"></div>
+
+      <a title="Configuració" class="w-[38px] h-[38px] rounded-lg flex items-center justify-center transition-colors hover:bg-admin-bg text-admin-text3">
+        <svg class="w-[17px] h-[17px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 4.93a10 10 0 0 0 0 14.14M19.07 19.07a10 10 0 0 0 0-14.14M4.93 19.07a10 10 0 0 0 14.14 0"/></svg>
+      </a>
+    </aside>
+
+    <main class="flex-1 overflow-hidden flex flex-col relative">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

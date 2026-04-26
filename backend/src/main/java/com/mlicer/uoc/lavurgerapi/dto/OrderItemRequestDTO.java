@@ -8,5 +8,7 @@ public record OrderItemRequestDTO(
         Long productId,
 
         @Min(value = 1, message = "Quantity must be at least 1")
-        int quantity
+        int quantity,
+
+        String notes
 ) {}

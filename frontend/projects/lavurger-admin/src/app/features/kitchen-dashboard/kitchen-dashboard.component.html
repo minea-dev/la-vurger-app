@@ -1,0 +1,163 @@
+<div class="absolute inset-0 flex flex-col bg-slate-50 p-5 overflow-hidden">
+
+  <div class="flex justify-between items-center mb-5 shrink-0">
+    <div>
+      <h1 class="text-xl font-bold text-slate-800 tracking-tight">Taulell de Cuina</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Gestió de comandes</p>
+    </div>
+  </div>
+
+  <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 min-h-0 h-full">
+
+    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+      <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
+        <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+          <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
+          Noves Comandes
+        </h2>
+        <span class="bg-blue-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-blue-600">{{ pendingOrders.length }}</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+
+        <div *ngFor="let order of pendingOrders"
+             class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
+
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-1.5">
+                {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+              </div>
+            </div>
+            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-600">
+              {{ order.createdAt | date:'HH:mm' }}
+            </div>
+          </div>
+
+          <div *ngIf="order.customerComment" class="bg-orange-50/50 border border-orange-100 rounded-lg p-2.5 mb-3 flex gap-2 items-start">
+            <span class="text-[10px]">💬</span>
+            <span class="text-xs text-orange-700 italic font-medium">"{{ order.customerComment }}"</span>
+          </div>
+
+          <div class="space-y-2.5 mb-4">
+            <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
+              <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
+              <div>
+                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
+            <button (click)="cancelOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
+              Cancel·lar
+            </button>
+            <button (click)="startOrder(order.id)" class="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+              → Preparació
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+      <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
+        <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+          <span class="w-1 h-3.5 bg-orange-500 rounded-full"></span>
+          En Preparació
+        </h2>
+        <span class="bg-orange-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-orange-600">{{ inProgressOrders.length }}</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+
+        <div *ngFor="let order of inProgressOrders" class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-1.5">{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</div>
+            </div>
+            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-orange-50 text-orange-600">
+              {{ order.createdAt | date:'HH:mm' }}
+            </div>
+          </div>
+
+          <div *ngIf="order.customerComment" class="bg-orange-50/50 border border-orange-100 rounded-lg p-2.5 mb-3 flex gap-2 items-start">
+            <span class="text-[10px]">💬</span>
+            <span class="text-xs text-orange-700 italic font-medium">"{{ order.customerComment }}"</span>
+          </div>
+
+          <div class="space-y-2.5 mb-4">
+            <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
+              <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
+              <div>
+                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
+            <button (click)="cancelOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
+              Cancel·lar
+            </button>
+            <button (click)="finishOrder(order.id)" class="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+              → Llest
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+      <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
+        <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+          <span class="w-1 h-3.5 bg-emerald-500 rounded-full"></span>
+          Llest per servir
+        </h2>
+        <span class="bg-emerald-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-600">{{ readyOrders.length }}</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 opacity-80">
+        <div *ngIf="readyOrders.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+          <svg class="w-10 h-10 mb-3 stroke-current opacity-30" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <p class="text-[13px] font-medium">No hi ha comandes pendents d'entrega</p>
+        </div>
+
+        <div *ngFor="let order of readyOrders" class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-1.5">{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</div>
+            </div>
+            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600">—</div>
+          </div>
+
+          <div class="space-y-2.5 mb-4">
+            <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
+              <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
+              <div>
+                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
+            <button (click)="returnOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
+              Retornar
+            </button>
+            <button (click)="deliverOrder(order.id)" class="flex-1 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
+              ✓ Entregat
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

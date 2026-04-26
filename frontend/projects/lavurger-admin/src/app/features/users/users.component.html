@@ -1,0 +1,221 @@
+<div class="absolute inset-0 flex flex-col bg-admin-bg overflow-hidden">
+
+  <div class="px-5 py-3.5 bg-admin-white border-b border-admin-border flex items-center gap-3 shrink-0 z-10">
+    <div class="text-[15px] font-bold text-admin-text mr-2">Directori d'usuaris del sistema</div>
+
+    <input type="text" placeholder="Cercar per nom o usuari..."
+           [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
+           class="h-[34px] px-3 border border-admin-border rounded-md bg-admin-bg text-[13px] text-admin-text outline-none w-[220px] transition-colors focus:border-admin-blue focus:bg-admin-white">
+
+    <div class="flex gap-1.5 ml-2">
+      <button (click)="setStatus('Tots')"
+              [ngClass]="selectedStatus === 'Tots' ? 'bg-admin-blue text-white border-admin-blue' : 'bg-admin-white text-admin-text2 border-admin-border hover:bg-admin-bg'"
+              class="h-[30px] px-3.5 rounded-full text-[12px] font-medium border transition-colors">Tots</button>
+      <button (click)="setStatus('Actius')"
+              [ngClass]="selectedStatus === 'Actius' ? 'bg-admin-blue text-white border-admin-blue' : 'bg-admin-white text-admin-text2 border-admin-border hover:bg-admin-bg'"
+              class="h-[30px] px-3.5 rounded-full text-[12px] font-medium border transition-colors">Actius</button>
+      <button (click)="setStatus('Desactivats')"
+              [ngClass]="selectedStatus === 'Desactivats' ? 'bg-admin-blue text-white border-admin-blue' : 'bg-admin-white text-admin-text2 border-admin-border hover:bg-admin-bg'"
+              class="h-[30px] px-3.5 rounded-full text-[12px] font-medium border transition-colors">Desactivats</button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <button (click)="openAddModal()" class="h-[34px] px-4 rounded-md bg-admin-blue text-white text-[13px] font-semibold flex items-center gap-1.5 transition-colors hover:bg-[#084f9a]">
+      <svg class="w-3.5 h-3.5 stroke-white pointer-events-none" stroke-width="2.5" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+      Nou usuari
+    </button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto scrollbar-thin bg-admin-white relative z-0">
+    <table class="w-full border-collapse text-left">
+      <thead class="sticky top-0 z-10">
+      <tr>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[40%]">Usuari / Empleat</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[25%]">Rol</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[20%]">Estat</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white text-right w-[15%]">Accions</th>
+      </tr>
+      </thead>
+      <tbody>
+
+      <tr *ngIf="filteredUsers.length === 0" class="border-b border-admin-border">
+        <td colspan="4" class="px-5 py-10 text-center text-[13px] font-medium text-admin-text3">
+          No s'han trobat usuaris que coincideixin amb els filtres.
+        </td>
+      </tr>
+
+      <tr *ngFor="let user of filteredUsers" class="border-b border-admin-border hover:bg-[#F8FAFB] transition-colors" [class.opacity-60]="!user.isActive">
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex items-center gap-3">
+            <app-user-avatar [name]="user.name" [role]="user.role" [isActive]="user.isActive" [size]="36"></app-user-avatar>
+            <div>
+              <div class="font-bold text-[14px] text-admin-text">{{ user.name }}</div>
+              <div class="text-[12px] text-admin-text3">{{ user.email }}</div>
+            </div>
+          </div>
+        </td>
+
+        <td class="px-5 py-3 align-middle">
+            <span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-md"
+                  [ngClass]="{
+                    'bg-[#FFF3E0] text-[#E65100]': user.role === Role.ADMIN,
+                    'bg-[#E1F3E5] text-[#046030]': user.role === Role.KITCHEN,
+                    'bg-purple-100 text-purple-700': user.role === Role.MANAGER,
+                    'bg-admin-blue-lt text-admin-blue': user.role === Role.CASHIER
+                  }">
+              {{ getRoleDisplayName(user.role) }}
+            </span>
+        </td>
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border w-fit"
+               [ngClass]="user.isActive ? 'bg-admin-green-lt border-admin-green/20 text-admin-green' : 'bg-admin-red-lt border-admin-red/20 text-admin-red'">
+            <div class="w-1.5 h-1.5 rounded-full" [ngClass]="user.isActive ? 'bg-admin-green' : 'bg-admin-red'"></div>
+            <span class="text-[11px] font-bold">{{ user.isActive ? 'Actiu' : 'Desactivat' }}</span>
+          </div>
+        </td>
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex gap-2 justify-end">
+            <button (click)="openEditDrawer(user)" title="Editar usuari" class="w-[32px] h-[32px] rounded-md border border-admin-border bg-admin-white flex items-center justify-center cursor-pointer hover:bg-admin-blue-lt text-admin-text3 hover:text-admin-blue transition-colors">
+              <svg class="w-[14px] h-[14px] stroke-current pointer-events-none" stroke-width="2" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+
+            <button *ngIf="user.id !== 1"
+                    (click)="toggleUserStatus(user)" [title]="user.isActive ? 'Desactivar usuari' : 'Activar usuari'"
+                    class="w-[32px] h-[32px] rounded-md border border-admin-border bg-admin-white flex items-center justify-center cursor-pointer transition-colors"
+                    [ngClass]="user.isActive ? 'hover:bg-admin-red-lt text-admin-text3 hover:text-admin-red' : 'hover:bg-admin-green-lt text-admin-text3 hover:text-admin-green'">
+              <svg class="w-[14px] h-[14px] stroke-current pointer-events-none" stroke-width="2" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                <line x1="12" y1="2" x2="12" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="isAddModalOpen" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+    <div class="w-[420px] bg-admin-white rounded-[10px] shadow-2xl overflow-hidden flex flex-col">
+      <div class="px-5 py-4 border-b border-admin-border flex items-center justify-between">
+        <div class="text-[15px] font-bold text-admin-text">Nou usuari del sistema</div>
+        <button (click)="closeAddModal()" class="w-[28px] h-[28px] border border-admin-border rounded-md flex items-center justify-center hover:bg-admin-bg"><svg class="w-3.5 h-3.5 stroke-admin-text3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="p-5 flex flex-col gap-4">
+
+        <div *ngIf="modalError" class="p-3 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight">
+          <svg class="w-4 h-4 stroke-current shrink-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ modalError }}
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Nom complet</label>
+          <input type="text" [(ngModel)]="selectedUser.name" (ngModelChange)="checkName()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="nameErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ nameErrorReactive }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Correu electrònic</label>
+          <input type="email" [(ngModel)]="selectedUser.email" (ngModelChange)="checkEmail()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="emailErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ emailErrorReactive }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Contrasenya segura</label>
+          <input type="password" [(ngModel)]="selectedUser.password" (ngModelChange)="checkPassword(false)" placeholder="Mínim 8 caràcters, números i símbols" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="passwordErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ passwordErrorReactive }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Rol d'accés</label>
+          <select [(ngModel)]="selectedUser.role" class="w-full h-[36px] px-3 border border-admin-border rounded-[6px] text-[13px] bg-white outline-none focus:border-admin-blue">
+            <option [value]="Role.ADMIN">Super Admin</option>
+            <option [value]="Role.MANAGER">Manager</option>
+            <option [value]="Role.KITCHEN">Cuina (Cap / Ajudant)</option>
+            <option [value]="Role.CASHIER">Sala / Cambrer</option>
+          </select>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-admin-border flex justify-end gap-2 bg-[#F8FAFB]">
+        <button (click)="closeAddModal()" class="h-[34px] px-4 border border-admin-border rounded-md bg-white text-[12px] font-semibold text-admin-text2 hover:bg-admin-bg transition-colors">Cancel·lar</button>
+        <button (click)="saveNewUser()" class="h-[34px] px-5 rounded-md bg-admin-blue text-white text-[12px] font-semibold hover:bg-[#084f9a] transition-colors">Crear usuari</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute top-0 right-0 bottom-0 w-[360px] bg-admin-white border-l border-admin-border shadow-2xl flex flex-col z-30 transition-transform duration-300 ease-in-out translate-x-full"
+       [class.!translate-x-0]="isEditDrawerOpen">
+    <div class="px-5 py-4 border-b border-admin-border flex items-center justify-between shrink-0 bg-[#F8FAFB]">
+      <div class="text-[14px] font-bold text-admin-text">Editar perfil</div>
+      <button (click)="closeEditDrawer()" class="w-[28px] h-[28px] border border-admin-border bg-white rounded-md flex items-center justify-center hover:bg-admin-bg transition-colors"><svg class="w-3.5 h-3.5 stroke-admin-text3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+
+      <div class="flex items-center gap-3 pb-4 border-b border-admin-border">
+        <app-user-avatar [name]="selectedUser.name || ''" [role]="selectedUser.role || ''" [isActive]="selectedUser.isActive || false" [size]="48"></app-user-avatar>
+        <div>
+          <div class="font-bold text-[15px] text-admin-text">{{ selectedUser.name }}</div>
+          <div class="text-[12px] font-medium text-admin-text3">{{ selectedUser.email }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="modalError" class="p-3 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight">
+        <svg class="w-4 h-4 stroke-current shrink-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        {{ modalError }}
+      </div>
+
+      <div>
+        <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Nom complet</label>
+        <input type="text" [(ngModel)]="selectedUser.name" (ngModelChange)="checkName()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] outline-none transition-colors" [ngClass]="nameErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+        <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ nameErrorReactive }}
+        </div>
+      </div>
+      <div>
+        <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Correu electrònic</label>
+        <input type="email" [(ngModel)]="selectedUser.email" (ngModelChange)="checkEmail()" class="w-full h-[36px] px-3 border border-admin-border rounded-[6px] text-[13px] outline-none transition-colors" [ngClass]="emailErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+        <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ emailErrorReactive }}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Canviar contrasenya</label>
+        <input type="password" [(ngModel)]="selectedUser.password" (ngModelChange)="checkPassword(true)" placeholder="Deixar en blanc per no canviar" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] outline-none transition-colors placeholder:italic" [ngClass]="passwordErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+        <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
+          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          {{ passwordErrorReactive }}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Rol d'accés</label>
+        <select [(ngModel)]="selectedUser.role" class="w-full h-[36px] px-3 border border-admin-border rounded-[6px] text-[13px] outline-none focus:border-admin-blue">
+          <option [value]="Role.ADMIN">Super Admin</option>
+          <option [value]="Role.MANAGER">Manager</option>
+          <option [value]="Role.KITCHEN">Cuina (Cap / Ajudant)</option>
+          <option [value]="Role.CASHIER">Sala / Cambrer</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-admin-border flex gap-2 bg-[#F8FAFB] shrink-0">
+      <button (click)="closeEditDrawer()" class="flex-1 h-[36px] border border-admin-border rounded-md bg-white text-[12px] font-semibold text-admin-text2 hover:bg-admin-bg transition-colors">Descartar</button>
+      <button (click)="updateUser()" class="flex-[2] h-[36px] rounded-md bg-admin-blue text-white text-[12px] font-semibold hover:bg-[#084f9a] transition-colors">Desar canvis</button>
+    </div>
+  </div>
+
+</div>

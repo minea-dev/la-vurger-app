@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+app-menu {
+  display: block;
+  width: 100%;
+}
+app-checkout {
+  display: block;
+  width: 100%;
+}
+
+app-order-status {
+  display: block;
+  width: 100%;
+}
