@@ -58,7 +58,7 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
   resetMenuAndNavigate() {
     this.menuStore.setCategory('burgers');
     this.menuStore.setSearchQuery('');
-    this.router.navigate(['/menu']);
+    this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
   }
 
   ngOnDestroy() {
