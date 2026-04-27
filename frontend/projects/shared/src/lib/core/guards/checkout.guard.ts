@@ -10,5 +10,13 @@ export const checkoutGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  return router.createUrlTree(['/menu'], { queryParams: route.queryParams });
+  const tableId = route.queryParamMap.get('table') || sessionStorage.getItem('vurger_table');
+
+  if (tableId) {
+    return router.createUrlTree(['/menu'], {
+      queryParams: { table: tableId },
+    });
+  }
+
+  return router.createUrlTree(['/menu']);
 };

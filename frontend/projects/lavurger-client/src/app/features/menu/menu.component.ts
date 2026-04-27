@@ -35,6 +35,12 @@ export class MenuComponent implements OnInit {
   ngOnInit() {
     this.menuStore.loadProducts();
 
+    const tableId = this.route.snapshot.queryParamMap.get('table');
+
+    if (tableId) {
+      sessionStorage.setItem('vurger_table', tableId);
+    }
+
     const tableParam = this.route.snapshot.queryParamMap.get('table');
     if (tableParam) {
       const id = parseInt(tableParam, 10);

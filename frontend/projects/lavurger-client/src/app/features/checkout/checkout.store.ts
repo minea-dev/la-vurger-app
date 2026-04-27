@@ -52,7 +52,10 @@ export const CheckoutStore = signalStore(
             patchState(store, { isLoading: false });
             cartStore.clearCart();
 
-            router.navigate(['/order-status', response.id]);
+            router.navigate(['/order-status', response.id], {
+              queryParamsHandling: 'preserve',
+              replaceUrl: true,
+            });
           },
           error: (err) => {
             console.error('❌ Error enviando la comanda:', err);
