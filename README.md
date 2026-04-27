@@ -1,63 +1,320 @@
-# <a name="_6a3l1lru0lp9"></a>**🍔 La Vurger App - TFM**
-This project is a full-stack restaurant management system featuring a **Spring Boot API**, an **Angular Frontend**, and a **PostgreSQL Database**, all orchestrated and containerized using **Docker**.
-## <a name="_bah8lgyp61l"></a>**🚀 Quick Start (Docker)**
-The fastest way to run the application is using **Docker Compose**. You do not need to install Java, Node.js, or PostgreSQL manually on your machine—only Docker is required.
-### <a name="_684motwiqacc"></a>**1. Prerequisites**
-- **Docker & Docker Compose:** Installed and running (Docker Desktop is recommended).
-- **Git:** To clone the repository.
-### <a name="_ta2wyixjmbwp"></a>**2. Installation & Setup**
-Clone the repository and navigate to the project root folder:
+# 🍔 La Vurger
 
-**git clone:** [**https://github.com/your-username/la-vurger-app.git**](https://www.google.com/search?q=https://github.com/your-username/la-vurger-app.git&authuser=4)
+A full-stack vegan burger restaurant management platform featuring a customer-facing ordering app and an admin panel — built with **Spring Boot**, **Angular 21**, and real-time communication via **WebSockets**.
 
-**cd la-vurger-app**
-### <a name="_7q8r5c2mrzq6"></a>**3. Launch the Application**
-Run the following command to build the images and start all services in detached mode:
+---
 
-**docker compose up -d --build**
+## 📁 Project Structure
 
-**What happens next?**
+```
+la-vurger/
+├── backend/               # Spring Boot REST API
+├── frontend/              # Angular monorepo
+│   ├── projects/
+│   │   ├── lavurger-client/   # Customer-facing app (port 4200)
+│   │   ├── lavurger-admin/    # Admin panel (port 4201)
+│   │   └── shared/            # Shared library between apps
+├── docker-compose.yml
+├── .env
+└── README.md
+```
 
-- **Docker pulls** the PostgreSQL image and initializes the database.
-- The **Spring Boot** backend is compiled and packaged inside a container.
-- The **Angular** frontend is built for production and served via **Nginx**.
-- **Nginx** acts as a Reverse Proxy, routing /api calls to the backend.
-### <a name="_zfl6xah5tpzz"></a>**4. Access the App**
-Once the terminal shows all containers are "Started", open your browser:
+---
 
-- **Frontend UI:** http://localhost?table=1
-- **API Swagger Docs:** http://localhost:8080/swagger-ui/index.html
------
-## <a name="_8l5znrqqdl4f"></a>**🛠 Project Architecture**
-The system follows a **3-Tier Architecture** fully integrated within a Docker network:
+## 🛠️ Tech Stack
 
-- **Frontend (Port 80):** Angular 17+ application served by an optimized Nginx web server.
-- **Backend (Port 8080):** Java Spring Boot REST API handling business logic and security.
-- **Database (Port 5432):** PostgreSQL instance for persistent data storage.
-- **Networking:** Nginx handles all incoming traffic on port 80. Requests starting with /api are automatically forwarded to the backend container, eliminating CORS issues in production.
------
-## <a name="_inxkn613nnsj"></a>**💾 Data Persistence**
-Database records (products, tables, orders) are stored in a Docker volume named **postgres\_data**. This ensures that your data is **persistent** even if you stop or remove the containers.
+### Backend
+| Technology | Version | Purpose |
+|---|---|---|
+| Java | 21 | Runtime |
+| Spring Boot | 3.4.3 | Application framework |
+| Spring Security + JWT | — | Authentication & authorization |
+| Spring Data JPA | — | Database ORM |
+| Spring WebSocket | — | Real-time communication |
+| PostgreSQL | — | Production database |
+| H2 | — | In-memory DB for tests |
+| SpringDoc OpenAPI | 2.8.5 | API documentation (Swagger UI) |
+| Lombok | — | Boilerplate reduction |
 
-To reset the database completely (including volumes), run:
+### Frontend
+| Technology | Version | Purpose |
+|---|---|---|
+| Angular | 21 | UI framework |
+| NgRx Signals | 21 | Reactive state management |
+| STOMP / RxStomp | 7.x / 2.x | WebSocket messaging |
+| Tailwind CSS | 3.x | Utility-first styling |
+| TypeScript | 5.9 | Type safety |
+| Vitest | 4.x | Unit testing |
 
-**docker compose down -v**
+---
 
------
-## <a name="_c699ri5aj9l6"></a>**📋 Useful Docker Commands**
+## ⚙️ Prerequisites
 
-|**Action**|**Command**|
-| :- | :- |
-|**Start all services**|docker compose up -d|
-|**Stop all services**|docker compose stop|
-|**View API logs**|docker compose logs -f api|
-|**Rebuild after code changes**|docker compose up -d --build|
-|**Check container status**|docker compose ps|
-|**Access PostgreSQL CLI**|docker exec -it lavurger-postgres psql -U postgres -d la\_vurger\_db|
+- **Java 21**
+- **Maven**
+- **Node.js** with **npm 11+**
+- **Docker & Docker Compose** (for containerized deployment)
+- **PostgreSQL** (if running locally without Docker)
 
------
-## <a name="_yo56h0jqtd3v"></a>**🔧 Troubleshooting**
-- **Port Conflicts:** Ensure ports **80**, **8080**, and **5432** are free. If you have a local Apache, Nginx, or Postgres running, stop them first.
-- **Connection Refused:** If the frontend loads but cannot see products, check the browser console (F12). Ensure the environment.prod.ts file uses apiUrl: '/api' (relative path).
-- **Missing Tables:** If the app fails to send orders, ensure you have initialized the database with the required restaurant\_tables entries.
+---
 
+## 🚀 Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-org/la-vurger.git
+cd la-vurger
+```
+
+### 2. Configure environment variables
+
+Copy and fill in the `.env` file at the project root:
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/lavurger
+DB_USER=your_db_user
+DB_PASSWORD=your_db_password
+JWT_SECRET=your_jwt_secret_key
+```
+
+---
+
+### 🐳 Run with Docker Compose (recommended)
+
+```bash
+docker-compose up --build
+```
+
+| Service | URL |
+|---|---|
+| REST API | http://localhost:8080 |
+| Customer App | http://localhost |
+| Admin Panel | http://localhost/admin/ |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+
+---
+
+### 🔧 Run Locally (without Docker)
+
+#### Backend
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+The API will start at `http://localhost:8080`.
+
+#### Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Start the **customer app**:
+```bash
+npm run start:client
+# Available at http://localhost:4200
+```
+
+Start the **admin panel**:
+```bash
+npm run start:admin
+# Available at http://localhost:4201
+```
+
+---
+
+## 🏗️ Build
+
+### Frontend (production)
+
+```bash
+cd frontend
+npm run build:all
+```
+
+This will build both apps:
+- `lavurger-client` → standard production build
+- `lavurger-admin` → production build with `/admin/` base href
+
+### Backend
+
+```bash
+cd backend
+mvn clean package
+```
+
+---
+
+## 🧪 Testing
+
+### Backend
+
+```bash
+cd backend
+mvn test
+```
+
+The test suite includes unit tests and integration tests:
+
+```
+src/test/java/
+├── service/
+│   ├── OrderServiceTest
+│   ├── ProductServiceTest
+│   ├── RestaurantTableServiceTest
+│   └── UserServiceTest
+├── OrderControllerIT
+├── ProductControllerIT
+└── UserControllerIT
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm test
+```
+
+---
+
+## 📐 Backend Architecture
+
+```
+com.mlicer.uoc.lavurgerapi/
+├── config/         # Spring Security, WebSocket, CORS configuration
+├── controller/     # REST API endpoints
+├── dto/            # Data Transfer Objects (request/response)
+├── entity/         # JPA entities
+├── exception/      # Custom exception handling
+├── mapper/         # Entity ↔ DTO mappers
+├── repository/     # Spring Data JPA repositories
+├── security/       # JWT filter, UserDetailsService, etc.
+└── service/        # Business logic
+```
+
+---
+
+## 🔌 API Documentation
+
+Once the backend is running, visit:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+---
+
+## 🔒 Authentication
+
+The API uses **JWT Bearer token** authentication. To access protected endpoints:
+
+1. `POST /api/auth/login` with your credentials.
+2. Copy the returned `token`.
+3. Include it in all subsequent requests as:
+   ```
+   Authorization: Bearer <token>
+   ```
+
+---
+
+## 🌐 Real-Time Features
+
+The application uses **WebSocket (STOMP protocol)** to push real-time updates — for example, notifying the kitchen or admin dashboard when a new order is placed.
+
+WebSocket endpoint: `ws://localhost:8080/ws`
+
+---
+
+## 📦 Frontend Scripts Reference
+
+| Script | Description |
+|---|---|
+| `npm run start:client` | Serve customer app (dev, port 4200) |
+| `npm run start:admin` | Serve admin panel (dev, port 4201) |
+| `npm run build:client` | Build customer app for production |
+| `npm run build:admin` | Build admin panel for production |
+| `npm run build:all` | Build both apps |
+| `npm test` | Run unit tests |
+
+---
+
+## 🌍 Live Demo (MVP)
+
+A working MVP is deployed on AWS EC2. You can explore both apps directly:
+
+### 🔧 Admin Panel (Backoffice)
+**URL:** http://51.92.201.144/admin/login
+
+### 🛒 Customer App — Takeaway simulation
+**URL:** http://51.92.201.144/menu
+
+Simulates a customer accessing the web directly to place a takeaway order (no table linked).
+
+### 📱 Customer App — QR code at table simulation
+**URL:** http://51.92.201.144/menu?table=4
+
+Simulates a customer who has scanned the QR code placed on table 4. The `?table=4` query parameter is automatically picked up to bind the order to that table.
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The project uses **GitHub Actions** for continuous integration and deployment to AWS EC2 on every push to `main`.
+
+### Workflow: `Deploy La Vurger MVP`
+
+```
+push to main
+    │
+    ▼
+┌─────────────────────────┐
+│  🧪 test (blocking)     │
+│  - Checkout             │
+│  - Setup Java 21        │
+│  - mvn clean package    │
+│    (compilation check)  │
+│  - Setup Node.js 22     │
+│  - npm install          │
+└───────────┬─────────────┘
+            │ on success
+            ▼
+┌─────────────────────────┐
+│  🚀 deploy              │
+│  - Checkout             │
+│  - SCP files to EC2     │
+│    (excl. node_modules  │
+│     and target/)        │
+│  - SSH into EC2:        │
+│    · Write .env         │
+│    · docker compose     │
+│      down               │
+│    · docker system      │
+│      prune              │
+│    · docker compose     │
+│      up --build         │
+│    · docker logs        │
+└─────────────────────────┘
+```
+
+### Required GitHub Secrets
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Description |
+|---|---|
+| `EC2_HOST` | Public IP or hostname of the EC2 instance |
+| `EC2_SSH_KEY` | Private SSH key to connect as `ubuntu` |
+| `DB_URL` | Full JDBC URL (e.g. `jdbc:postgresql://host:5432/db`) |
+| `DB_USER` | Database username |
+| `DB_PASSWORD` | Database password |
+| `JWT_SECRET` | Secret key used to sign JWT tokens |
+
+---
+
+## 📄 License
+
+This project is part of an academic assignment for UOC (Universitat Oberta de Catalunya). All rights reserved.
