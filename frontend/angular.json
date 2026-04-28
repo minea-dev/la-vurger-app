@@ -23,7 +23,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/lavurger-client/public"
+                "input": "projects/lavurger-client/src/public",
+                "output": "/"
               }
             ],
             "styles": ["projects/lavurger-client/src/styles.css"]
@@ -91,7 +92,8 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/lavurger-admin/public"
+                "input": "projects/lavurger-admin/src/public",
+                "output": "/"
               }
             ],
             "styles": ["projects/lavurger-admin/src/styles.css"]
