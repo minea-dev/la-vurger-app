@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { checkoutGuard } from '@shared/core/guards/checkout.guard';
+import { orderStatusGuard } from '@shared/core/guards/order-status.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,7 @@ export const routes: Routes = [
     path: 'order-status/:id',
     loadComponent: () =>
       import('./features/order-status/order-status.component').then((m) => m.OrderStatusComponent),
+    canActivate: [orderStatusGuard],
   },
   {
     path: '**',

@@ -5,12 +5,12 @@
     "ng": "ng",
     "start:client": "ng serve lavurger-client",
     "start:admin": "ng serve lavurger-admin --port 4201",
-    "build:client": "ng build lavurger-client",
-    "build:admin": "ng build lavurger-admin",
-    "test:client": "ng test lavurger-client",
-    "test:admin": "ng test lavurger-admin",
-    "watch:client": "ng build lavurger-client --watch --configuration development",
-    "watch:admin": "ng build lavurger-admin --watch --configuration development"
+    "build:client": "ng build lavurger-client --configuration production",
+    "build:admin": "ng build lavurger-admin --configuration production --base-href /admin/",
+    "build:all": "npm run build:client && npm run build:admin",
+    "build": "npm run build:all",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
   },
   "private": true,
   "packageManager": "npm@11.7.0",
