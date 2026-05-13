@@ -19,6 +19,15 @@ export class HistoryComponent implements OnInit {
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
 
+  translatedStatuses: { [key: string]: string } = {
+    PENDING: 'Pendent',
+    PREPARING: 'En preparació',
+    READY: 'Llest',
+    COMPLETED: 'Completada',
+    DELIVERED: 'Lliurat',
+    CANCELLED: 'Cancel·lada',
+  };
+
   ngOnInit() {
     this.loadOrders();
   }
@@ -26,12 +35,11 @@ export class HistoryComponent implements OnInit {
   loadOrders() {
     this.orderService.getOrders().subscribe({
       next: (data) => {
-        // Guardamos y ordenamos
         this.orders = (data || []).sort((a, b) => (b.id || 0) - (a.id || 0));
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Error carregant històric:', err);
+        console.error('Error loading history:', err);
         this.cdr.detectChanges();
       },
     });

@@ -41,7 +41,7 @@
         <div class="text-right">
           <div class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
                [ngClass]="order.status === OrderStatus.CANCELLED ? 'bg-admin-red-lt text-admin-red' : 'bg-admin-bg text-admin-text2'">
-            {{ order.status }}
+            {{ translatedStatuses[order.status] || order.status }}
           </div>
           <div class="text-[15px] font-bold text-admin-text mt-0.5">{{ order.totalAmount | currency:'EUR' }}</div>
         </div>
