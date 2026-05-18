@@ -4,6 +4,8 @@ import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Data @NoArgsConstructor @AllArgsConstructor
@@ -28,4 +30,7 @@ public class User {
 
     @Column(nullable = false)
     private boolean isActive = true;
+
+    @Column(name = "last_access")
+    private LocalDateTime lastAccess;
 }

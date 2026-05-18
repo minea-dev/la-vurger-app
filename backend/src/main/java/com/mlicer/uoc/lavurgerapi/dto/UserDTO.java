@@ -1,9 +1,12 @@
 package com.mlicer.uoc.lavurgerapi.dto;
 
+import java.time.LocalDateTime;
+
 public record UserDTO(
         Long id,
         String name,
         String email,
         String role,
-        Boolean isActive
+        Boolean isActive,
+        LocalDateTime lastAccess
 ) {}

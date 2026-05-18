@@ -11,7 +11,8 @@ public class UserMapper {
                 user.getName(),
                 user.getEmail(),
                 user.getRole().name(),
-                user.isActive()
+                user.isActive(),
+                user.getLastAccess()
         );
     }
 }

@@ -3,7 +3,6 @@ package com.mlicer.uoc.lavurgerapi.controller;
 import com.mlicer.uoc.lavurgerapi.dto.AuthRequestDTO;
 import com.mlicer.uoc.lavurgerapi.dto.AuthResponseDTO;
 import com.mlicer.uoc.lavurgerapi.dto.CreateUserDTO;
-import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import com.mlicer.uoc.lavurgerapi.mapper.UserMapper;
@@ -18,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -30,21 +29,16 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final List<Role> ADMIN_PANEL_ROLES = List.of(
-            Role.ADMIN, Role.MANAGER, Role.KITCHEN, Role.CASHIER
-    );
-
     public AuthController(JwtUtils jwtUtils, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Operation(summary = "Login", description = "Authenticates a user and returns a JWT token if active and authorized.")
+    @Operation(summary = "Login", description = "Authenticates a user and returns a JWT token if active.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful authentication"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials or inactive user"),
-            @ApiResponse(responseCode = "403", description = "User does not have permission to access the admin panel")
+            @ApiResponse(responseCode = "401", description = "Invalid credentials or inactive user")
     })
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO authRequestDTO) {
@@ -54,12 +48,11 @@ public class AuthController {
             User user = usuariOpcional.get();
 
             if (!user.isActive()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            if (!ADMIN_PANEL_ROLES.contains(user.getRole())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403
-            }
+            user.setLastAccess(LocalDateTime.now());
+            userRepository.save(user);
 
             String token = jwtUtils.generateToken(user.getEmail());
             return ResponseEntity.ok(new AuthResponseDTO(token, user.getEmail(), user.getRole().name()));
@@ -72,7 +65,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody CreateUserDTO dto) {
         if (userRepository.findByEmail(dto.email()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: L'email ja està en ús.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Email already in use.");
         }
 
         User newUser = new User();
@@ -80,13 +73,18 @@ public class AuthController {
         newUser.setEmail(dto.email());
         newUser.setPassword(passwordEncoder.encode(dto.password()));
 
-        try {
-            newUser.setRole(Role.valueOf(dto.role().toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Error: Rol invàlid.");
+        if (dto.role() == null || dto.role().isBlank()) {
+            newUser.setRole(Role.CUSTOMER);
+        } else {
+            try {
+                newUser.setRole(Role.valueOf(dto.role().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Error: Invalid role.");
+            }
         }
 
         newUser.setActive(true);
+        newUser.setLastAccess(LocalDateTime.now());
 
         User savedUser = userRepository.save(newUser);
 
