@@ -1,5 +1,6 @@
-<div class="min-h-screen bg-vurger-bg font-sans text-vurger-dark flex flex-col justify-center px-6 py-12">
-  <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
+<div class="min-h-[100dvh] w-full bg-vurger-bg font-sans text-vurger-dark flex flex-col items-center justify-center p-6">
+
+  <div class="w-full max-w-md text-center mb-8">
     <h1 class="font-serif text-4xl font-black tracking-tight text-vurger-primary">
       La <span class="text-vurger-muted">Vurger</span>
     </h1>
@@ -8,8 +9,8 @@
     </h2>
   </div>
 
-  <div class="sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-8 shadow-sm">
+  <div class="w-full max-w-md">
+    <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-6 md:p-8 shadow-sm">
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
 
         @if (errorMessage) {
@@ -25,11 +26,11 @@
             type="text"
             formControlName="name"
             placeholder="El teu nom"
-            class="w-full h-12 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-sm outline-none focus:border-vurger-muted transition-colors"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
             [class.border-red-400]="registerForm.controls.name.touched && registerForm.controls.name.invalid"
           />
           @if (registerForm.controls.name.touched && registerForm.controls.name.errors?.['required']) {
-            <span class="text-[11px] text-red-600 mt-1 block">El nom és obligatori.</span>
+            <span class="text-[11px] text-red-600 mt-1.5 block">El nom és obligatori.</span>
           }
         </div>
 
@@ -40,14 +41,14 @@
             type="email"
             formControlName="email"
             placeholder="exemple@vurger.com"
-            class="w-full h-12 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-sm outline-none focus:border-vurger-muted transition-colors"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
             [class.border-red-400]="registerForm.controls.email.touched && registerForm.controls.email.invalid"
           />
           @if (registerForm.controls.email.touched && registerForm.controls.email.errors?.['required']) {
-            <span class="text-[11px] text-red-600 mt-1 block">El correu és obligatori.</span>
+            <span class="text-[11px] text-red-600 mt-1.5 block">El correu és obligatori.</span>
           }
           @if (registerForm.controls.email.touched && registerForm.controls.email.errors?.['email']) {
-            <span class="text-[11px] text-red-600 mt-1 block">Introdueix un correu vàlid.</span>
+            <span class="text-[11px] text-red-600 mt-1.5 block">Introdueix un correu vàlid.</span>
           }
         </div>
 
@@ -58,26 +59,26 @@
             type="password"
             formControlName="password"
             placeholder="••••••••"
-            class="w-full h-12 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-sm outline-none focus:border-vurger-muted transition-colors"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
             [class.border-red-400]="registerForm.controls.password.touched && registerForm.controls.password.invalid"
           />
           @if (registerForm.controls.password.touched && registerForm.controls.password.errors?.['required']) {
-            <span class="text-[11px] text-red-600 mt-1 block">La contrasenya és obligatòria.</span>
+            <span class="text-[11px] text-red-600 mt-1.5 block">La contrasenya és obligatòria.</span>
           }
           @if (registerForm.controls.password.touched && registerForm.controls.password.errors?.['minlength']) {
-            <span class="text-[11px] text-red-600 mt-1 block">Ha de tener com a mínim 6 caràcters.</span>
+            <span class="text-[11px] text-red-600 mt-1.5 block">Ha de tindre com a mínim 6 caràcters.</span>
           }
         </div>
 
         <button
           type="submit"
-          class="w-full h-12 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg rounded-xl font-medium text-sm tracking-wide transition-colors shadow-md"
+          class="w-full h-14 mt-2 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg rounded-xl font-medium text-[15px] tracking-wide transition-colors shadow-md"
         >
           Registrar-se
         </button>
       </form>
 
-      <p class="mt-6 text-center text-xs text-vurger-muted">
+      <p class="mt-6 text-center text-[13px] text-vurger-muted">
         Ja tens un compte?
         <a routerLink="/login" class="font-semibold text-vurger-primary hover:underline ml-1">Inicia sessió</a>
       </p>
