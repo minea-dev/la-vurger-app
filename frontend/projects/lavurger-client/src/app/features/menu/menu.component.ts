@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MenuStore } from './menu.store';
-import { CartStore } from '@shared';
+import { CartStore, AuthService } from '@shared';
 
 @Component({
   selector: 'app-menu',
@@ -15,6 +15,10 @@ export class MenuComponent implements OnInit {
   cartStore = inject(CartStore);
 
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  isUserMenuOpen = false;
 
   categoryNames: Record<string, string> = {
     burgers: '🍔 Vurguers',
@@ -29,7 +33,7 @@ export class MenuComponent implements OnInit {
     burritos: "Vurritos de l'horta",
     sides: 'Per acompanyar',
     drinks: 'Begudes fresques',
-    desserts: 'Postres vegans'
+    desserts: 'Postres vegans',
   };
 
   ngOnInit() {
@@ -54,5 +58,19 @@ export class MenuComponent implements OnInit {
   getQuantity(productId: number): number {
     const item = this.cartStore.cart().find((i) => i.product.id === productId);
     return item ? item.quantity : 0;
+  }
+
+  get userEmail(): string | null {
+    return this.authService.getCurrentEmail();
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  logout() {
+    this.authService.logout();
+    this.isUserMenuOpen = false;
+    this.router.navigate(['/login']);
   }
 }

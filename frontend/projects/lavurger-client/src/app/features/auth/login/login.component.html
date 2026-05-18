@@ -1,0 +1,68 @@
+<div class="min-h-screen bg-vurger-bg font-sans text-vurger-dark flex flex-col justify-center px-6 py-12">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
+    <h1 class="font-serif text-4xl font-black tracking-tight text-vurger-primary">
+      La <span class="text-vurger-muted">Vurger</span>
+    </h1>
+    <h2 class="mt-4 font-serif text-2xl font-bold tracking-tight text-vurger-dark">
+      Inicia sessió
+    </h2>
+  </div>
+
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-8 shadow-sm">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+
+        @if (errorMessage) {
+          <div class="p-3 bg-red-100 border border-red-200 text-red-700 text-xs rounded-xl text-center font-medium">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <div>
+          <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-2">Correu electrònic</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="exemple@vurger.com"
+            class="w-full h-12 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-sm outline-none focus:border-vurger-muted transition-colors"
+            [class.border-red-400]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+          />
+          @if (loginForm.controls.email.touched && loginForm.controls.email.errors?.['required']) {
+            <span class="text-[11px] text-red-600 mt-1 block">El correu és obligatori.</span>
+          }
+          @if (loginForm.controls.email.touched && loginForm.controls.email.errors?.['email']) {
+            <span class="text-[11px] text-red-600 mt-1 block">Introdueix un correu vàlid.</span>
+          }
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-2">Contrasenya</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full h-12 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-sm outline-none focus:border-vurger-muted transition-colors"
+            [class.border-red-400]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+          />
+          @if (loginForm.controls.password.touched && loginForm.controls.password.errors?.['required']) {
+            <span class="text-[11px] text-red-600 mt-1 block">La contrasenya és obligatòria.</span>
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="w-full h-12 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg rounded-xl font-medium text-sm tracking-wide transition-colors shadow-md"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-xs text-vurger-muted">
+        No tens compte?
+        <a routerLink="/register" class="font-semibold text-vurger-primary hover:underline ml-1">Registra't aquí</a>
+      </p>
+    </div>
+  </div>
+</div>
