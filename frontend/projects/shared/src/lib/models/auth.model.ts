@@ -1,0 +1,17 @@
+export interface AuthRequestDTO {
+  email: string;
+  password?: string;
+}
+
+export interface CreateUserDTO {
+  name: string;
+  email: string;
+  password?: string;
+  role?: string;
+}
+
+export interface AuthResponseDTO {
+  token: string;
+  email: string;
+  role: string;
+}

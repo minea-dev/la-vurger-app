@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { checkoutGuard } from '@shared/core/guards/checkout.guard';
 import { orderStatusGuard } from '@shared/core/guards/order-status.guard';
+import { authGuard } from '@shared/core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -10,7 +11,13 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent),
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'menu',
@@ -27,6 +34,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/order-status/order-status.component').then((m) => m.OrderStatusComponent),
     canActivate: [orderStatusGuard],
+  },
+  {
+    path: 'orders',
+    loadComponent: () =>
+      import('./features/orders/orders.component').then((m) => m.OrdersComponent),
+    canActivate: [authGuard],
   },
   {
     path: '**',

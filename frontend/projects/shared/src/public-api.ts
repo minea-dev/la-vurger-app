@@ -10,19 +10,25 @@ export * from './lib/core/config/stomp.config';
 
 // Guards
 export * from './lib/core/guards/checkout.guard';
+export * from './lib/core/guards/auth.guard';
+export * from './lib/core/guards/admin.guard';
 
 // Services
 export * from './lib/core/services/api.service';
+export * from './lib/core/services/auth.service';
 export * from './lib/core/services/order.service';
 export * from './lib/core/services/product.service';
-export * from './lib/core/services/stomp.service';
 export * from './lib/core/services/stomp.service';
 export * from './lib/core/services/user.service';
 
 // Store
 export * from './lib/core/store/cart.store';
 
+// Interceptors
+export * from './lib/core/interceptors/auth.interceptor';
+
 // --- MODELS ---
+export * from './lib/models/auth.model';
 
 // DTOs
 export * from './lib/models/dtos/order.dto';
