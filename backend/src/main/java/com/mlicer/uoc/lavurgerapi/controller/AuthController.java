@@ -64,7 +64,8 @@ public class AuthController {
     @Operation(summary = "Register new user", description = "Creates a new user in the system (Staff or Customer).")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody CreateUserDTO dto) {
-        if (userRepository.findByEmail(dto.email()).isPresent()) {
+
+        if (userRepository.existsByEmail(dto.email())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Error: Email already in use.");
         }
 
