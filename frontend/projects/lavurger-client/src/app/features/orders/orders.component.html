@@ -3,7 +3,7 @@
 
     <header class="flex items-center gap-4 mb-8">
       <button
-        routerLink="/menu"
+        (click)="backToMenu()"
         class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors"
       >
         <svg class="w-5 h-5 stroke-vurger-dark fill-none" stroke-width="2.5" viewBox="0 0 24 24">
@@ -20,58 +20,66 @@
       </div>
     </header>
 
-    <div class="space-y-4">
-      @for (order of orders; track order.id) {
-        <div
-          [routerLink]="['/order-status', order.id]"
-          class="bg-vurger-surface border-2 border-vurger-border rounded-2xl p-5 hover:border-vurger-muted transition-all cursor-pointer flex flex-col gap-4"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-vurger-primary">
-              Comanda #{{ order.id }}
-            </span>
+    @if (isLoading) {
+      <div class="flex justify-center py-12">
+        <div class="w-8 h-8 border-4 border-vurger-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else {
+      <div class="space-y-4">
+        @for (order of orders; track order.id) {
+          <div
+            [routerLink]="['/orders/detalle', order.id]"
+            class="bg-vurger-surface border-2 border-vurger-border rounded-2xl p-5 hover:border-vurger-muted transition-all cursor-pointer flex flex-col gap-4"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-vurger-primary">
+                Comanda #{{ order.orderNumber }}
+              </span>
 
-            <span
-              class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg"
-              [class.bg-vurger-pale]="order.status === 'PREPARING' || order.status === 'READY'"
-              [class.text-vurger-primary]="order.status === 'PREPARING' || order.status === 'READY'"
-              [class.bg-vurger-border]="order.status === 'DELIVERED'"
-              [class.text-vurger-muted]="order.status === 'DELIVERED'"
-            >
-              {{ statusLabels[order.status] }}
-            </span>
-          </div>
-
-          <div class="h-0.5 bg-vurger-border/60 w-full"></div>
-
-          <div class="flex items-center justify-between text-xs text-vurger-muted">
-            <div class="flex flex-col gap-1">
-              <span>{{ order.date | date:'dd/MM/yyyy &middot; HH:mm' }}</span>
-              <span class="font-medium text-vurger-dark/70">{{ order.itemsCount }} productes</span>
+              <span
+                class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg"
+                [class.bg-vurger-pale]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED'"
+                [class.text-vurger-primary]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED'"
+                [class.bg-vurger-border]="order.status === 'COMPLETED'"
+                [class.text-vurger-muted]="order.status === 'COMPLETED'"
+                [class.bg-red-50]="order.status === 'CANCELLED'"
+                [class.text-red-500]="order.status === 'CANCELLED'"
+              >
+                {{ statusLabels[order.status || 'RECEIVED'] || order.status }}
+              </span>
             </div>
 
-            <span class="text-base font-black text-vurger-primary">
-              {{ order.total | currency:'EUR' }}
-            </span>
+            <div class="h-0.5 bg-vurger-border/60 w-full"></div>
+
+            <div class="flex items-center justify-between text-xs text-vurger-muted">
+              <div class="flex flex-col gap-1">
+                <span>{{ order.createdAt | date:'dd/MM/yyyy &middot; HH:mm' }}</span>
+                <span class="font-medium text-vurger-dark/70">{{ order.items.length }} productes</span>
+              </div>
+
+              <span class="text-base font-black text-vurger-primary">
+                {{ order.totalAmount | currency:'EUR' }}
+              </span>
+            </div>
           </div>
-        </div>
-      } @empty {
-        <div class="text-center py-16 px-4">
-          <div class="w-16 h-16 bg-vurger-surface rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 stroke-vurger-muted fill-none" stroke-width="1.5" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>
-            </svg>
+        } @empty {
+          <div class="text-center py-16 px-4">
+            <div class="w-16 h-16 bg-vurger-surface rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 stroke-vurger-muted fill-none" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+            </div>
+            <p class="text-sm text-vurger-muted">Encara no has fet cap comanda.</p>
+            <button
+              routerLink="/menu"
+              class="mt-4 text-xs font-bold text-vurger-primary hover:underline"
+            >
+              Anar a la carta →
+            </button>
           </div>
-          <p class="text-sm text-vurger-muted">Encara no has fet cap comanda.</p>
-          <button
-            routerLink="/menu"
-            class="mt-4 text-xs font-bold text-vurger-primary hover:underline"
-          >
-            Anar a la carta →
-          </button>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
 
   </div>
 </div>

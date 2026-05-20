@@ -15,6 +15,7 @@ export class RegisterComponent {
   private router = inject(Router);
 
   errorMessage: string | null = null;
+  registrationSuccess = false;
 
   registerForm = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
@@ -30,10 +31,14 @@ export class RegisterComponent {
 
     this.authService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
-        this.router.navigate(['/login']);
+        this.registrationSuccess = true;
       },
-      error: () => {
-        this.errorMessage = 'Aquest correu electrònic ja està en ús.';
+      error: (err) => {
+        if (err.status === 409) {
+          this.errorMessage = 'Aquest correu electrònic ja està en ús.';
+        } else {
+          this.errorMessage = "S'ha produït un error de connexió amb el servidor.";
+        }
       },
     });
   }

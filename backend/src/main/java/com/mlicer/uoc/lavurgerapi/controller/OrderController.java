@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -40,6 +41,12 @@ public class OrderController {
         messagingTemplate.convertAndSend("/topic/orders", savedOrder);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
+    }
+
+    @Operation(summary = "Get logged-in user orders history")
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderDTO>> getMyOrders(Principal principal) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomerEmail(principal.getName()));
     }
 
     @Operation(summary = "Get orders", description = "Retrieves a list of orders. Optionally filterable by status (for admin/kitchen use).")

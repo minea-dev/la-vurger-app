@@ -20,6 +20,7 @@ export * from './lib/core/services/order.service';
 export * from './lib/core/services/product.service';
 export * from './lib/core/services/stomp.service';
 export * from './lib/core/services/user.service';
+export * from './lib/core/services/favorites.service';
 
 // Store
 export * from './lib/core/store/cart.store';

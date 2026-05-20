@@ -1,5 +1,6 @@
 package com.mlicer.uoc.lavurgerapi.controller;
 
+import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserRequestDTO;
 import com.mlicer.uoc.lavurgerapi.service.UserService;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -55,5 +57,25 @@ public class UserController {
             throw new IllegalArgumentException("Field 'isActive' is required");
         }
         return ResponseEntity.ok(userService.toggleUserStatus(id, isActive));
+    }
+
+    @Operation(summary = "Get favorites of the currently logged in user")
+    @GetMapping("/favorites")
+    public ResponseEntity<List<ProductDTO>> getMyFavorites(Principal principal) {
+        return ResponseEntity.ok(userService.getUserFavorites(principal.getName()));
+    }
+
+    @Operation(summary = "Add a product to user favorites")
+    @PostMapping("/favorites/{productId}")
+    public ResponseEntity<Void> addFavorite(@PathVariable("productId") Long productId, Principal principal) {
+        userService.addFavorite(principal.getName(), productId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Remove a product from user favorites")
+    @DeleteMapping("/favorites/{productId}")
+    public ResponseEntity<Void> removeFavorite(@PathVariable("productId") Long productId, Principal principal) {
+        userService.removeFavorite(principal.getName(), productId);
+        return ResponseEntity.ok().build();
     }
 }

@@ -2,15 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { AuthRequestDTO, AuthResponseDTO, CreateUserDTO } from '@shared';
+import { APP_CONFIG, AuthRequestDTO, AuthResponseDTO, CreateUserDTO } from '@shared';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
-
-  private apiUrl = '/api/auth';
+  private config = inject(APP_CONFIG);
+  private apiUrl = `${this.config.apiUrl}/auth`;
+  private readonly NAME_KEY = 'auth_name';
 
   private readonly TOKEN_KEY = 'auth_token';
   private readonly ROLE_KEY = 'auth_role';
@@ -23,6 +25,7 @@ export class AuthService {
           localStorage.setItem(this.TOKEN_KEY, response.token);
           localStorage.setItem(this.ROLE_KEY, response.role);
           localStorage.setItem(this.EMAIL_KEY, response.email);
+          localStorage.setItem(this.NAME_KEY, response.name);
         }
       }),
     );
@@ -36,6 +39,7 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.EMAIL_KEY);
+    localStorage.removeItem(this.NAME_KEY);
   }
 
   getToken(): string | null {
@@ -52,5 +56,9 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  getCurrentName(): string | null {
+    return localStorage.getItem(this.NAME_KEY);
   }
 }

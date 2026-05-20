@@ -6,6 +6,7 @@ import com.mlicer.uoc.lavurgerapi.entity.Order;
 import com.mlicer.uoc.lavurgerapi.entity.OrderItem;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
+import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.OrderStatus;
 import com.mlicer.uoc.lavurgerapi.entity.enums.OrderType;
 import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentStatus;
@@ -15,8 +16,11 @@ import com.mlicer.uoc.lavurgerapi.mapper.OrderMapper;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
+import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,9 +49,21 @@ public class OrderService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderRequest) {
         Order order = new Order();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String currentEmail = authentication.getName();
+            userRepository.findByEmail(currentEmail).ifPresent(user -> {
+                order.setCustomer(user);
+                order.setCustomerEmail(user.getEmail());
+            });
+        }
 
         if (orderRequest.tableId() != null) {
             RestaurantTable table = tableRepository.findById(orderRequest.tableId())
@@ -174,5 +190,14 @@ public class OrderService {
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
 
         return updatedOrderDTO;
+    }
+
+    public List<OrderDTO> getOrdersByCustomerEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(user.getId()).stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

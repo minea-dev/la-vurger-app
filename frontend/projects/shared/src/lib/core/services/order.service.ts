@@ -5,9 +5,6 @@ import { OrderStatus } from '../../models/enums/order-status.enum';
 import { PaymentStatus } from '../../models/enums/payment-status.enum';
 import { APP_CONFIG } from '@shared/core/config/api.tokens';
 
-
-
-
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private http = inject(HttpClient);
@@ -32,5 +29,9 @@ export class OrderService {
 
   updatePaymentStatus(id: number, status: PaymentStatus) {
     return this.http.patch<OrderDTO>(`${this.apiUrl}/${id}/payment-status`, `"${status}"`);
+  }
+
+  getMyOrders() {
+    return this.http.get<OrderDTO[]>(`${this.apiUrl}/my-orders`);
   }
 }

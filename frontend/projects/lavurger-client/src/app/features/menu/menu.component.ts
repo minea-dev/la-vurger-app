@@ -19,6 +19,8 @@ export class MenuComponent implements OnInit {
   private authService = inject(AuthService);
 
   isUserMenuOpen = false;
+  showLogoutModal = false;
+  showLoginToast = false;
 
   categoryNames: Record<string, string> = {
     burgers: '🍔 Vurguers',
@@ -39,8 +41,24 @@ export class MenuComponent implements OnInit {
   ngOnInit() {
     this.menuStore.loadProducts();
 
-    const tableId = this.route.snapshot.queryParamMap.get('table');
+    if (this.isLoggedIn) {
+      this.menuStore.loadFavorites();
 
+      if (!sessionStorage.getItem('vurger_welcome_shown')) {
+        this.showLoginToast = true;
+        sessionStorage.setItem('vurger_welcome_shown', 'true');
+        setTimeout(() => {
+          this.showLoginToast = false;
+        }, 4000);
+      }
+    }
+
+    if (sessionStorage.getItem('vurger_keep_menu_open') === 'true') {
+      this.isUserMenuOpen = true;
+      sessionStorage.removeItem('vurger_keep_menu_open');
+    }
+
+    const tableId = this.route.snapshot.queryParamMap.get('table');
     if (tableId) {
       sessionStorage.setItem('vurger_table', tableId);
     }
@@ -68,9 +86,48 @@ export class MenuComponent implements OnInit {
     return this.authService.isLoggedIn();
   }
 
-  logout() {
-    this.authService.logout();
+  get userName(): string {
+    const name = this.authService.getCurrentName();
+    if (!name || name === 'undefined' || name === 'null') {
+      const email = this.userEmail;
+      return email ? email.split('@')[0] : 'Usuari';
+    }
+    return name;
+  }
+
+  openUserMenu() {
+    this.isUserMenuOpen = true;
+  }
+
+  closeUserMenu() {
     this.isUserMenuOpen = false;
-    this.router.navigate(['/login']);
+  }
+
+  navigateToFeature(path: string) {
+    sessionStorage.setItem('vurger_keep_menu_open', 'true');
+    this.isUserMenuOpen = false;
+    this.router.navigate([path]);
+  }
+
+  triggerLogout() {
+    this.showLogoutModal = true;
+  }
+
+  cancelLogout() {
+    this.showLogoutModal = false;
+  }
+
+  confirmLogout() {
+    this.authService.logout();
+    this.showLogoutModal = false;
+    this.isUserMenuOpen = false;
+    sessionStorage.removeItem('vurger_welcome_shown');
+    sessionStorage.removeItem('vurger_keep_menu_open');
+    this.router.navigate(['/menu']);
+  }
+
+  toggleFavorite(event: Event, productId: number) {
+    event.stopPropagation();
+    this.menuStore.toggleFavorite(productId);
   }
 }
