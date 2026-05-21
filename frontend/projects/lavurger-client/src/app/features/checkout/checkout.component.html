@@ -45,6 +45,88 @@
       </div>
     }
 
+    @if (!authService.isLoggedIn()) {
+      <div class="flex flex-col gap-4 p-6 bg-vurger-surface border-2 border-vurger-border rounded-2xl mb-8 shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="text-3xl select-none mt-0.5">✨</span>
+            <div class="flex flex-col">
+              <span class="text-base font-black text-vurger-dark">Tens un compte d'usuari?</span>
+              <span class="text-xs font-medium text-vurger-muted mt-1 leading-relaxed">Inicia sessió o registra't per facilitar futures comandes.</span>
+            </div>
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto shrink-0">
+            <button
+              routerLink="/register"
+              [queryParams]="{ returnUrl: '/checkout' }"
+              queryParamsHandling="merge"
+              class="flex-1 sm:flex-none h-10 px-5 bg-transparent border-2 border-vurger-border hover:bg-vurger-surface rounded-xl text-xs font-bold text-vurger-primary transition-colors whitespace-nowrap"
+            >
+              Registrar-se
+            </button>
+            <button
+              routerLink="/login"
+              [queryParams]="{ returnUrl: '/checkout' }"
+              queryParamsHandling="merge"
+              class="flex-1 sm:flex-none h-10 px-5 bg-vurger-primary hover:bg-vurger-primaryHover rounded-xl text-xs font-bold text-vurger-bg transition-colors whitespace-nowrap"
+            >
+              Entrar
+            </button>
+          </div>
+        </div>
+
+        @if (!cartStore.tableId()) {
+          <div class="h-px bg-vurger-border"></div>
+          <div class="text-center pt-1">
+            <button
+              (click)="showGuestForm.set(!showGuestForm())"
+              class="text-xs font-bold text-vurger-primary hover:underline tracking-wide"
+            >
+              {{ showGuestForm() ? 'Ocultar dades de contacte' : 'Fer la comanda sense registre' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (!authService.isLoggedIn() && !cartStore.tableId() && showGuestForm()) {
+      <h2 class="text-xs font-semibold text-vurger-muted tracking-[1.5px] uppercase mb-4">Dades de contacte <span class="text-red-500 font-bold">*</span></h2>
+      <div class="flex flex-col gap-3 bg-vurger-surface border-2 border-vurger-border rounded-2xl p-4 mb-8">
+        <div>
+          <label class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">Nom complet</label>
+          <input
+            type="text"
+            placeholder="Ex: María Pérez"
+            [value]="guestName()"
+            (input)="guestName.set($any($event.target).value)"
+            class="w-full h-11 bg-vurger-bg border-2 border-vurger-border focus:border-vurger-muted rounded-xl px-3 outline-none text-sm text-vurger-dark transition-colors"
+          />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">Correu electrònic</label>
+            <input
+              type="email"
+              placeholder="Ex: m.perez@gmail.com"
+              [value]="guestEmail()"
+              (input)="guestEmail.set($any($event.target).value)"
+              class="w-full h-11 bg-vurger-bg border-2 border-vurger-border focus:border-vurger-muted rounded-xl px-3 outline-none text-sm text-vurger-dark transition-colors"
+            />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">Telèfon mòbil</label>
+            <input
+              type="tel"
+              placeholder="Ex: 612 345 678"
+              [value]="guestPhone()"
+              (input)="guestPhone.set($any($event.target).value)"
+              class="w-full h-11 bg-vurger-bg border-2 border-vurger-border focus:border-vurger-muted rounded-xl px-3 outline-none text-sm text-vurger-dark transition-colors"
+            />
+          </div>
+        </div>
+      </div>
+    }
+
     <h2 class="text-xs font-semibold text-vurger-muted tracking-[1.5px] uppercase mb-4">Resum de la comanda</h2>
 
     <div class="bg-vurger-surface border-2 border-vurger-border rounded-2xl mb-8">
@@ -178,8 +260,8 @@
   <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm lg:max-w-md z-10">
     <button
       (click)="submitOrder()"
-      [disabled]="checkoutStore.isLoading() || cartStore.cart().length === 0"
-      class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl flex items-center justify-between px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
+      [disabled]="checkoutStore.isLoading() || cartStore.cart().length === 0 || isFormInvalid()"
+      class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl flex items-center justify-between px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
       <span class="text-sm font-medium text-vurger-bg tracking-wide">
         {{ checkoutStore.isLoading() ? 'Enviant...' : 'Enviar comanda' }}
       </span>
@@ -188,7 +270,7 @@
         <span class="text-sm font-medium text-vurger-pale">{{ cartStore.cartTotal() | currency:'EUR' }}</span>
         <div class="w-8 h-8 bg-vurger-bg/10 rounded-xl flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 stroke-vurger-bg fill-none" stroke-width="2.5" viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
+            <path d="M5 13l4 4L19 7"/>
           </svg>
         </div>
       </div>

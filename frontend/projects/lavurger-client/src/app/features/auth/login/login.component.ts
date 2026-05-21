@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '@shared';
 
 @Component({
@@ -13,6 +13,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   errorMessage: string | null = null;
 
@@ -29,7 +30,8 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
-        this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/menu';
+        this.router.navigate([returnUrl], { queryParamsHandling: 'preserve' });
       },
       error: () => {
         this.errorMessage = 'Credencials incorrectes';
