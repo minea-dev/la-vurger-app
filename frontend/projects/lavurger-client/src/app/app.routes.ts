@@ -30,6 +30,12 @@ export const routes: Routes = [
     canActivate: [checkoutGuard],
   },
   {
+    path: 'orders/detalle/:id',
+    loadComponent: () =>
+      import('./features/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'order-status/:id',
     loadComponent: () =>
       import('./features/order-status/order-status.component').then((m) => m.OrderStatusComponent),
@@ -44,7 +50,8 @@ export const routes: Routes = [
   {
     path: 'favoritos',
     loadComponent: () =>
-      import('./features/favorites/favorites.component').then(m => m.FavoritesComponent)
+      import('./features/favorites/favorites.component').then((m) => m.FavoritesComponent),
+    canActivate: [authGuard],
   },
   {
     path: '**',

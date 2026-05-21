@@ -1,13 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FavoritesService } from '@shared/core/services/favorites.service';
 import { CartStore, ProductDTO } from '@shared';
 
 @Component({
   selector: 'app-favorites',
   standalone: true,
-  imports: [CurrencyPipe, NgClass],
+  imports: [CurrencyPipe, NgClass, RouterLink],
   templateUrl: './favorites.component.html',
 })
 export class FavoritesComponent implements OnInit {
@@ -49,7 +49,7 @@ export class FavoritesComponent implements OnInit {
   }
 
   backToMenu() {
-    sessionStorage.setItem('vurger_keep_menu_open', 'true');
+    sessionStorage.removeItem('vurger_keep_menu_open');
     this.router.navigate(['/menu']);
   }
 }

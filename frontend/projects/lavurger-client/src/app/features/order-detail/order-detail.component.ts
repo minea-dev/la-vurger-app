@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CartStore, OrderDTO, OrderService } from '@shared';
 
 @Component({
@@ -25,6 +25,11 @@ export class OrderDetailComponent implements OnInit {
     READY: 'Llest per a recollir',
     COMPLETED: 'Entregat',
     CANCELLED: 'Cancel·lada',
+  };
+
+  typeLabels: Record<string, string> = {
+    DINE_IN: 'Al local',
+    TAKE_AWAY: 'Per a emportar',
   };
 
   ngOnInit() {

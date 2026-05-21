@@ -29,10 +29,10 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
-        this.router.navigate(['/']);
+        this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
       },
       error: () => {
-        this.errorMessage = 'Credencials incorrectes o usuari inactiu.';
+        this.errorMessage = 'Credencials incorrectes';
       },
     });
   }

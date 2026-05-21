@@ -31,7 +31,7 @@ export class RegisterComponent {
 
     this.authService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
-        this.registrationSuccess = true;
+        this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
       },
       error: (err) => {
         if (err.status === 409) {
