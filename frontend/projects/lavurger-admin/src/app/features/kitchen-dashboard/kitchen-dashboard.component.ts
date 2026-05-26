@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 
 import { OrderDTO } from '@shared/models/dtos/order.dto';
 import { OrderStatus } from '@shared/models/enums/order-status.enum';
@@ -21,6 +21,8 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   private wsSubscription?: Subscription;
   OrderStatus = OrderStatus;
 
+  selectedOrderForModal: OrderDTO | null = null;
+
   get pendingOrders() {
     return this.orders.filter((o) => o.status === OrderStatus.RECEIVED);
   }
@@ -37,11 +39,13 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadInitialOrders() {
-    this.orderService.getOrders().subscribe({
-      next: (data) => {
-        this.orders = data.filter(
-          (o) => o.status !== OrderStatus.COMPLETED && o.status !== OrderStatus.CANCELLED,
-        );
+    forkJoin({
+      received: this.orderService.getOrders(OrderStatus.RECEIVED),
+      preparing: this.orderService.getOrders(OrderStatus.PREPARING),
+      ready: this.orderService.getOrders(OrderStatus.READY),
+    }).subscribe({
+      next: (res) => {
+        this.orders = [...res.received, ...res.preparing, ...res.ready];
         this.cdr.detectChanges();
       },
     });
@@ -72,6 +76,35 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  hasCustomerInfo(order: any): boolean {
+    return !!(
+      order.guestName ||
+      order.guestPhone ||
+      order.customerName ||
+      order.customerPhone ||
+      order.user?.name ||
+      order.user?.phone
+    );
+  }
+
+  getCustomerName(order: any): string {
+    return order.guestName || order.customerName || order.user?.name || 'No especificat';
+  }
+
+  getCustomerPhone(order: any): string {
+    return order.guestPhone || order.customerPhone || order.user?.phone || 'No especificat';
+  }
+
+  openInfoModal(order: OrderDTO) {
+    this.selectedOrderForModal = order;
+    this.cdr.detectChanges();
+  }
+
+  closeInfoModal() {
+    this.selectedOrderForModal = null;
+    this.cdr.detectChanges();
+  }
+
   startOrder(id: number) {
     this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe();
   }
@@ -88,11 +121,11 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     this.orderService.updateOrderStatus(id, OrderStatus.COMPLETED).subscribe();
   }
 
-  ngOnDestroy() {
-    this.wsSubscription?.unsubscribe();
-  }
-
   cancelOrder(id: number) {
     this.orderService.updateOrderStatus(id, OrderStatus.CANCELLED).subscribe();
+  }
+
+  ngOnDestroy() {
+    this.wsSubscription?.unsubscribe();
   }
 }

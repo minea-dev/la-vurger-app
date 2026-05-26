@@ -13,7 +13,6 @@ export class UserService {
   private apiUrl = `${this.config.apiUrl}/users`;
 
   getUsers(): Observable<UserDTO[]> {
-    // Añadimos el timestamp para evitar problemas de caché al activar/desactivar
     return this.http.get<UserDTO[]>(`${this.apiUrl}?t=${new Date().getTime()}`);
   }
 
