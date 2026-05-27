@@ -11,6 +11,15 @@ import { OrderService, StompService } from '@shared';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './kitchen-dashboard.component.html',
+  styles: [`
+    @keyframes cardFlash {
+      0%, 100% { border-color: #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+      50% { border-color: #2563eb; box-shadow: 0 0 14px rgba(37, 99, 235, 0.35); }
+    }
+    .animate-new-card {
+      animation: cardFlash 1.2s infinite ease-in-out;
+    }
+  `]
 })
 export class KitchenDashboardComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
@@ -24,6 +33,10 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
 
   selectedOrderForModal: OrderDTO | null = null;
   orderIdForCancelModal: number | null = null;
+
+  private alertSound = new Audio('/assets/sounds/new-order.mp3');
+
+  recentlyAddedOrderIds: Set<number> = new Set();
 
   get pendingOrders() {
     return this.orders.filter((o) => o.status === OrderStatus.RECEIVED);
@@ -74,12 +87,29 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
         this.orders = updatedList;
       }
     } else {
+      if (newOrder.status === OrderStatus.RECEIVED) {
+        this.playAlert();
+
+        this.recentlyAddedOrderIds.add(newOrder.id);
+        setTimeout(() => {
+          this.recentlyAddedOrderIds.delete(newOrder.id);
+          this.cdr.detectChanges();
+        }, 5000);
+      }
+
       if (newOrder.status !== OrderStatus.COMPLETED && newOrder.status !== OrderStatus.CANCELLED) {
         this.orders = [...this.orders, newOrder];
       }
     }
 
     this.cdr.detectChanges();
+  }
+
+  private playAlert() {
+    this.alertSound.currentTime = 0;
+    this.alertSound.play().catch((err) => {
+      console.warn('⚠️ El navegador ha bloquejat l\'àudio fins que es interactuï amb la pàgina:', err);
+    });
   }
 
   hasCustomerInfo(order: any): boolean {

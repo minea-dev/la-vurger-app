@@ -20,6 +20,7 @@
 
       <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
         <div *ngFor="let order of pendingOrders"
+             [class.animate-new-card]="recentlyAddedOrderIds.has(order.id)"
              class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
 
           <div class="flex justify-between items-start mb-3">
