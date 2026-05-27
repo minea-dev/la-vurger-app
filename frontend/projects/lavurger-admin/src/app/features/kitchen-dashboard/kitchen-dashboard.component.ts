@@ -35,7 +35,6 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   orderIdForCancelModal: number | null = null;
 
   private alertSound = new Audio('/assets/sounds/new-order.mp3');
-
   recentlyAddedOrderIds: Set<number> = new Set();
 
   get pendingOrders() {
@@ -79,7 +78,11 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     const index = this.orders.findIndex((o) => o.id === newOrder.id);
 
     if (index > -1) {
-      if (newOrder.status === OrderStatus.COMPLETED || newOrder.status === OrderStatus.CANCELLED) {
+      if (
+        newOrder.status === OrderStatus.DISPATCHED ||
+        newOrder.status === OrderStatus.COMPLETED ||
+        newOrder.status === OrderStatus.CANCELLED
+      ) {
         this.orders = this.orders.filter((o) => o.id !== newOrder.id);
       } else {
         const updatedList = [...this.orders];
@@ -97,7 +100,11 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
         }, 5000);
       }
 
-      if (newOrder.status !== OrderStatus.COMPLETED && newOrder.status !== OrderStatus.CANCELLED) {
+      if (
+        newOrder.status === OrderStatus.RECEIVED ||
+        newOrder.status === OrderStatus.PREPARING ||
+        newOrder.status === OrderStatus.READY
+      ) {
         this.orders = [...this.orders, newOrder];
       }
     }
@@ -108,22 +115,16 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   private playAlert() {
     this.alertSound.currentTime = 0;
     this.alertSound.play().catch((err) => {
-      console.warn('⚠️ El navegador ha bloquejat l\'àudio fins que es interactuï amb la pàgina:', err);
+      console.warn('⚠️ El navegador ha bloquejat l\'àudio:', err);
     });
   }
 
+  dispatchOrder(orderId: number) {
+    this.orderService.updateOrderStatus(orderId, OrderStatus.DISPATCHED).subscribe();
+  }
+
   hasCustomerInfo(order: any): boolean {
-    return !!(
-      order.guestName ||
-      order.customerName ||
-      order.user?.name ||
-      order.guestPhone ||
-      order.customerPhone ||
-      order.user?.phone ||
-      order.guestEmail ||
-      order.customerEmail ||
-      order.user?.email
-    );
+    return !!(order.guestName || order.customerName || order.user?.name || order.guestPhone || order.customerPhone || order.user?.phone || order.guestEmail || order.customerEmail || order.user?.email);
   }
 
   getCustomerName(order: any): string {
@@ -138,54 +139,22 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     return order.guestEmail || order.customerEmail || order.user?.email || '';
   }
 
-  openInfoModal(order: OrderDTO) {
-    this.selectedOrderForModal = order;
-    this.cdr.detectChanges();
-  }
-
-  closeInfoModal() {
-    this.selectedOrderForModal = null;
-    this.cdr.detectChanges();
-  }
-
-  triggerCancelConfirmation(id: number) {
-    this.orderIdForCancelModal = id;
-    this.cdr.detectChanges();
-  }
-
-  closeCancelModal() {
-    this.orderIdForCancelModal = null;
-    this.cdr.detectChanges();
-  }
+  openInfoModal(order: OrderDTO) { this.selectedOrderForModal = order; this.cdr.detectChanges(); }
+  closeInfoModal() { this.selectedOrderForModal = null; this.cdr.detectChanges(); }
+  triggerCancelConfirmation(id: number) { this.orderIdForCancelModal = id; this.cdr.detectChanges(); }
+  closeCancelModal() { this.orderIdForCancelModal = null; this.cdr.detectChanges(); }
 
   confirmCancelOrder() {
     if (this.orderIdForCancelModal) {
-      this.cancelOrder(this.orderIdForCancelModal);
+      this.orderService.updateOrderStatus(this.orderIdForCancelModal, OrderStatus.CANCELLED).subscribe();
       this.closeCancelModal();
     }
   }
 
-  startOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe();
-  }
+  startOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe(); }
+  finishOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.READY).subscribe(); }
+  returnOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe(); }
+  cancelOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.CANCELLED).subscribe(); }
 
-  finishOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.READY).subscribe();
-  }
-
-  returnOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe();
-  }
-
-  deliverOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.COMPLETED).subscribe();
-  }
-
-  cancelOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.CANCELLED).subscribe();
-  }
-
-  ngOnDestroy() {
-    this.wsSubscription?.unsubscribe();
-  }
+  ngOnDestroy() { this.wsSubscription?.unsubscribe(); }
 }

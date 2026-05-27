@@ -158,13 +158,21 @@ public class OrderService {
 
         try {
             OrderStatus statusEnum = OrderStatus.valueOf(newStatus.toUpperCase().trim());
+
+            if (statusEnum == OrderStatus.DISPATCHED &&
+                    order.getOrderType() == OrderType.DINE_IN &&
+                    order.getPaymentStatus() == PaymentStatus.PAID) {
+                statusEnum = OrderStatus.COMPLETED;
+            }
+
             order.setStatus(statusEnum);
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
         }
 
-        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
@@ -182,12 +190,20 @@ public class OrderService {
             PaymentStatus statusEnum = PaymentStatus.valueOf(cleanStatus);
 
             order.setPaymentStatus(statusEnum);
+
+            if (statusEnum == PaymentStatus.PAID &&
+                    order.getOrderType() == OrderType.DINE_IN &&
+                    order.getStatus() == OrderStatus.DISPATCHED) {
+                order.setStatus(OrderStatus.COMPLETED);
+            }
+
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid payment status value: " + newPaymentStatus);
         }
 
-        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);

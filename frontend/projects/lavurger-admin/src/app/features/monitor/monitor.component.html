@@ -1,90 +1,151 @@
 <div class="absolute inset-0 flex flex-col bg-admin-bg overflow-hidden">
 
-  <div class="px-4 py-3 bg-admin-white border-b border-admin-border flex items-center gap-3 shrink-0">
+  <div class="px-5 py-3.5 bg-admin-white border-b border-admin-border flex items-center justify-between shrink-0 z-10">
     <div class="text-[14px] font-bold text-admin-text">Gestió de Comandes i Cobraments</div>
-    <div class="flex-1"></div>
+
     <div class="flex gap-2 items-center">
-      <button (click)="setFilter('PENDING_PAY')"
-              class="h-[32px] px-4 border rounded-full text-[12px] font-medium flex items-center gap-2 transition-colors"
-              [ngClass]="currentFilter === 'PENDING_PAY' ? 'bg-admin-blue border-admin-blue text-white shadow-md' : 'bg-admin-white border-admin-border text-admin-text2 hover:border-admin-border2'">
-        <div class="w-2 h-2 rounded-full" [ngClass]="currentFilter === 'PENDING_PAY' ? 'bg-admin-red-lt' : 'bg-admin-red'"></div>
-        Pendents cobrament
+      <button (click)="setFilter('ACTIVE')"
+              class="h-[34px] px-4 border rounded-full text-[12px] font-semibold flex items-center gap-2 transition-colors"
+              [ngClass]="currentFilter === 'ACTIVE' ? 'bg-admin-blue border-admin-blue text-white shadow-sm' : 'bg-admin-white border-admin-border text-admin-text2 hover:bg-admin-bg'">
+        <div class="w-1.5 h-1.5 rounded-full" [ngClass]="currentFilter === 'ACTIVE' ? 'bg-white' : 'bg-admin-green'"></div>
+        Tauler actiu
         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1"
-              [ngClass]="currentFilter === 'PENDING_PAY' ? 'bg-white/20 text-white' : 'bg-admin-red-lt text-admin-red'">
-          {{ pendingPaymentCount }}
+              [ngClass]="currentFilter === 'ACTIVE' ? 'bg-white/20 text-white' : 'bg-admin-blue-lt text-admin-blue'">
+          {{ totalActiveCount }}
         </span>
       </button>
 
       <button (click)="setFilter('COMPLETED')"
-              class="h-[32px] px-4 border rounded-full text-[12px] font-medium flex items-center gap-2 transition-colors"
-              [ngClass]="currentFilter === 'COMPLETED' ? 'bg-admin-blue border-admin-blue text-white shadow-md' : 'bg-admin-white border-admin-border text-admin-text2 hover:border-admin-border2'">
-        <div class="w-2 h-2 rounded-full" [ngClass]="currentFilter === 'COMPLETED' ? 'bg-white' : 'bg-admin-text3'"></div>
-        Acabades (24h)
+              class="h-[34px] px-4 border rounded-full text-[12px] font-semibold flex items-center gap-2 transition-colors"
+              [ngClass]="currentFilter === 'COMPLETED' ? 'bg-admin-blue border-admin-blue text-white shadow-sm' : 'bg-admin-white border-admin-border text-admin-text2 hover:bg-admin-bg'">
+        <div class="w-1.5 h-1.5 rounded-full" [ngClass]="currentFilter === 'COMPLETED' ? 'bg-white' : 'bg-admin-text3'"></div>
+        Historial tancades (24h)
       </button>
     </div>
   </div>
 
-  <div class="flex-1 overflow-y-auto scrollbar-thin p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 align-content-start items-start">
+  <div *ngIf="currentFilter === 'ACTIVE'" class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5 p-5 min-h-0 h-full overflow-hidden">
 
-    <div *ngIf="filteredOrders.length === 0" class="col-span-full py-20 flex flex-col items-center justify-center text-admin-text3">
-      <svg class="w-12 h-12 stroke-admin-border mb-3" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z"/><path d="M9 12h6M12 9v6"/></svg>
-      <span class="text-sm font-medium">No hi ha comandes per mostrar.</span>
+    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+      <div class="py-2.5 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3.5">
+        <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+          <span class="w-1.5 h-3.5 bg-admin-red rounded-full"></span>
+          Restaurant (Per Pagar Sala)
+        </h2>
+        <span class="bg-admin-red-lt px-2.5 py-0.5 rounded-full text-xs font-bold text-admin-red">{{ dineInPendingOrders.length }}</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-3.5 pr-1 pb-4 scrollbar-thin">
+        <div *ngIf="dineInPendingOrders.length === 0" class="py-10 text-center text-[13px] font-medium text-admin-text3 italic">
+          No hi ha taules pendents de cobrament.
+        </div>
+
+        <div *ngFor="let order of dineInPendingOrders"
+             [class.animate-new-card]="recentlyAddedOrderIds.has(order.id)"
+             class="bg-admin-white border border-admin-border rounded-xl p-4 shadow-sm flex flex-col gap-3 border-t-[4px] border-t-admin-red transition-all">
+          <ng-container *ngTemplateOutlet="orderCardLayout; context: { $implicit: order }"></ng-container>
+        </div>
+      </div>
     </div>
 
-    <div *ngFor="let order of filteredOrders"
-         class="bg-admin-white border border-admin-border rounded-xl p-4 shadow-sm flex flex-col gap-3 border-t-[4px] transition-all hover:shadow-md"
-         [ngClass]="{
-           'border-t-admin-green': order.status === OrderStatus.READY,
-           'border-t-admin-border2 opacity-85': order.status === OrderStatus.COMPLETED,
-           'border-t-admin-red opacity-70': order.status === OrderStatus.CANCELLED
-         }">
-
-      <div class="flex items-start justify-between">
-        <div>
-          <div class="text-[16px] font-bold text-admin-text leading-tight">{{ order.orderNumber }}</div>
-          <div class="text-[11px] font-bold mt-1.5 inline-block px-2 py-0.5 rounded bg-admin-bg text-admin-text3 uppercase tracking-wider">
-            {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
-          </div>
-        </div>
-        <div class="text-right">
-          <div class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-admin-bg text-admin-text2 border border-admin-border/50">
-            {{ order.status }}
-          </div>
-          <div class="text-[15px] font-bold text-admin-text mt-1">
-            {{ order.totalAmount | currency:'EUR' }}
-          </div>
-        </div>
+    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+      <div class="py-2.5 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3.5">
+        <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
+          <span class="w-1.5 h-3.5 bg-admin-blue rounded-full"></span>
+          Barra (Per lliurar Takeaway)
+        </h2>
+        <span class="bg-admin-blue-lt px-2.5 py-0.5 rounded-full text-xs font-bold text-admin-blue">{{ takeawayReadyOrders.length }}</span>
       </div>
 
-      <div class="text-[13px] text-admin-text2 leading-relaxed border-y border-admin-border/50 py-3 my-1 min-h-[60px]">
-        <div *ngFor="let item of order.items" class="flex gap-2">
-          <span class="font-bold text-admin-blue">{{ item.quantity }}×</span>
-          <span class="flex-1">{{ item.product?.name }}</span>
+      <div class="flex-1 overflow-y-auto space-y-3.5 pr-1 pb-4 scrollbar-thin">
+        <div *ngIf="takeawayReadyOrders.length === 0" class="py-10 text-center text-[13px] font-medium text-admin-text3 italic">
+          No hi ha paquets a la barra esperant recollida.
+        </div>
+
+        <div *ngFor="let order of takeawayReadyOrders"
+             [class.animate-new-card]="recentlyAddedOrderIds.has(order.id)"
+             class="bg-admin-white border border-admin-border rounded-xl p-4 shadow-sm flex flex-col gap-3 border-t-[4px] border-t-admin-blue transition-all">
+          <ng-container *ngTemplateOutlet="orderCardLayout; context: { $implicit: order }"></ng-container>
         </div>
       </div>
+    </div>
 
-      <div class="flex items-center justify-between pt-1">
-        <div class="text-[11px] font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-             [ngClass]="order.paymentStatus === PaymentStatus.PAID ? 'bg-admin-green-lt text-admin-green' : 'bg-admin-red-lt text-admin-red'">
-          <div *ngIf="order.paymentStatus === PaymentStatus.PENDING" class="w-1.5 h-1.5 rounded-full bg-admin-red animate-pulse"></div>
-          <span *ngIf="order.paymentStatus === PaymentStatus.PAID">✓</span>
-          {{ order.paymentStatus === PaymentStatus.PAID ? 'PAGAT' : 'PENDENT' }}
-        </div>
+  </div>
 
-        <button *ngIf="order.status === OrderStatus.READY || order.paymentStatus === PaymentStatus.PENDING"
-                class="h-[32px] px-4 rounded-lg text-[11px] font-bold transition-all shadow-sm active:scale-95"
-                [ngClass]="{
-                  'bg-admin-green text-white hover:bg-[#046030]': order.paymentStatus === PaymentStatus.PENDING,
-                  'border border-admin-green bg-admin-white text-admin-green hover:bg-admin-green-lt': order.paymentStatus === PaymentStatus.PAID && order.status === OrderStatus.READY
-                }"
-                (click)="order.paymentStatus === PaymentStatus.PENDING ? markAsPaid(order.id) : deliverOrder(order.id)">
-          {{ order.paymentStatus === PaymentStatus.PENDING ? 'COBRAR' : 'ENTREGAR' }}
-        </button>
+  <div *ngIf="currentFilter === 'COMPLETED'" class="flex-1 overflow-y-auto scrollbar-thin p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 align-content-start items-start">
+    <div *ngIf="completedOrdersHistory.length === 0" class="col-span-full py-20 flex flex-col items-center justify-center text-admin-text3">
+      <svg class="w-12 h-12 stroke-admin-border mb-3" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z"/><path d="M9 12h6M12 9v6"/></svg>
+      <span class="text-sm font-medium">No hi ha comandes arxivades en les últimes 24 hores.</span>
+    </div>
 
-        <div *ngIf="order.status === OrderStatus.COMPLETED" class="text-[10px] font-bold text-admin-text3 italic">
-          Arxivada
-        </div>
+    <div *ngFor="let order of completedOrdersHistory"
+         class="bg-admin-white border border-admin-border rounded-xl p-4 shadow-sm flex flex-col gap-3 border-t-[4px]"
+         [ngClass]="order.status === OrderStatus.CANCELLED ? 'border-t-admin-text3 opacity-60' : 'border-t-admin-green opacity-80'">
+      <ng-container *ngTemplateOutlet="orderCardLayout; context: { $implicit: order }"></ng-container>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #orderCardLayout let-order>
+  <div class="flex items-start justify-between">
+    <div>
+      <div class="text-[16px] font-bold text-admin-text leading-tight">{{ order.orderNumber }}</div>
+      <div class="text-[11px] font-bold mt-1.5 inline-block px-2 py-0.5 rounded bg-admin-bg text-admin-text3 uppercase tracking-wider">
+        {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+      </div>
+    </div>
+    <div class="text-right">
+      <div class="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-admin-bg text-admin-text2 border border-admin-border/50">
+        {{ order.status }}
+      </div>
+      <div class="text-[15px] font-bold text-admin-text mt-1">
+        {{ order.totalAmount | currency:'EUR' }}
       </div>
     </div>
   </div>
-</div>
+
+  <div *ngIf="hasCustomerInfo(order)" class="bg-slate-50 border border-slate-100 rounded-lg p-2 flex flex-col gap-0.5 text-[11px]">
+    <div class="flex items-center gap-1.5 text-slate-700 font-bold">
+      <svg class="w-3 h-3 stroke-slate-500 fill-none" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+      <span>{{ getCustomerName(order) }}</span>
+    </div>
+    <div *ngIf="getCustomerPhone(order)" class="flex items-center gap-1.5 text-slate-500 font-medium pl-4.5">
+      <span>📞 {{ getCustomerPhone(order) }}</span>
+    </div>
+  </div>
+
+  <div class="text-[13px] text-admin-text2 leading-relaxed border-y border-admin-border/50 py-2 my-0.5 min-h-[45px]">
+    <div *ngFor="let item of order.items" class="flex gap-2">
+      <span class="font-bold text-admin-blue">{{ item.quantity }}×</span>
+      <span class="flex-1 text-slate-700">{{ item.product?.name }}</span>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between pt-0.5">
+    <div class="text-[11px] font-bold flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+         [ngClass]="order.paymentStatus === PaymentStatus.PAID ? 'bg-admin-green-lt text-admin-green' : 'bg-admin-red-lt text-admin-red'">
+      <div *ngIf="order.paymentStatus === PaymentStatus.PENDING" class="w-1.5 h-1.5 rounded-full bg-admin-red animate-pulse"></div>
+      <span *ngIf="order.paymentStatus === PaymentStatus.PAID">✓</span>
+      {{ order.paymentStatus === PaymentStatus.PAID ? 'PAGAT' : 'PENDENT' }}
+    </div>
+
+    <ng-container *ngIf="order.status !== OrderStatus.CANCELLED && !(order.status === OrderStatus.COMPLETED && order.paymentStatus === PaymentStatus.PAID)">
+      <button class="h-[32px] px-4 rounded-lg text-[11px] font-bold transition-all shadow-sm active:scale-95"
+              [ngClass]="{
+                'bg-admin-green text-white hover:bg-[#046030]': order.paymentStatus === PaymentStatus.PENDING,
+                'border border-admin-green bg-admin-white text-admin-green hover:bg-admin-green-lt': order.paymentStatus === PaymentStatus.PAID && order.status === OrderStatus.DISPATCHED
+              }"
+              (click)="handleOrderAction(order)">
+        {{ order.paymentStatus === PaymentStatus.PENDING ? 'COBRAR' : 'ENTREGAR' }}
+      </button>
+    </ng-container>
+
+    <div *ngIf="order.status === OrderStatus.CANCELLED" class="text-[10px] font-bold text-admin-red italic">
+      Cancel·lada
+    </div>
+    <div *ngIf="order.status === OrderStatus.COMPLETED && order.paymentStatus === PaymentStatus.PAID" class="text-[10px] font-bold text-admin-text3 italic">
+      Arxivada
+    </div>
+  </div>
+</ng-template>

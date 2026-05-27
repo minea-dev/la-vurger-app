@@ -3,7 +3,6 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { OrderDTO, OrderService } from '@shared';
 
-
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -21,7 +20,8 @@ export class OrdersComponent implements OnInit {
     RECEIVED: 'Rebuda',
     PENDING: 'Pendent',
     PREPARING: 'A la cuina',
-    READY: 'Llest per a recollir',
+    READY: 'Llest a cuina',
+    DISPATCHED: 'Llest per a recollir',
     COMPLETED: 'Entregat',
     CANCELLED: 'Cancel·lada',
   };

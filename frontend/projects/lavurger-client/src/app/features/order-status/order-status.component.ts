@@ -26,7 +26,6 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
-
     if (idParam) {
       const id = parseInt(idParam, 10);
       if (!isNaN(id)) {
@@ -59,7 +58,6 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
     const savedTable = sessionStorage.getItem('vurger_table');
     this.menuStore.setCategory('burgers');
     this.menuStore.setSearchQuery('');
-
     this.router.navigate(['/menu'], {
       queryParams: savedTable ? { table: savedTable } : {},
       queryParamsHandling: 'merge'
@@ -68,19 +66,19 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.wsSubscription?.unsubscribe();
-    if (this.redirectTimeout) {
-      clearTimeout(this.redirectTimeout);
-    }
+    if (this.redirectTimeout) { clearTimeout(this.redirectTimeout); }
   }
 
   getStepStatus(status: OrderStatus, stepIndex: number): 'done' | 'active' | 'pending' {
+    const displayStatus = status === OrderStatus.DISPATCHED ? OrderStatus.READY : status;
+
     const states = [
       OrderStatus.RECEIVED,
       OrderStatus.PREPARING,
       OrderStatus.READY,
       OrderStatus.COMPLETED,
     ];
-    const currentIndex = states.indexOf(status);
+    const currentIndex = states.indexOf(displayStatus);
 
     if (currentIndex === -1) return 'pending';
     if (currentIndex > stepIndex) return 'done';

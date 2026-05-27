@@ -38,8 +38,8 @@
 
               <span
                 class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg"
-                [class.bg-vurger-pale]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED'"
-                [class.text-vurger-primary]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED'"
+                [class.bg-vurger-pale]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED' || order.status === 'DISPATCHED'"
+                [class.text-vurger-primary]="order.status === 'PREPARING' || order.status === 'READY' || order.status === 'RECEIVED' || order.status === 'DISPATCHED'"
                 [class.bg-vurger-border]="order.status === 'COMPLETED'"
                 [class.text-vurger-muted]="order.status === 'COMPLETED'"
                 [class.bg-red-50]="order.status === 'CANCELLED'"

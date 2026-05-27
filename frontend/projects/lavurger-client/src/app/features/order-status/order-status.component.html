@@ -35,7 +35,7 @@
       <div class="relative w-full rounded-[32px] p-8 flex flex-col items-center text-center overflow-hidden transition-colors duration-500 shadow-xl shadow-vurger-primary/10"
            [ngClass]="{
              'bg-vurger-primary': order.status === OrderStatus.RECEIVED || order.status === OrderStatus.PREPARING,
-             'bg-[#1A5C38]': order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED,
+             'bg-[#1A5C38]': order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED,
              'bg-red-700': order.status === OrderStatus.CANCELLED
            }">
 
@@ -46,13 +46,13 @@
                [ngClass]="{
                  'bg-yellow-400 animate-pulse': order.status === OrderStatus.PREPARING,
                  'bg-white': order.status === OrderStatus.RECEIVED,
-                 'bg-green-400': order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED,
+                 'bg-green-400': order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED,
                  'bg-red-300': order.status === OrderStatus.CANCELLED
                }"></div>
           <span class="text-xs font-bold text-white tracking-[1px] uppercase">
             @if (order.status === OrderStatus.RECEIVED) { REBUDA }
             @else if (order.status === OrderStatus.PREPARING) { PREPARANT-SE }
-            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) { LLEST }
+            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED) { LLEST }
             @else if (order.status === OrderStatus.CANCELLED) { CANCEL·LADA }
             @else { {{ order.status }} }
           </span>
@@ -65,7 +65,7 @@
           <span class="text-6xl drop-shadow-2xl relative z-10 animate-bounce" style="animation-duration: 3s;">
             @if (order.status === OrderStatus.RECEIVED) { 📝 }
             @else if (order.status === OrderStatus.PREPARING) { 🍔 }
-            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) { ✨ }
+            @else if (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED) { ✨ }
             @else if (order.status === OrderStatus.CANCELLED) { ❌ }
             @else { 📦 }
           </span>
@@ -74,7 +74,7 @@
         <h2 class="font-serif text-3xl font-black text-white leading-tight mb-3 z-10">
           @if (order.status === OrderStatus.RECEIVED) { Comanda rebuda! }
           @else if (order.status === OrderStatus.PREPARING) { Marxant una de Vurguers! }
-          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) {
+          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED) {
             @if (order.orderType === 'TAKEAWAY') { Ja pots recollir-la! }
             @else { Ja anem cap allà! }
           }
@@ -84,7 +84,7 @@
         <p class="text-sm text-white/90 z-10 max-w-[280px] mx-auto font-medium">
           @if (order.status === OrderStatus.RECEIVED) { Hem rebut la teua comanda i estem esperant confirmació de cuina. }
           @else if (order.status === OrderStatus.PREPARING) { Els nostres cuiners estan preparant la teua comanda amb molt d'amor. }
-          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.COMPLETED) {
+          @else if (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED || order.status === OrderStatus.COMPLETED) {
             @if (order.orderType === 'TAKEAWAY') { Pots passar a recollir-la al taulell. Bon profit! }
             @else { Ara mateix un cambrer te la portarà a la taula. Bon profit! }
           }

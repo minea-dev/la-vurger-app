@@ -5,5 +5,6 @@ public enum OrderStatus {
     PREPARING,
     READY,
     COMPLETED,
+    DISPATCHED,
     CANCELLED
 }
