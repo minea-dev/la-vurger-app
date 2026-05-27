@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, forkJoin } from 'rxjs';
 
@@ -16,12 +16,14 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
   private stompService = inject(StompService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   orders: OrderDTO[] = [];
   private wsSubscription?: Subscription;
   OrderStatus = OrderStatus;
 
   selectedOrderForModal: OrderDTO | null = null;
+  orderIdForCancelModal: number | null = null;
 
   get pendingOrders() {
     return this.orders.filter((o) => o.status === OrderStatus.RECEIVED);
@@ -53,8 +55,10 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
 
   connectToWebSockets() {
     this.wsSubscription = this.stompService.watch('/topic/orders').subscribe((message) => {
-      const updatedOrder: OrderDTO = JSON.parse(message.body);
-      this.handleIncomingOrder(updatedOrder);
+      this.ngZone.run(() => {
+        const updatedOrder: OrderDTO = JSON.parse(message.body);
+        this.handleIncomingOrder(updatedOrder);
+      });
     });
   }
 
@@ -63,13 +67,15 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
 
     if (index > -1) {
       if (newOrder.status === OrderStatus.COMPLETED || newOrder.status === OrderStatus.CANCELLED) {
-        this.orders.splice(index, 1);
+        this.orders = this.orders.filter((o) => o.id !== newOrder.id);
       } else {
-        this.orders[index] = newOrder;
+        const updatedList = [...this.orders];
+        updatedList[index] = newOrder;
+        this.orders = updatedList;
       }
     } else {
       if (newOrder.status !== OrderStatus.COMPLETED && newOrder.status !== OrderStatus.CANCELLED) {
-        this.orders.push(newOrder);
+        this.orders = [...this.orders, newOrder];
       }
     }
 
@@ -110,6 +116,23 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   closeInfoModal() {
     this.selectedOrderForModal = null;
     this.cdr.detectChanges();
+  }
+
+  triggerCancelConfirmation(id: number) {
+    this.orderIdForCancelModal = id;
+    this.cdr.detectChanges();
+  }
+
+  closeCancelModal() {
+    this.orderIdForCancelModal = null;
+    this.cdr.detectChanges();
+  }
+
+  confirmCancelOrder() {
+    if (this.orderIdForCancelModal) {
+      this.cancelOrder(this.orderIdForCancelModal);
+      this.closeCancelModal();
+    }
   }
 
   startOrder(id: number) {
