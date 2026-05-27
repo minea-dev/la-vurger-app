@@ -6,6 +6,8 @@ import com.mlicer.uoc.lavurgerapi.dto.OrderRequestDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Order;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
+import com.mlicer.uoc.lavurgerapi.entity.enums.OrderType;
+import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentMethod;
 import com.mlicer.uoc.lavurgerapi.exception.ResourceNotFoundException;
 import com.mlicer.uoc.lavurgerapi.mapper.OrderMapper;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
@@ -58,9 +60,12 @@ class OrderServiceTest {
 
         OrderRequestDTO request = new OrderRequestDTO(
                 tableId,
-                null,
-                null,
+                OrderType.DINE_IN,
+                PaymentMethod.COUNTER,
                 "Test comment",
+                "Guest",
+                "guest@test.com",
+                "123456789",
                 List.of(itemRequest)
         );
 
@@ -77,7 +82,8 @@ class OrderServiceTest {
 
         OrderDTO expectedResponse = new OrderDTO(
                 1L, "#VURG-TEST", "RECEIVED", "DINE_IN", "COUNTER",
-                "PENDING", new BigDecimal("21.00"), null, null, tableId, List.of(), null
+                "PENDING", new BigDecimal("21.00"), "Test comment", null, tableId, List.of(), null,
+                "Guest", "guest@test.com", "123456789", null, null
         );
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(mockTable));
@@ -101,7 +107,7 @@ class OrderServiceTest {
     @DisplayName("Should throw ResourceNotFoundException when table does not exist")
     void shouldThrowExceptionWhenTableDoesNotExist() {
         // GIVEN
-        OrderRequestDTO request = new OrderRequestDTO(99L, null, null, null, List.of());
+        OrderRequestDTO request = new OrderRequestDTO(99L, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of());
         when(tableRepository.findById(99L)).thenReturn(Optional.empty());
 
         // WHEN & THEN
@@ -117,7 +123,7 @@ class OrderServiceTest {
         Long tableId = 1L;
         OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(500L, 1, null);
 
-        OrderRequestDTO request = new OrderRequestDTO(tableId, null, null, null, List.of(itemRequest));
+        OrderRequestDTO request = new OrderRequestDTO(tableId, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of(itemRequest));
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(new RestaurantTable()));
         when(productRepository.findById(500L)).thenReturn(Optional.empty());
@@ -138,7 +144,8 @@ class OrderServiceTest {
 
         OrderDTO expectedDTO = new OrderDTO(
                 orderId, "#VURG-123", "RECEIVED", "DINE_IN", "COUNTER",
-                "PENDING", new BigDecimal("15.50"), null, null, null, List.of(), null
+                "PENDING", new BigDecimal("15.50"), null, null, null, List.of(), null,
+                null, null, null, null, null
         );
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));

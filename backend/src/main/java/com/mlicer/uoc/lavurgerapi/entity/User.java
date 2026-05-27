@@ -33,6 +33,9 @@ public class User {
     @Column(nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "phone", length = 15)
+    private String phone;
+
     @Column(name = "last_access")
     private LocalDateTime lastAccess;
 

@@ -1,7 +1,6 @@
 package com.mlicer.uoc.lavurgerapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserRequestDTO;
 import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
@@ -60,8 +59,9 @@ public class UserControllerIT {
         UserRequestDTO request = new UserRequestDTO(
                 "New Cashier",
                 "cashier@lavurger.com",
+                null,
                 "SecurePass1!",
-                "CASHIER"
+                Role.CASHIER
         );
 
         mockMvc.perform(post("/api/users")
@@ -79,8 +79,9 @@ public class UserControllerIT {
         UserRequestDTO request = new UserRequestDTO(
                 "Weak User",
                 "weak@lavurger.com",
+                null,
                 "12345",
-                "MANAGER"
+                Role.MANAGER
         );
 
         mockMvc.perform(post("/api/users")
@@ -104,8 +105,9 @@ public class UserControllerIT {
         UserRequestDTO request = new UserRequestDTO(
                 "Updated Name",
                 "initial@lavurger.com",
+                null,
                 "",
-                "MANAGER"
+                Role.MANAGER
         );
 
         mockMvc.perform(put("/api/users/" + savedUserId)
@@ -131,7 +133,7 @@ public class UserControllerIT {
     @Test
     @DisplayName("Should return 404 when updating non-existent user")
     void shouldReturn404ForNonExistentUser() throws Exception {
-        UserRequestDTO request = new UserRequestDTO("Ghost", "ghost@test.com", "Pass123!", "KITCHEN");
+        UserRequestDTO request = new UserRequestDTO("Ghost", "ghost@test.com", null, "Pass123!", Role.KITCHEN);
 
         mockMvc.perform(put("/api/users/9999")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -5,7 +5,6 @@ import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserRequestDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.User;
-import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import com.mlicer.uoc.lavurgerapi.mapper.ProductMapper;
 import com.mlicer.uoc.lavurgerapi.mapper.UserMapper;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
@@ -46,7 +45,8 @@ public class UserService {
         user.setName(dto.name());
         user.setEmail(dto.email());
         user.setPassword(dto.password());
-        user.setRole(Role.valueOf(dto.role().toUpperCase()));
+        user.setRole(dto.role());
+        user.setPhone(dto.phone());
         user.setActive(true);
         return UserMapper.toDTO(userRepository.save(user));
     }
@@ -56,7 +56,8 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
         user.setName(dto.name());
         user.setEmail(dto.email());
-        user.setRole(Role.valueOf(dto.role().toUpperCase()));
+        user.setRole(dto.role());
+        user.setPhone(dto.phone());
         return UserMapper.toDTO(userRepository.save(user));
     }
 

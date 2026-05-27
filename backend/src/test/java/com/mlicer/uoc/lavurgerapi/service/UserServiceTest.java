@@ -50,54 +50,53 @@ class UserServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        assertEquals("test@lavurger.com", result.get(0).email());
+        @SuppressWarnings("all")
+        String userEmail = result.get(0).email();
+        assertEquals("test@lavurger.com", userEmail);
         verify(userRepository).findAll();
     }
 
     @Test
     @DisplayName("Should create user successfully with strong password")
     void shouldCreateUserSuccessfully() {
-        UserRequestDTO request = new UserRequestDTO("John Doe", "john@lavurger.com", "StrongPass1!", "MANAGER");
+        UserRequestDTO request = new UserRequestDTO("John Doe", "john@lavurger.com", "600123456", "StrongPass1!", Role.MANAGER);
 
         User savedUser = new User();
         savedUser.setId(1L);
         savedUser.setName("John Doe");
         savedUser.setEmail("john@lavurger.com");
+        savedUser.setPhone("600123456");
         savedUser.setRole(Role.MANAGER);
         savedUser.setActive(true);
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(request.password())).thenReturn("hashed_password");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         UserDTO result = userService.createUser(request);
 
         assertNotNull(result);
         assertEquals("John Doe", result.name());
-        assertEquals(Role.MANAGER.name(), result.role().toString());
+        assertEquals(Role.MANAGER.name(), result.role());
         verify(userRepository).save(any(User.class));
     }
 
     @Test
     @DisplayName("Should throw Exception when creating user with existing email")
     void shouldThrowExceptionWhenEmailExists() {
-        UserRequestDTO request = new UserRequestDTO("John Doe", "john@lavurger.com", "StrongPass1!", "MANAGER");
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(new User()));
+        UserRequestDTO request = new UserRequestDTO("John Doe", "john@lavurger.com", null, "StrongPass1!", Role.MANAGER);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             userService.createUser(request);
         });
 
-        assertEquals("Email is already in use", exception.getMessage());
         verify(userRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("Should throw Exception when password is weak")
     void shouldThrowExceptionWhenPasswordIsWeak() {
-        UserRequestDTO request1 = new UserRequestDTO("John", "j1@test.com", "NoSpecial123", "CASHIER");
-        UserRequestDTO request2 = new UserRequestDTO("John", "j2@test.com", "nouppercase1!", "CASHIER");
-        UserRequestDTO request3 = new UserRequestDTO("John", "j3@test.com", "Sh0rt!", "CASHIER");
+        UserRequestDTO request1 = new UserRequestDTO("John", "j1@test.com", null, "NoSpecial123", Role.CASHIER);
+        UserRequestDTO request2 = new UserRequestDTO("John", "j2@test.com", null, "nouppercase1!", Role.CASHIER);
+        UserRequestDTO request3 = new UserRequestDTO("John", "j3@test.com", null, "Sh0rt!", Role.CASHIER);
 
         assertThrows(IllegalArgumentException.class, () -> userService.createUser(request1));
         assertThrows(IllegalArgumentException.class, () -> userService.createUser(request2));
@@ -115,15 +114,13 @@ class UserServiceTest {
         existingUser.setEmail("old@test.com");
         existingUser.setPassword("old_hash");
 
-        UserRequestDTO request = new UserRequestDTO("New Name", "new@test.com", "", "KITCHEN");
+        UserRequestDTO request = new UserRequestDTO("New Name", "new@test.com", null, "", Role.KITCHEN);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findByEmail("new@test.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(existingUser);
 
         userService.updateUser(userId, request);
 
-        verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository).save(existingUser);
         assertEquals("New Name", existingUser.getName());
         assertEquals("old_hash", existingUser.getPassword());

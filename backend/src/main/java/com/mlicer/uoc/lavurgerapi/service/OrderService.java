@@ -61,7 +61,6 @@ public class OrderService {
             String currentEmail = authentication.getName();
             userRepository.findByEmail(currentEmail).ifPresent(user -> {
                 order.setCustomer(user);
-                order.setCustomerEmail(user.getEmail());
             });
         }
 
@@ -77,6 +76,10 @@ public class OrderService {
         order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
 
         order.setCustomerComment(orderRequest.customerComment());
+
+        order.setGuestName(orderRequest.guestName());
+        order.setGuestEmail(orderRequest.guestEmail());
+        order.setGuestPhone(orderRequest.guestPhone());
 
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());

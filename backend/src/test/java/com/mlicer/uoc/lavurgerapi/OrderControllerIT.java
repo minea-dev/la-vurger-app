@@ -112,6 +112,9 @@ public class OrderControllerIT {
                 OrderType.DINE_IN,
                 PaymentMethod.COUNTER,
                 "No onions",
+                null,
+                null,
+                null,
                 List.of(mockItem)
         );
 
@@ -132,6 +135,9 @@ public class OrderControllerIT {
                 this.savedTableId,
                 OrderType.DINE_IN,
                 PaymentMethod.COUNTER,
+                null,
+                null,
+                null,
                 null,
                 List.of(mockItem)
         );
@@ -160,6 +166,9 @@ public class OrderControllerIT {
                 OrderType.DINE_IN,
                 PaymentMethod.COUNTER,
                 "Empty Items Test",
+                null,
+                null,
+                null,
                 List.of()
         );
 
@@ -206,6 +215,9 @@ public class OrderControllerIT {
                 this.savedTableId,
                 OrderType.DINE_IN,
                 PaymentMethod.COUNTER,
+                null,
+                null,
+                null,
                 null,
                 List.of(mockItem)
         );
