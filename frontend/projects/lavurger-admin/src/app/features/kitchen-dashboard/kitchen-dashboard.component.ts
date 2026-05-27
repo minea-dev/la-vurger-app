@@ -79,11 +79,14 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   hasCustomerInfo(order: any): boolean {
     return !!(
       order.guestName ||
-      order.guestPhone ||
       order.customerName ||
-      order.customerPhone ||
       order.user?.name ||
-      order.user?.phone
+      order.guestPhone ||
+      order.customerPhone ||
+      order.user?.phone ||
+      order.guestEmail ||
+      order.customerEmail ||
+      order.user?.email
     );
   }
 
@@ -93,6 +96,10 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
 
   getCustomerPhone(order: any): string {
     return order.guestPhone || order.customerPhone || order.user?.phone || 'No especificat';
+  }
+
+  getCustomerEmail(order: any): string {
+    return order.guestEmail || order.customerEmail || order.user?.email || '';
   }
 
   openInfoModal(order: OrderDTO) {

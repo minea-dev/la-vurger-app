@@ -55,7 +55,6 @@ export class MonitorComponent implements OnInit, OnDestroy {
     this.wsSubscription?.unsubscribe();
   }
 
-  // 🚨 EL MÉTODO QUE FALTABA
   setFilter(filter: 'PENDING_PAY' | 'COMPLETED') {
     this.currentFilter = filter;
   }

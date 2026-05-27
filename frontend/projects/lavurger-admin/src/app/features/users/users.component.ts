@@ -29,6 +29,7 @@ export class UsersComponent implements OnInit {
   nameErrorReactive: string | null = null;
   emailErrorReactive: string | null = null;
   passwordErrorReactive: string | null = null;
+  phoneErrorReactive: string | null = null;
 
   selectedUser: Partial<UserDTO & { password?: string }> = {};
 
@@ -109,6 +110,15 @@ export class UsersComponent implements OnInit {
     }
   }
 
+  checkPhone() {
+    const phone = this.selectedUser.phone || '';
+    if (phone.length > 0 && !/^[0-9]{9}$/.test(phone)) {
+      this.phoneErrorReactive = 'El telèfon ha de tenir exactament 9 dígits.';
+    } else {
+      this.phoneErrorReactive = null;
+    }
+  }
+
   checkPassword(isEditMode = false) {
     const pass = this.selectedUser.password || '';
 
@@ -130,11 +140,12 @@ export class UsersComponent implements OnInit {
   }
 
   openAddModal() {
-    this.selectedUser = { role: Role.CASHIER, password: '' };
+    this.selectedUser = { role: Role.CASHIER, password: '', phone: '' };
     this.modalError = '';
     this.nameErrorReactive = null;
     this.emailErrorReactive = null;
     this.passwordErrorReactive = null;
+    this.phoneErrorReactive = null;
     this.isAddModalOpen = true;
     this.cdr.detectChanges();
   }
@@ -147,6 +158,7 @@ export class UsersComponent implements OnInit {
   saveNewUser() {
     this.checkName();
     this.checkEmail();
+    this.checkPhone();
     this.checkPassword(false);
 
     if (
@@ -159,14 +171,15 @@ export class UsersComponent implements OnInit {
       return;
     }
 
-    if (this.nameErrorReactive || this.emailErrorReactive || this.passwordErrorReactive) {
-      this.modalError = 'Revisa els errors abans de continuar.';
+    if (this.nameErrorReactive || this.emailErrorReactive || this.passwordErrorReactive || this.phoneErrorReactive) {
+      this.modalError = 'Revisa els errors del formulari abans de continuar.';
       return;
     }
 
     const request: UserRequestDTO = {
       name: this.selectedUser.name,
       email: this.selectedUser.email,
+      phone: this.selectedUser.phone || '',
       password: this.selectedUser.password,
       role: this.selectedUser.role,
     };
@@ -177,8 +190,13 @@ export class UsersComponent implements OnInit {
         this.loadUsers();
       },
       error: (err) => {
-        this.modalError =
-          err.error?.message || err.message || 'Error intern del servidor. Revisa les dades.';
+        if (err.status === 400) {
+          this.modalError = 'La contrasenya o el format de les dades no compleix els requisits de seguretat.';
+        } else if (err.status === 409) {
+          this.modalError = 'Aquest correu electrònic ja està registrat al sistema.';
+        } else {
+          this.modalError = 'S\'ha produït un error intern al servidor. Intenta-ho de nou.';
+        }
         this.cdr.detectChanges();
       },
     });
@@ -190,6 +208,7 @@ export class UsersComponent implements OnInit {
     this.nameErrorReactive = null;
     this.emailErrorReactive = null;
     this.passwordErrorReactive = null;
+    this.phoneErrorReactive = null;
     this.isEditDrawerOpen = true;
     this.cdr.detectChanges();
   }
@@ -202,6 +221,7 @@ export class UsersComponent implements OnInit {
   updateUser() {
     this.checkName();
     this.checkEmail();
+    this.checkPhone();
     this.checkPassword(true);
 
     if (
@@ -214,14 +234,15 @@ export class UsersComponent implements OnInit {
       return;
     }
 
-    if (this.nameErrorReactive || this.emailErrorReactive || this.passwordErrorReactive) {
-      this.modalError = 'Revisa els errors abans de continuar.';
+    if (this.nameErrorReactive || this.emailErrorReactive || this.passwordErrorReactive || this.phoneErrorReactive) {
+      this.modalError = 'Revisa els errors del formulari abans de continuar.';
       return;
     }
 
     const request: UserRequestDTO = {
       name: this.selectedUser.name,
       email: this.selectedUser.email,
+      phone: this.selectedUser.phone || '',
       password: this.selectedUser.password,
       role: this.selectedUser.role,
     };
@@ -232,7 +253,11 @@ export class UsersComponent implements OnInit {
         this.loadUsers();
       },
       error: (err) => {
-        this.modalError = err.error?.message || err.message || "Error en actualitzar l'usuari.";
+        if (err.status === 400) {
+          this.modalError = 'Les dades introduïdes no són vàlides o no compleixen els requisits.';
+        } else {
+          this.modalError = 'Error en actualitzar l\'usuari del sistema.';
+        }
         this.cdr.detectChanges();
       },
     });

@@ -26,17 +26,27 @@ export class CheckoutComponent implements OnInit {
   guestPhone = signal<string>('');
   showGuestForm = signal<boolean>(false);
 
+  showErrorModal = signal<boolean>(false);
+  errorMessage = signal<string>('');
+
   PaymentMethod = PaymentMethod;
 
   isFormInvalid = computed(() => {
     if (this.authService.isLoggedIn()) return false;
     if (this.cartStore.tableId()) return false;
-    return (
-      !this.showGuestForm() ||
-      !this.guestName().trim() ||
-      !this.guestEmail().trim() ||
-      !this.guestPhone().trim()
-    );
+
+    if (!this.showGuestForm()) return true;
+
+    const name = this.guestName().trim();
+    const email = this.guestEmail().trim();
+    const phone = this.guestPhone().trim();
+
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const phoneValid = /^[0-9]{9}$/.test(phone);
+    const nameValid =
+      name.length >= 3 && name.length <= 50 && /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(name);
+
+    return !nameValid || !emailValid || !phoneValid;
   });
 
   ngOnInit() {
@@ -59,7 +69,7 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
-  submitOrder() {
+  async submitOrder() {
     sessionStorage.setItem('vurger_clear_cart_needed', 'true');
 
     const payload: any = {
@@ -73,7 +83,20 @@ export class CheckoutComponent implements OnInit {
       payload.guestPhone = this.guestPhone().trim();
     }
 
-    this.checkoutStore.sendOrder(payload);
+    try {
+      await this.checkoutStore.sendOrder(payload);
+    } catch (err: any) {
+      console.error('❌ Error enviant la comanda:', err);
+
+      const isBadRequest = err.status === 400;
+      this.errorMessage.set(
+        isBadRequest
+          ? "Les dades de contacte són incorrectes. Revisa'n el format."
+          : 'Hi ha hagut un problema amb el servidor. Siusplau, avisa un cambrer o intenta-ho de nou més tard.',
+      );
+
+      this.showErrorModal.set(true);
+    }
   }
 
   backToMenu() {

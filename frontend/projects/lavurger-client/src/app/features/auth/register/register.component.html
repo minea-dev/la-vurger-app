@@ -48,6 +48,9 @@
             @if (registerForm.controls.name.touched && registerForm.controls.name.errors?.['required']) {
               <span class="text-[11px] text-red-600 mt-1.5 block">El nom és obligatori.</span>
             }
+            @if (registerForm.controls.name.touched && registerForm.controls.name.errors?.['pattern']) {
+              <span class="text-[11px] text-red-600 mt-1.5 block">El nom només pot contenir lletres.</span>
+            }
           </div>
 
           <div>
@@ -69,6 +72,24 @@
           </div>
 
           <div>
+            <label for="phone" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-2">Telèfon mòbil</label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="Ex: 612345678"
+              class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
+              [class.border-red-400]="registerForm.controls.phone.touched && registerForm.controls.phone.invalid"
+            />
+            @if (registerForm.controls.phone.touched && registerForm.controls.phone.errors?.['required']) {
+              <span class="text-[11px] text-red-600 mt-1.5 block">El telèfon és obligatori.</span>
+            }
+            @if (registerForm.controls.phone.touched && registerForm.controls.phone.errors?.['pattern']) {
+              <span class="text-[11px] text-red-600 mt-1.5 block">Introdueix un número vàlid (9 dígits de l'0 al 9).</span>
+            }
+          </div>
+
+          <div>
             <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-2">Contrasenya</label>
             <input
               id="password"
@@ -81,8 +102,8 @@
             @if (registerForm.controls.password.touched && registerForm.controls.password.errors?.['required']) {
               <span class="text-[11px] text-red-600 mt-1.5 block">La contrasenya és obligatòria.</span>
             }
-            @if (registerForm.controls.password.touched && registerForm.controls.password.errors?.['minlength']) {
-              <span class="text-[11px] text-red-600 mt-1.5 block">Ha de tindre com a mínim 6 caràcters.</span>
+            @if (registerForm.controls.password.touched && registerForm.controls.password.errors?.['pattern']) {
+              <span class="text-[11px] text-red-600 mt-1.5 block">Deu tindre almenys 8 caràcters, incloent lletres i números.</span>
             }
           </div>
 

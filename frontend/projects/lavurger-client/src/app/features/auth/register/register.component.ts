@@ -19,9 +19,10 @@ export class RegisterComponent {
   registrationSuccess = false;
 
   registerForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
+    password: ['', [Validators.required, Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)]],
   });
 
   onSubmit(): void {

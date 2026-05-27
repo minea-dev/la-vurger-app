@@ -19,6 +19,9 @@ export interface OrderRequest {
   orderType: string;
   paymentMethod: string;
   customerComment?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
   items: OrderItemRequest[];
 }
 
