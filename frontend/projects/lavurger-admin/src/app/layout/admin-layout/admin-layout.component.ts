@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { UserAvatarComponent } from '../../shared/components/user-avatar/user-avatar.component';
-import { Role } from '@shared'; //
+import { Role } from '@shared';
 
 @Component({
   selector: 'app-admin-layout',
@@ -25,6 +25,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   canSeeKitchen = false;
   canSeeMonitor = false;
   canSeeMenu = false;
+  canSeeCustomers = false; // <-- AÑADIDO
   canSeeUsers = false;
 
   ngOnInit() {
@@ -56,6 +57,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
       this.canSeeKitchen = [Role.ADMIN, Role.MANAGER, Role.KITCHEN].includes(this.userRole);
       this.canSeeMonitor = [Role.ADMIN, Role.MANAGER, Role.CASHIER].includes(this.userRole);
       this.canSeeMenu = [Role.ADMIN, Role.MANAGER].includes(this.userRole);
+      this.canSeeCustomers = [Role.ADMIN, Role.MANAGER].includes(this.userRole);
       this.canSeeUsers = this.userRole === Role.ADMIN;
     }
   }
