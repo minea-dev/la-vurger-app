@@ -116,4 +116,13 @@ public class OrderController {
             @RequestParam(defaultValue = "24") int hours) {
         return ResponseEntity.ok(orderService.getRecentOrdersByStatus(status, hours));
     }
+
+    @Operation(summary = "Get historical orders with optional date range filters")
+    @GetMapping("/history-admin")
+    public ResponseEntity<List<OrderDTO>> getHistoryAdmin(
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(orderService.getHistoryOrders(date, startDate, endDate));
+    }
 }

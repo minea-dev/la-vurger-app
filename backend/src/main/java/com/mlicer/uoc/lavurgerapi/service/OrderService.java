@@ -306,4 +306,29 @@ public class OrderService {
             return List.of();
         }
     }
+
+    public List<OrderDTO> getHistoryOrders(String dateStr, String startDateStr, String endDateStr) {
+        List<Order> orders;
+
+        if (startDateStr != null && !startDateStr.isBlank() && endDateStr != null && !endDateStr.isBlank()) {
+            java.time.LocalDate start = java.time.LocalDate.parse(startDateStr);
+            java.time.LocalDate end = java.time.LocalDate.parse(endDateStr);
+            orders = orderRepository.findByCreatedAtBetweenOrderByIdDesc(
+                    start.atStartOfDay(),
+                    end.atTime(java.time.LocalTime.MAX)
+            );
+        } else if (dateStr != null && !dateStr.isBlank()) {
+            java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+            orders = orderRepository.findByCreatedAtBetweenOrderByIdDesc(
+                    date.atStartOfDay(),
+                    date.atTime(java.time.LocalTime.MAX)
+            );
+        } else {
+            orders = orderRepository.findTop150ByOrderByIdDesc();
+        }
+
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 }

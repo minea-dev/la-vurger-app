@@ -13,4 +13,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStatus(OrderStatus status);
     List<Order> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
     List<Order> findByStatusAndCreatedAtAfterOrderByIdDesc(OrderStatus status, LocalDateTime date);
+    List<Order> findTop150ByOrderByIdDesc();
+    List<Order> findByCreatedAtBetweenOrderByIdDesc(LocalDateTime start, LocalDateTime end);
 }
