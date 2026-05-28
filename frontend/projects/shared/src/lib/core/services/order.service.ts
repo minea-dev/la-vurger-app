@@ -4,6 +4,7 @@ import { OrderDTO, OrderRequest, OrderResponse } from '../../models/dtos/order.d
 import { OrderStatus } from '../../models/enums/order-status.enum';
 import { PaymentStatus } from '../../models/enums/payment-status.enum';
 import { APP_CONFIG } from '@shared/core/config/api.tokens';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -52,5 +53,14 @@ export class OrderService {
       .set('t', new Date().getTime().toString());
 
     return this.http.get<OrderDTO[]>(`${this.apiUrl}/recent`, { params });
+  }
+
+  getHistoryAdmin(date?: string, startDate?: string, endDate?: string): Observable<OrderDTO[]> {
+    let params = new HttpParams();
+    if (date) params = params.set('date', date);
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+
+    return this.http.get<OrderDTO[]>(`${this.apiUrl}/history-admin`, { params });
   }
 }

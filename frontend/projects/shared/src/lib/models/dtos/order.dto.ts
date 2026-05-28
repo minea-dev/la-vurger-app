@@ -65,4 +65,7 @@ export interface OrderDTO {
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
 }
