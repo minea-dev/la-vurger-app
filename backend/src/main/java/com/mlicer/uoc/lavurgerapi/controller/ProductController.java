@@ -12,7 +12,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -96,6 +98,21 @@ public class ProductController {
             @Valid @RequestBody ProductAvailabilityDTO availabilityDTO) {
 
         ProductDTO updatedProduct = productService.toggleAvailability(id, availabilityDTO.isAvailable());
+        return ResponseEntity.ok(updatedProduct);
+    }
+
+    @Operation(summary = "Upload or update a product's image in AWS S3")
+    @PatchMapping(value = "/{id}/image", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ProductDTO> uploadProductImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ProductDTO updatedProduct = productService.updateProductImage(id, file);
         return ResponseEntity.ok(updatedProduct);
     }
 }
