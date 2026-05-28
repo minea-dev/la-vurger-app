@@ -44,4 +44,13 @@ export class OrderService {
   getMyOrders() {
     return this.http.get<OrderDTO[]>(`${this.apiUrl}/my-orders`);
   }
+
+  getRecentOrders(status: OrderStatus, hours: number = 24) {
+    let params = new HttpParams()
+      .set('status', status)
+      .set('hours', hours.toString())
+      .set('t', new Date().getTime().toString());
+
+    return this.http.get<OrderDTO[]>(`${this.apiUrl}/recent`, { params });
+  }
 }

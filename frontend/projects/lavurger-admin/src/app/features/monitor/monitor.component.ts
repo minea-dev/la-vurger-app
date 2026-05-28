@@ -26,6 +26,10 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
   orders: OrderDTO[] = [];
   currentFilter: 'ACTIVE' | 'COMPLETED' = 'ACTIVE';
+
+  isHistoryLoading = false;
+  private historyLoaded = false;
+
   private wsSubscription?: Subscription;
 
   OrderStatus = OrderStatus;
@@ -56,14 +60,32 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   loadHistoryLazy() {
-    this.orderService.getOrders(OrderStatus.COMPLETED).subscribe({
-      next: (completedData) => {
-        const activeOrders = this.orders.filter(o => o.status !== OrderStatus.COMPLETED);
-        this.orders = [...activeOrders, ...completedData];
+    if (this.historyLoaded) return;
+
+    this.isHistoryLoading = true;
+    this.cdr.detectChanges();
+
+    forkJoin({
+      completed: this.orderService.getRecentOrders(OrderStatus.COMPLETED, 24),
+      cancelled: this.orderService.getRecentOrders(OrderStatus.CANCELLED, 24)
+    }).subscribe({
+      next: (res) => {
+        const activeOrders = this.orders.filter(o =>
+          o.status !== OrderStatus.COMPLETED && o.status !== OrderStatus.CANCELLED
+        );
+
+        this.orders = [...activeOrders, ...res.completed, ...res.cancelled];
         this.orders.sort((a, b) => b.id - a.id);
+
+        this.historyLoaded = true;
+        this.isHistoryLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('❌ Error carregant historial passat per caixa:', err)
+      error: (err) => {
+        console.error('❌ Error carregant historial passat:', err);
+        this.isHistoryLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -75,7 +97,6 @@ export class MonitorComponent implements OnInit, OnDestroy {
         const index = this.orders.findIndex((o) => o.id === updatedOrder.id);
 
         const isNewDineIn = !oldOrder && updatedOrder.orderType === 'DINE_IN' && updatedOrder.status === OrderStatus.RECEIVED;
-
         const isTakeawayInBarra = updatedOrder.orderType === 'TAKEAWAY' && updatedOrder.status === OrderStatus.DISPATCHED && (!oldOrder || oldOrder.status !== OrderStatus.DISPATCHED);
 
         if (isNewDineIn || isTakeawayInBarra) {
@@ -121,16 +142,9 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   get completedOrdersHistory() {
-    const now = new Date().getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
     return this.orders.filter((order) => {
-      const orderDate = order.createdAt ? new Date(order.createdAt).getTime() : 0;
-      const isClosedOrCancelled =
-        order.status === OrderStatus.CANCELLED ||
+      return order.status === OrderStatus.CANCELLED ||
         (order.status === OrderStatus.COMPLETED && order.paymentStatus === PaymentStatus.PAID);
-
-      return isClosedOrCancelled && (now - orderDate <= twentyFourHours);
     });
   }
 
@@ -149,6 +163,13 @@ export class MonitorComponent implements OnInit, OnDestroy {
   hasCustomerInfo(order: any): boolean { return !!(order.guestName || order.customerName || order.user?.name || order.guestPhone || order.customerPhone || order.user?.phone); }
   getCustomerName(order: any): string { return order.guestName || order.customerName || order.user?.name || 'Client'; }
   getCustomerPhone(order: any): string { return order.guestPhone || order.customerPhone || order.user?.phone || ''; }
-  setFilter(filter: 'ACTIVE' | 'COMPLETED') { this.currentFilter = filter; if (filter === 'COMPLETED') { this.loadHistoryLazy(); } }
+
+  setFilter(filter: 'ACTIVE' | 'COMPLETED') {
+    this.currentFilter = filter;
+    if (filter === 'COMPLETED') {
+      this.loadHistoryLazy();
+    }
+  }
+
   ngOnDestroy() { this.wsSubscription?.unsubscribe(); }
 }

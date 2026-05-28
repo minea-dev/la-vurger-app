@@ -73,7 +73,15 @@
   </div>
 
   <div *ngIf="currentFilter === 'COMPLETED'" class="flex-1 overflow-y-auto scrollbar-thin p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 align-content-start items-start">
-    <div *ngIf="completedOrdersHistory.length === 0" class="col-span-full py-20 flex flex-col items-center justify-center text-admin-text3">
+
+    @if (isHistoryLoading) {
+      <div class="col-span-full flex justify-center items-center py-12">
+        <div class="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <span class="ml-3 text-slate-500 font-medium text-sm">Carregant historial...</span>
+      </div>
+    }
+
+    <div *ngIf="!isHistoryLoading && completedOrdersHistory.length === 0" class="col-span-full py-20 flex flex-col items-center justify-center text-admin-text3">
       <svg class="w-12 h-12 stroke-admin-border mb-3" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9Z"/><path d="M9 12h6M12 9v6"/></svg>
       <span class="text-sm font-medium">No hi ha comandes arxivades en les últimes 24 hores.</span>
     </div>
