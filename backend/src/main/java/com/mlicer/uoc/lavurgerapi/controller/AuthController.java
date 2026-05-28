@@ -73,6 +73,7 @@ public class AuthController {
         newUser.setName(dto.name());
         newUser.setEmail(dto.email());
         newUser.setPassword(passwordEncoder.encode(dto.password()));
+        newUser.setPhone(dto.phone());
 
         if (dto.role() == null || dto.role().isBlank()) {
             newUser.setRole(Role.CUSTOMER);

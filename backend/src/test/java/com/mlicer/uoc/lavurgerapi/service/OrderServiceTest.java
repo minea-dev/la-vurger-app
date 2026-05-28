@@ -56,7 +56,6 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should create order successfully and return DTO")
     void shouldCreateOrderAndReturnDTO() {
-        // GIVEN
         Long tableId = 1L;
         Long productId = 10L;
 
@@ -84,10 +83,11 @@ class OrderServiceTest {
 
         Order savedOrder = new Order();
 
+        // Añadido un null extra para la columna del customerPhone
         OrderDTO expectedResponse = new OrderDTO(
                 1L, "#VURG-TEST", "RECEIVED", "DINE_IN", "COUNTER",
                 "PENDING", new BigDecimal("21.00"), "Test comment", null, tableId, List.of(), null,
-                "Guest", "guest@test.com", "123456789", null, null, null
+                "Guest", "guest@test.com", "123456789", null, null, null, null
         );
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(mockTable));
@@ -95,10 +95,8 @@ class OrderServiceTest {
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toDTO(savedOrder)).thenReturn(expectedResponse);
 
-        // WHEN
         OrderDTO result = orderService.createOrder(request);
 
-        // THEN
         assertEquals(expectedResponse, result);
 
         verify(tableRepository).findById(tableId);
@@ -110,11 +108,9 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when table does not exist")
     void shouldThrowExceptionWhenTableDoesNotExist() {
-        // GIVEN
         OrderRequestDTO request = new OrderRequestDTO(99L, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of());
         when(tableRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // WHEN & THEN
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(request));
 
         verify(orderRepository, never()).save(any(Order.class));
@@ -123,7 +119,6 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when product does not exist")
     void shouldThrowExceptionWhenProductDoesNotExist() {
-        // GIVEN
         Long tableId = 1L;
         OrderItemRequestDTO itemRequest = new OrderItemRequestDTO(500L, 1, null);
 
@@ -132,7 +127,6 @@ class OrderServiceTest {
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(new RestaurantTable()));
         when(productRepository.findById(500L)).thenReturn(Optional.empty());
 
-        // WHEN & THEN
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(request));
 
         verify(orderRepository, never()).save(any(Order.class));
@@ -141,24 +135,22 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should return order by ID successfully")
     void shouldReturnOrderByIdSuccessfully() {
-        // GIVEN
         Long orderId = 1L;
         Order mockOrder = new Order();
         mockOrder.setId(orderId);
 
+        // Añadido un null extra para la columna del customerPhone
         OrderDTO expectedDTO = new OrderDTO(
                 orderId, "#VURG-123", "RECEIVED", "DINE_IN", "COUNTER",
                 "PENDING", new BigDecimal("15.50"), null, null, null, List.of(), null,
-                null, null, null, null, null, null
+                null, null, null, null, null, null, null
         );
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
         when(orderMapper.toDTO(mockOrder)).thenReturn(expectedDTO);
 
-        // WHEN
         OrderDTO result = orderService.getOrderById(orderId);
 
-        // THEN
         assertNotNull(result);
         assertEquals(expectedDTO, result);
         verify(orderRepository).findById(orderId);
@@ -168,11 +160,9 @@ class OrderServiceTest {
     @Test
     @DisplayName("Should throw ResourceNotFoundException when order does not exist")
     void shouldThrowExceptionWhenOrderDoesNotExist() {
-        // GIVEN
         Long orderId = 99L;
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        // WHEN & THEN
         assertThrows(ResourceNotFoundException.class, () -> orderService.getOrderById(orderId));
 
         verify(orderRepository).findById(orderId);

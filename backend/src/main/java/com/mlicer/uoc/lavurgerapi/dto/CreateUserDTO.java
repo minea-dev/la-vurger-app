@@ -4,5 +4,6 @@ public record CreateUserDTO(
         String name,
         String email,
         String password,
-        String role // ADMIN, KITCHEN, MANAGER, CASHIER, CUSTOMER
+        String role, // ADMIN, KITCHEN, MANAGER, CASHIER, CUSTOMER
+        String phone
 ) {}

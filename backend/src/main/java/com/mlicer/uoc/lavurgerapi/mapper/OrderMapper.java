@@ -34,11 +34,13 @@ public class OrderMapper {
         Long customerId = null;
         String customerName = null;
         String customerEmail = null;
+        String customerPhone = null;
 
         if (entity.getCustomer() != null) {
             customerId = entity.getCustomer().getId();
             customerName = entity.getCustomer().getName();
             customerEmail = entity.getCustomer().getEmail();
+            customerPhone = entity.getCustomer().getPhone();
         }
 
         Long tableId = (entity.getRestaurantTable() != null) ? entity.getRestaurantTable().getId() : null;
@@ -74,6 +76,7 @@ public class OrderMapper {
 
                 customerName,
                 customerEmail,
+                customerPhone,
 
                 entity.getEstimatedTime()
         );
