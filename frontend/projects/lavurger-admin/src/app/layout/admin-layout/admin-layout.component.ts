@@ -25,7 +25,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   canSeeKitchen = false;
   canSeeMonitor = false;
   canSeeMenu = false;
-  canSeeCustomers = false; // <-- AÑADIDO
+  canSeeCustomers = false;
   canSeeUsers = false;
 
   ngOnInit() {
