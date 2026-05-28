@@ -56,11 +56,13 @@ export interface OrderDTO {
   paymentStatus: PaymentStatus;
   totalAmount: number;
   transactionId?: string;
-  customerEmail?: string;
   customerComment?: string;
   createdAt: string;
   updatedAt: string;
   items: OrderItemDTO[];
   tableId?: number | null;
   estimatedTime?: number;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
 }

@@ -29,7 +29,7 @@ export * from './lib/core/store/cart.store';
 export * from './lib/core/interceptors/auth.interceptor';
 
 // --- MODELS ---
-export * from './lib/models/auth.model';
+export * from '@shared/models/dtos/auth.dto';
 
 // DTOs
 export * from './lib/models/dtos/order.dto';
