@@ -13,6 +13,7 @@ import com.mlicer.uoc.lavurgerapi.mapper.OrderMapper;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
+import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,9 @@ class OrderServiceTest {
 
     @Mock
     private SimpMessagingTemplate messagingTemplate;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -83,7 +87,7 @@ class OrderServiceTest {
         OrderDTO expectedResponse = new OrderDTO(
                 1L, "#VURG-TEST", "RECEIVED", "DINE_IN", "COUNTER",
                 "PENDING", new BigDecimal("21.00"), "Test comment", null, tableId, List.of(), null,
-                "Guest", "guest@test.com", "123456789", null, null
+                "Guest", "guest@test.com", "123456789", null, null, null
         );
 
         when(tableRepository.findById(tableId)).thenReturn(Optional.of(mockTable));
@@ -145,7 +149,7 @@ class OrderServiceTest {
         OrderDTO expectedDTO = new OrderDTO(
                 orderId, "#VURG-123", "RECEIVED", "DINE_IN", "COUNTER",
                 "PENDING", new BigDecimal("15.50"), null, null, null, List.of(), null,
-                null, null, null, null, null
+                null, null, null, null, null, null
         );
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));

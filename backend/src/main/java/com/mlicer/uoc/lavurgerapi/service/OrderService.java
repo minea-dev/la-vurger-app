@@ -76,7 +76,6 @@ public class OrderService {
         order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
 
         order.setCustomerComment(orderRequest.customerComment());
-
         order.setGuestName(orderRequest.guestName());
         order.setGuestEmail(orderRequest.guestEmail());
         order.setGuestPhone(orderRequest.guestPhone());
@@ -84,6 +83,7 @@ public class OrderService {
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
+
         if (order.getPaymentMethod() == PaymentMethod.APP) {
             order.setPaymentStatus(PaymentStatus.PAID);
         } else {
@@ -106,7 +106,6 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.quantity());
-
             orderItem.setNotes(itemReq.notes());
 
             BigDecimal itemPrice = product.getPrice();
@@ -122,6 +121,8 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
         OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", orderDTO);
@@ -141,13 +142,18 @@ public class OrderService {
         } else {
             orders = orderRepository.findAll();
         }
-        return orders.stream().map(orderMapper::toDTO).collect(Collectors.toList());
+
+        return orders.stream().map(order -> {
+            injectEstimatedTime(order);
+            return orderMapper.toDTO(order);
+        }).collect(Collectors.toList());
     }
 
     public OrderDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
+        injectEstimatedTime(order);
         return orderMapper.toDTO(order);
     }
 
@@ -172,6 +178,8 @@ public class OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
         OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
@@ -203,6 +211,8 @@ public class OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
         OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
@@ -216,7 +226,72 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return orderRepository.findByCustomerIdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(orderMapper::toDTO)
+                .map(order -> {
+                    injectEstimatedTime(order);
+                    return orderMapper.toDTO(order);
+                })
                 .collect(Collectors.toList());
+    }
+
+    // ==========================================
+    // BUSINESS LOGIC: ETA CALCULATION (Times)
+    // ==========================================
+
+    private void injectEstimatedTime(Order order) {
+        if (order.getOrderType() == OrderType.TAKEAWAY &&
+                (order.getStatus() == OrderStatus.RECEIVED || order.getStatus() == OrderStatus.PREPARING)) {
+            order.setEstimatedTime(calculateEstimatedTimeInMinutes(order));
+        }
+    }
+
+    public int calculateEstimatedTimeInMinutes(Order order) {
+        double eta = 3.0;
+        double orderTime = 0.0;
+
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getProduct() != null && item.getProduct().getCategory() != null) {
+                    orderTime += getCategoryPrepTime(item.getProduct().getCategory()) * item.getQuantity();
+                }
+            }
+        }
+        eta += orderTime;
+
+        List<Order> activeOrders = new ArrayList<>();
+        activeOrders.addAll(orderRepository.findByStatus(OrderStatus.RECEIVED));
+        activeOrders.addAll(orderRepository.findByStatus(OrderStatus.PREPARING));
+
+        double queueTime = 0.0;
+        for (Order activeOrder : activeOrders) {
+            if (order.getId() == null || !activeOrder.getId().equals(order.getId())) {
+                if (activeOrder.getItems() != null) {
+                    for (OrderItem item : activeOrder.getItems()) {
+                        if (item.getProduct() != null && item.getProduct().getCategory() != null) {
+                            queueTime += getCategoryPrepTime(item.getProduct().getCategory()) * item.getQuantity();
+                        }
+                    }
+                }
+            }
+        }
+
+        eta += (queueTime * 0.5);
+
+        if (order.getOrderType() == OrderType.TAKEAWAY) {
+            eta += 8.0;
+        }
+
+        return (int) Math.ceil(eta);
+    }
+
+    private double getCategoryPrepTime(String category) {
+        if (category == null) return 1.5;
+
+        return switch (category.toUpperCase().trim()) {
+            case "BURGERS", "BURRITOS" -> 3.0;
+            case "SIDES" -> 1.5;
+            case "DESSERTS" -> 1.0;
+            case "DRINKS" -> 0.5;
+            default -> 1.5;
+        };
     }
 }

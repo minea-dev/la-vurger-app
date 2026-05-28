@@ -73,6 +73,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
+    @Transient
+    private Integer estimatedTime;
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();

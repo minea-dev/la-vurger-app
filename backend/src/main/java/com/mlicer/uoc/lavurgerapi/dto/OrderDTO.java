@@ -34,5 +34,6 @@ public record OrderDTO(
         String guestEmail,
         String guestPhone,
         String customerName,
-        String customerEmail
+        String customerEmail,
+        Integer estimatedTime
 ) {}
