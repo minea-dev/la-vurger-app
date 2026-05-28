@@ -108,4 +108,12 @@ public class OrderController {
         OrderDTO order = orderService.getOrderById(id);
         return ResponseEntity.ok(order);
     }
+
+    @Operation(summary = "Get recent orders", description = "Retrieves a list of orders filtered by status from the last X hours.")
+    @GetMapping("/recent")
+    public ResponseEntity<List<OrderDTO>> getRecentOrders(
+            @RequestParam String status,
+            @RequestParam(defaultValue = "24") int hours) {
+        return ResponseEntity.ok(orderService.getRecentOrdersByStatus(status, hours));
+    }
 }

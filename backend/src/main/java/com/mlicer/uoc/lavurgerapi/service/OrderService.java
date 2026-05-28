@@ -233,10 +233,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // ==========================================
-    // BUSINESS LOGIC: ETA CALCULATION (Times)
-    // ==========================================
-
     private void injectEstimatedTime(Order order) {
         if (order.getOrderType() == OrderType.TAKEAWAY &&
                 (order.getStatus() == OrderStatus.RECEIVED || order.getStatus() == OrderStatus.PREPARING)) {
@@ -293,5 +289,21 @@ public class OrderService {
             case "DRINKS" -> 0.5;
             default -> 1.5;
         };
+    }
+
+    public List<OrderDTO> getRecentOrdersByStatus(String status, int hours) {
+        try {
+            OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase().trim());
+            LocalDateTime thresholdDate = LocalDateTime.now().minusHours(hours);
+
+            return orderRepository.findByStatusAndCreatedAtAfterOrderByIdDesc(orderStatus, thresholdDate)
+                    .stream()
+                    .map(order -> {
+                        injectEstimatedTime(order);
+                        return orderMapper.toDTO(order);
+                    }).collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            return List.of();
+        }
     }
 }
