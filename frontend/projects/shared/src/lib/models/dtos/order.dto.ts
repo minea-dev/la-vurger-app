@@ -62,4 +62,5 @@ export interface OrderDTO {
   updatedAt: string;
   items: OrderItemDTO[];
   tableId?: number | null;
+  estimatedTime?: number;
 }

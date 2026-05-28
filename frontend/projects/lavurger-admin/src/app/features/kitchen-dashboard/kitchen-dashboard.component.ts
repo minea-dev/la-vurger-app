@@ -29,6 +29,7 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
 
   orders: OrderDTO[] = [];
   private wsSubscription?: Subscription;
+  private timerInterval?: any;
   OrderStatus = OrderStatus;
 
   selectedOrderForModal: OrderDTO | null = null;
@@ -50,6 +51,16 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadInitialOrders();
     this.connectToWebSockets();
+
+    this.timerInterval = setInterval(() => {
+      this.orders = this.orders.map(o => {
+        if (o.orderType === 'TAKEAWAY' && o.estimatedTime != null && o.estimatedTime > 0) {
+          return { ...o, estimatedTime: o.estimatedTime - 1 };
+        }
+        return o;
+      });
+      this.cdr.detectChanges();
+    }, 60000);
   }
 
   loadInitialOrders() {
@@ -78,6 +89,10 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     const index = this.orders.findIndex((o) => o.id === newOrder.id);
 
     if (index > -1) {
+      if (this.orders[index].estimatedTime != null) {
+        newOrder.estimatedTime = this.orders[index].estimatedTime;
+      }
+
       if (
         newOrder.status === OrderStatus.DISPATCHED ||
         newOrder.status === OrderStatus.COMPLETED ||
@@ -92,7 +107,6 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     } else {
       if (newOrder.status === OrderStatus.RECEIVED) {
         this.playAlert();
-
         this.recentlyAddedOrderIds.add(newOrder.id);
         setTimeout(() => {
           this.recentlyAddedOrderIds.delete(newOrder.id);
@@ -156,5 +170,8 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   returnOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.PREPARING).subscribe(); }
   cancelOrder(id: number) { this.orderService.updateOrderStatus(id, OrderStatus.CANCELLED).subscribe(); }
 
-  ngOnDestroy() { this.wsSubscription?.unsubscribe(); }
+  ngOnDestroy() {
+    this.wsSubscription?.unsubscribe();
+    if (this.timerInterval) clearInterval(this.timerInterval);
+  }
 }

@@ -26,8 +26,17 @@
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium">
-                {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
+
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-red-600 bg-red-50 border-red-200': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
@@ -86,8 +95,17 @@
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium">
-                {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
+
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-red-600 bg-red-50 border-red-200': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
@@ -145,8 +163,17 @@
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium">
-                {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
+
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-red-600 bg-red-50 border-red-200': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
