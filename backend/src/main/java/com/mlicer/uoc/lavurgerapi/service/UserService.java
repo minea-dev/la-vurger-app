@@ -5,6 +5,7 @@ import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserRequestDTO;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.User;
+import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
 import com.mlicer.uoc.lavurgerapi.mapper.ProductMapper;
 import com.mlicer.uoc.lavurgerapi.mapper.UserMapper;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
@@ -27,9 +28,14 @@ public class UserService {
     @Autowired
     private ProductMapper productMapper;
 
-
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserDTO> getUsersByRole(Role role) {
+        return userRepository.findByRole(role).stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -54,10 +60,13 @@ public class UserService {
     public UserDTO updateUser(Long id, UserRequestDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
+
         user.setName(dto.name());
-        user.setEmail(dto.email());
-        user.setRole(dto.role());
         user.setPhone(dto.phone());
+        if (dto.role() != null) {
+            user.setRole(dto.role());
+        }
+
         return UserMapper.toDTO(userRepository.save(user));
     }
 
