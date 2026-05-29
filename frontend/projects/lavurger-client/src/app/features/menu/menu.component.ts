@@ -247,4 +247,9 @@ export class MenuComponent implements OnInit {
     this.cartStore.addToCart(product);
     this.closeProductDetail();
   }
+
+  get isRestaurantOpen(): boolean {
+    const currentHour = new Date().getHours();
+    return currentHour >= 11 && currentHour < 23;
+  }
 }
