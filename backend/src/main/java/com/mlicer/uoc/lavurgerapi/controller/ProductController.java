@@ -71,6 +71,7 @@ public class ProductController {
                 id,
                 productDTO.name(),
                 productDTO.description(),
+                productDTO.longDescription(),
                 productDTO.price(),
                 productDTO.category(),
                 productDTO.imageUrl(),

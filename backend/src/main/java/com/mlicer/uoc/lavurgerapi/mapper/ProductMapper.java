@@ -16,6 +16,7 @@ public class ProductMapper {
                 entity.getId(),
                 entity.getName(),
                 entity.getDescription(),
+                entity.getLongDescription(),
                 entity.getPrice(),
                 entity.getCategory(),
                 entity.getImageUrl(),
@@ -32,6 +33,7 @@ public class ProductMapper {
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setDescription(dto.description());
+        entity.setLongDescription(dto.longDescription());
         entity.setPrice(dto.price());
         entity.setCategory(dto.category());
         entity.setImageUrl(dto.imageUrl());

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +37,7 @@ class ProductServiceTest {
     void shouldReturnAllProducts() {
         // GIVEN
         Product mockProduct = new Product();
-        ProductDTO mockDTO = new ProductDTO(1L, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        ProductDTO mockDTO = new ProductDTO(1L, "Burger", "Desc", "Long Desc", new BigDecimal("10.0"), "MAIN", "", true);
 
         when(productRepository.findAll()).thenReturn(List.of(mockProduct));
         when(productMapper.toDTO(mockProduct)).thenReturn(mockDTO);
@@ -57,7 +58,7 @@ class ProductServiceTest {
         // GIVEN
         Long productId = 1L;
         Product mockProduct = new Product();
-        ProductDTO mockDTO = new ProductDTO(productId, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        ProductDTO mockDTO = new ProductDTO(productId, "Burger", "Desc", "Long Desc", new BigDecimal("10.0"), "MAIN", "", true);
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
         when(productMapper.toDTO(mockProduct)).thenReturn(mockDTO);
@@ -75,10 +76,10 @@ class ProductServiceTest {
     @DisplayName("Should save and return a new product")
     void shouldSaveProduct() {
         // GIVEN
-        ProductDTO inputDTO = new ProductDTO(null, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        ProductDTO inputDTO = new ProductDTO(null, "Burger", "Desc", "Long Desc", new BigDecimal("10.0"), "MAIN", "", true);
         Product mockEntity = new Product();
         Product savedEntity = new Product();
-        ProductDTO expectedDTO = new ProductDTO(1L, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        ProductDTO expectedDTO = new ProductDTO(1L, "Burger", "Desc", "Long Desc", new BigDecimal("10.0"), "MAIN", "", true);
 
         when(productMapper.toEntity(inputDTO)).thenReturn(mockEntity);
         when(productRepository.save(mockEntity)).thenReturn(savedEntity);
@@ -115,7 +116,7 @@ class ProductServiceTest {
         Product savedProduct = new Product();
         savedProduct.setAvailable(true);
 
-        ProductDTO expectedDTO = new ProductDTO(productId, "Burger", "Desc", new BigDecimal("10.0"), "MAIN", "", true);
+        ProductDTO expectedDTO = new ProductDTO(productId, "Burger", "Desc", "Long Desc", new BigDecimal("10.0"), "MAIN", "", true);
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(mockProduct));
         when(productRepository.save(mockProduct)).thenReturn(savedProduct);

@@ -22,6 +22,7 @@ export class MenuComponent implements OnInit {
   showLogoutModal = signal(false);
   showLoginToast = signal(false);
   showLogoutToast = signal(false);
+  selectedDetailProduct = signal<any | null>(null);
 
   private isCartInitialized = signal(false);
 
@@ -235,5 +236,21 @@ export class MenuComponent implements OnInit {
   toggleFavorite(event: Event, productId: number) {
     event.stopPropagation();
     this.menuStore.toggleFavorite(productId);
+  }
+
+  openProductDetail(product: any, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.selectedDetailProduct.set(product);
+  }
+
+  closeProductDetail() {
+    this.selectedDetailProduct.set(null);
+  }
+
+  addToCartFromDetail(product: any) {
+    this.cartStore.addToCart(product);
+    this.closeProductDetail();
   }
 }

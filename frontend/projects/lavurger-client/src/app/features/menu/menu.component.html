@@ -86,7 +86,8 @@
                (click)="cartStore.addToCart(product)">
 
             <div class="flex items-center gap-4 min-w-0 flex-1">
-              <div class="w-20 h-20 rounded-2xl bg-vurger-surface border-2 border-vurger-border shrink-0 flex items-center justify-center overflow-hidden">
+              <div class="w-20 h-20 rounded-2xl bg-vurger-surface border-2 border-vurger-border shrink-0 flex items-center justify-center overflow-hidden cursor-pointer"
+                   (click)="openProductDetail(product, $event)">
                 @if (product.imageUrl) {
                   <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-cover">
                 } @else {
@@ -130,10 +131,12 @@
         }
 
         @else {
-          <div class="flex items-center justify-between gap-4 p-4 bg-vurger-pale md:rounded-2xl transition-colors">
+          <div class="flex items-center justify-between gap-4 p-4 bg-vurger-pale md:rounded-2xl transition-colors cursor-pointer"
+               (click)="cartStore.addToCart(product)">
 
             <div class="flex items-center gap-4 min-w-0 flex-1">
-              <div class="w-20 h-20 rounded-2xl bg-vurger-surface border-2 border-vurger-muted shrink-0 flex items-center justify-center overflow-hidden">
+              <div class="w-20 h-20 rounded-2xl bg-vurger-surface border-2 border-vurger-muted shrink-0 flex items-center justify-center overflow-hidden cursor-pointer"
+                   (click)="openProductDetail(product, $event)">
                 @if (product.imageUrl) {
                   <img [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-cover">
                 } @else {
@@ -152,7 +155,7 @@
               </div>
             </div>
 
-            <div class="flex flex-col items-center gap-3 shrink-0">
+            <div class="flex flex-col items-center gap-3 shrink-0" (click)="$event.stopPropagation()">
               @if (isLoggedIn) {
                 <button
                   (click)="toggleFavorite($event, product.id)"
@@ -330,5 +333,63 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+@if (selectedDetailProduct()) {
+  <div class="fixed inset-0 z-40 bg-vurger-dark/40 backdrop-blur-[1px] transition-opacity" (click)="closeProductDetail()"></div>
+
+  <div class="fixed bottom-0 left-0 right-0 z-50 bg-vurger-bg rounded-t-[28px] overflow-hidden max-h-[85vh] flex flex-col shadow-[0_-8px_32px_rgba(26,40,32,0.18)] animate-slide-up">
+
+    <div class="w-10 h-1.5 bg-vurger-border rounded-full mx-auto my-3.5 shrink-0"></div>
+
+    <div class="flex-1 overflow-y-auto pb-28">
+      <div class="max-w-md mx-auto w-full px-5">
+
+        <div class="w-full h-52 bg-vurger-surface rounded-2xl border-2 border-vurger-border overflow-hidden mb-4 relative shadow-inner">
+          @if (selectedDetailProduct().imageUrl) {
+            <img [src]="selectedDetailProduct().imageUrl" [alt]="selectedDetailProduct().name" class="w-full h-full object-cover">
+          } @else {
+            <div class="w-full h-full flex items-center justify-center text-4xl bg-vurger-pale opacity-50">🍔</div>
+          }
+          <button (click)="closeProductDetail()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-vurger-dark/60 text-white flex items-center justify-center backdrop-blur-sm active:scale-90 transition-all">
+            <svg class="w-4 h-4 stroke-current fill-none" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="mb-5">
+          <h3 class="font-serif text-2xl font-black text-vurger-dark tracking-tight leading-tight mb-1.5">
+            {{ selectedDetailProduct().name }}
+          </h3>
+          <p class="text-[13px] text-vurger-muted leading-relaxed font-medium mb-4">
+            {{ selectedDetailProduct().description }}
+          </p>
+
+          @if (selectedDetailProduct().longDescription) {
+            <div class="p-4 bg-vurger-surface/50 border border-vurger-border rounded-xl">
+              <h4 class="text-[11px] font-bold text-vurger-dark uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 stroke-vurger-primary fill-none" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Ingredients principals
+              </h4>
+              <p class="text-[13px] text-vurger-muted leading-relaxed whitespace-pre-wrap">
+                {{ selectedDetailProduct().longDescription }}
+              </p>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-vurger-border bg-vurger-bg/95 backdrop-blur-md shrink-0">
+      <div class="max-w-md mx-auto">
+        <button (click)="addToCartFromDetail(selectedDetailProduct())"
+                class="w-full h-12 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg font-serif text-[15px] font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-between px-5">
+          <span>Afegir a la comanda</span>
+          <span>{{ selectedDetailProduct().price | currency:'EUR' }}</span>
+        </button>
+      </div>
+    </div>
+
   </div>
 }

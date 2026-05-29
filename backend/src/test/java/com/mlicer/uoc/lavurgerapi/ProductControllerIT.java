@@ -48,7 +48,7 @@ public class ProductControllerIT {
     void shouldCreateProduct() throws Exception {
         // GIVEN: Valid product
         ProductDTO validProduct = new ProductDTO(
-                null, "Cheese Burger", "Classic burger",
+                null, "Cheese Burger", "Classic burger", "Long desc with ingredients",
                 new BigDecimal("12.50"), "BURGERS", "url_image", true
         );
 
@@ -66,7 +66,7 @@ public class ProductControllerIT {
     void shouldReturn400WhenNameIsBlank() throws Exception {
         // GIVEN: Empty name
         ProductDTO invalidProduct = new ProductDTO(
-                null, "", "Description",
+                null, "", "Description", "Long Desc",
                 new BigDecimal("10.00"), "BURGERS", "url", true
         );
 
@@ -82,7 +82,7 @@ public class ProductControllerIT {
     void shouldReturn400WhenPriceIsInvalid() throws Exception {
         // GIVEN: Negative price
         ProductDTO cheapProduct = new ProductDTO(
-                null, "Cheap Burger", "Error",
+                null, "Cheap Burger", "Error", null,
                 new BigDecimal("-1.00"), "BURGERS", "url", true
         );
 

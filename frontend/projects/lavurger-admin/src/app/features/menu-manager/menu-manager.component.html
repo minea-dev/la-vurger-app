@@ -132,8 +132,20 @@
           </div>
         </div>
 
-        <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">Descripció</label>
-          <textarea [(ngModel)]="selectedProduct.description" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="3"></textarea>
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <label class="block text-[12px] font-semibold text-admin-text2">Descripció curta (Targeta)</label>
+            <span class="text-[10px] text-admin-text3">{{ selectedProduct.description?.length || 0 }}/150</span>
+          </div>
+          <textarea [(ngModel)]="selectedProduct.description" maxlength="150" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="2" placeholder="Descripció breu per a la llista..."></textarea>
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <label class="block text-[12px] font-semibold text-admin-text2">Ingredients i detalls (Només al fer clic)</label>
+            <span class="text-[10px] text-admin-text3">{{ selectedProduct.longDescription?.length || 0 }}/1000</span>
+          </div>
+          <textarea [(ngModel)]="selectedProduct.longDescription" maxlength="1000" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="3" placeholder="Ex: Proteïna de soja, jalapeños, formatge vegà fos..."></textarea>
         </div>
       </div>
       <div class="px-5 py-3.5 border-t border-admin-border flex justify-end gap-2 bg-admin-bg shrink-0">
@@ -198,8 +210,20 @@
         </div>
       </div>
 
-      <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">Descripció</label>
-        <textarea [(ngModel)]="selectedProduct.description" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="3"></textarea>
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="block text-[12px] font-semibold text-admin-text2">Descripció curta (Targeta)</label>
+          <span class="text-[10px] text-admin-text3">{{ selectedProduct.description?.length || 0 }}/150</span>
+        </div>
+        <textarea [(ngModel)]="selectedProduct.description" maxlength="150" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="2" placeholder="Descripció breu per a la llista..."></textarea>
+      </div>
+
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="block text-[12px] font-semibold text-admin-text2">Ingredients i detalls (Només al fer clic)</label>
+          <span class="text-[10px] text-admin-text3">{{ selectedProduct.longDescription?.length || 0 }}/1000</span>
+        </div>
+        <textarea [(ngModel)]="selectedProduct.longDescription" maxlength="1000" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="3" placeholder="Ex: Proteïna de soja, jalapeños, formatge vegà fos..."></textarea>
       </div>
     </div>
     <div class="p-3 border-t border-admin-border flex gap-2 bg-admin-bg shrink-0">
