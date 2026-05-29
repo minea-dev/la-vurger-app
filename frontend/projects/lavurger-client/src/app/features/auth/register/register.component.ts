@@ -33,8 +33,7 @@ export class RegisterComponent {
 
     this.authService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/menu';
-        this.router.navigate([returnUrl], { queryParamsHandling: 'preserve' });
+        this.router.navigate(['/login'], { queryParamsHandling: 'preserve' });
       },
       error: (err) => {
         if (err.status === 409) {
