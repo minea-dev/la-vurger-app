@@ -19,7 +19,7 @@ export class RegisterComponent {
   registrationSuccess = false;
 
   registerForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/)]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
     password: ['', [Validators.required, Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/)]],
@@ -44,5 +44,9 @@ export class RegisterComponent {
         }
       },
     });
+  }
+
+  backToMenu(): void {
+    this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
   }
 }

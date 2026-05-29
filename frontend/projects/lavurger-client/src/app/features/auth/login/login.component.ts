@@ -38,4 +38,8 @@ export class LoginComponent {
       },
     });
   }
+
+  backToMenu(): void {
+    this.router.navigate(['/menu'], { queryParamsHandling: 'preserve' });
+  }
 }
