@@ -117,13 +117,18 @@ export class MenuComponent implements OnInit {
   }
 
   private loadPersistedCart() {
-    this.isCartInitialized.set(false);
+    if (this.cartStore.cart().length > 0) {
+      if (this.isLoggedIn) {
+        localStorage.removeItem('vurger_cart_guest');
+      }
+      this.isCartInitialized.set(true);
+      return;
+    }
 
+    this.isCartInitialized.set(false);
     const email = this.userEmail;
-    const currentGuestItems = [...this.cartStore.cart()];
 
     this.cartStore.clearCart();
-
     let savedCart: string | null = null;
 
     if (this.isLoggedIn && email) {
@@ -141,17 +146,6 @@ export class MenuComponent implements OnInit {
           }
         }
       }
-    }
-
-    if (this.isLoggedIn && email && currentGuestItems.length > 0) {
-      for (const item of currentGuestItems) {
-        if (item.product) {
-          for (let i = 0; i < item.quantity; i++) {
-            this.cartStore.addToCart(item.product);
-          }
-        }
-      }
-      localStorage.removeItem('vurger_cart_guest');
     }
 
     this.isCartInitialized.set(true);
