@@ -16,4 +16,5 @@ export interface AuthResponseDTO {
   email: string;
   role: string;
   name: string;
+  phone: string;
 }

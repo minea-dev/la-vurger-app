@@ -22,31 +22,41 @@ export class CheckoutComponent implements OnInit {
   customerComment = signal<string>('');
 
   guestName = signal<string>('');
-  guestEmail = signal<string>('');
   guestPhone = signal<string>('');
   showGuestForm = signal<boolean>(false);
+
+  guestNameTouched = signal<boolean>(false);
+  guestPhoneTouched = signal<boolean>(false);
 
   showErrorModal = signal<boolean>(false);
   errorMessage = signal<string>('');
 
   PaymentMethod = PaymentMethod;
 
+  isGuestNameInvalid = computed(() => {
+    const name = this.guestName().trim();
+    if (name.length === 0) return false;
+    return name.length < 3 || name.length > 50 || !/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(name);
+  });
+
+  isGuestPhoneInvalid = computed(() => {
+    const phone = this.guestPhone().trim();
+    if (phone.length === 0) return false;
+    return !/^[0-9]{9}$/.test(phone);
+  });
+
   isFormInvalid = computed(() => {
     if (this.authService.isLoggedIn()) return false;
     if (this.cartStore.tableId()) return false;
-
     if (!this.showGuestForm()) return true;
 
     const name = this.guestName().trim();
-    const email = this.guestEmail().trim();
     const phone = this.guestPhone().trim();
 
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const nameValid = name.length >= 3 && name.length <= 50 && /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(name);
     const phoneValid = /^[0-9]{9}$/.test(phone);
-    const nameValid =
-      name.length >= 3 && name.length <= 50 && /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/.test(name);
 
-    return !nameValid || !emailValid || !phoneValid;
+    return !nameValid || !phoneValid;
   });
 
   ngOnInit() {
@@ -79,8 +89,8 @@ export class CheckoutComponent implements OnInit {
 
     if (!this.authService.isLoggedIn() && !this.cartStore.tableId()) {
       payload.guestName = this.guestName().trim();
-      payload.guestEmail = this.guestEmail().trim();
       payload.guestPhone = this.guestPhone().trim();
+      payload.guestEmail = 'convidat@lavurger.com';
     }
 
     try {
@@ -97,6 +107,14 @@ export class CheckoutComponent implements OnInit {
 
       this.showErrorModal.set(true);
     }
+  }
+
+  get userName(): string {
+    return this.authService.getCurrentName() || 'Client';
+  }
+
+  get userPhone(): string {
+    return this.authService.getCurrentPhone() || 'No informat';
   }
 
   backToMenu() {

@@ -55,7 +55,8 @@ public class AuthController {
             userRepository.save(user);
 
             String token = jwtUtils.generateToken(user.getEmail());
-            return ResponseEntity.ok(new AuthResponseDTO(token, user.getEmail(), user.getRole().name(), user.getName()));
+
+            return ResponseEntity.ok(new AuthResponseDTO(token, user.getEmail(), user.getRole().name(), user.getName(), user.getPhone()));
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

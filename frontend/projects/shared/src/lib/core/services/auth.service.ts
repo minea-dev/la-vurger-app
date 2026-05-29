@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { APP_CONFIG, AuthRequestDTO, AuthResponseDTO, CreateUserDTO } from '@shared';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -12,11 +11,12 @@ export class AuthService {
   private http = inject(HttpClient);
   private config = inject(APP_CONFIG);
   private apiUrl = `${this.config.apiUrl}/auth`;
-  private readonly NAME_KEY = 'auth_name';
 
+  private readonly NAME_KEY = 'auth_name';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly ROLE_KEY = 'auth_role';
   private readonly EMAIL_KEY = 'auth_email';
+  private readonly PHONE_KEY = 'auth_phone';
 
   login(credentials: AuthRequestDTO): Observable<AuthResponseDTO> {
     return this.http.post<AuthResponseDTO>(`${this.apiUrl}/login`, credentials).pipe(
@@ -26,6 +26,9 @@ export class AuthService {
           localStorage.setItem(this.ROLE_KEY, response.role);
           localStorage.setItem(this.EMAIL_KEY, response.email);
           localStorage.setItem(this.NAME_KEY, response.name);
+          if (response.phone) {
+            localStorage.setItem(this.PHONE_KEY, response.phone);
+          }
         }
       }),
     );
@@ -40,6 +43,7 @@ export class AuthService {
     localStorage.removeItem(this.ROLE_KEY);
     localStorage.removeItem(this.EMAIL_KEY);
     localStorage.removeItem(this.NAME_KEY);
+    localStorage.removeItem(this.PHONE_KEY);
   }
 
   getToken(): string | null {
@@ -60,5 +64,9 @@ export class AuthService {
 
   getCurrentName(): string | null {
     return localStorage.getItem(this.NAME_KEY);
+  }
+
+  getCurrentPhone(): string | null {
+    return localStorage.getItem(this.PHONE_KEY);
   }
 }
