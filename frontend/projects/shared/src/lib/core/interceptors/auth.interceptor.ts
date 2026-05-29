@@ -5,12 +5,7 @@ import { AuthService } from '@shared';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  const token =
-    authService.getToken() ||
-    localStorage.getItem('vurger_admin_token') ||
-    localStorage.getItem('vurger_client_token') ||
-    localStorage.getItem('auth_token') ||
-    localStorage.getItem('token');
+  const token = authService.getToken();
 
   if (token) {
     const clonedRequest = req.clone({

@@ -8,7 +8,7 @@ export const stompConfig: RxStompConfig = {
   brokerURL: environment.apiUrl.replace('http', 'ws') + '/ws-la-vurger',
 
   connectHeaders: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
   },
 
   heartbeatIncoming: 0,
