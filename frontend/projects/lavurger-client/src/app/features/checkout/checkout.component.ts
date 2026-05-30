@@ -28,6 +28,11 @@ export class CheckoutComponent implements OnInit {
   guestNameTouched = signal<boolean>(false);
   guestPhoneTouched = signal<boolean>(false);
 
+  cardNumber = signal<string>('');
+  cardExpiry = signal<string>('');
+  cardCvc = signal<string>('');
+  isStripeProcessing = signal<boolean>(false);
+
   showErrorModal = signal<boolean>(false);
   errorMessage = signal<string>('');
 
@@ -43,6 +48,16 @@ export class CheckoutComponent implements OnInit {
     const phone = this.guestPhone().trim();
     if (phone.length === 0) return false;
     return !/^[0-9]{9}$/.test(phone);
+  });
+
+  isStripeFormInvalid = computed(() => {
+    if (this.paymentMethod() !== PaymentMethod.APP) return false;
+
+    const num = this.cardNumber().replace(/\s/g, '');
+    const exp = this.cardExpiry().trim();
+    const cvc = this.cardCvc().trim();
+
+    return num.length < 16 || exp.length < 5 || cvc.length < 3;
   });
 
   isFormInvalid = computed(() => {
@@ -80,6 +95,13 @@ export class CheckoutComponent implements OnInit {
   }
 
   async submitOrder() {
+    if (this.paymentMethod() === PaymentMethod.APP) {
+      this.isStripeProcessing.set(true);
+
+      await new Promise(resolve => setTimeout(resolve, 1800));
+      this.isStripeProcessing.set(false);
+    }
+
     sessionStorage.setItem('vurger_clear_cart_needed', 'true');
 
     const payload: any = {
