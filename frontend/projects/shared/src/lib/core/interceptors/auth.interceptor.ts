@@ -5,6 +5,10 @@ import { AuthService } from '@shared';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
+  if (req.url.includes('/api/auth/')) {
+    return next(req);
+  }
+
   const token = authService.getToken();
 
   if (token) {

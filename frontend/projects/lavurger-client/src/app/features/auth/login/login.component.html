@@ -1,4 +1,15 @@
-<div class="min-h-[100dvh] w-full bg-vurger-bg font-sans text-vurger-dark flex flex-col items-center justify-center p-6">
+<div class="min-h-[100dvh] w-full bg-vurger-bg font-sans text-vurger-dark flex flex-col items-center justify-center p-6 relative">
+
+  @if (errorMessage) {
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[calc(100%-2rem)] p-4 bg-red-50 border-2 border-red-200 text-red-700 text-sm rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300">
+      <svg class="w-5 h-5 shrink-0 stroke-red-600 fill-none" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span class="font-semibold text-[13px]">{{ errorMessage }}</span>
+    </div>
+  }
 
   <div class="w-full max-w-md flex items-center gap-4 mb-6">
     <button
@@ -20,12 +31,6 @@
   <div class="w-full max-w-md">
     <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-6 md:p-8 shadow-sm">
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-2.5">
-
-        @if (errorMessage) {
-          <div class="p-3 mb-2 bg-red-100 border border-red-200 text-red-700 text-xs rounded-xl text-center font-medium">
-            {{ errorMessage }}
-          </div>
-        }
 
         <div>
           <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-1.5">Correu electrònic</label>
