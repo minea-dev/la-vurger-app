@@ -134,8 +134,6 @@ export class UsersComponent implements OnInit {
       this.passwordErrorReactive = 'Falta una minúscula.';
     else if (pass.length > 0 && !/.*\d.*/.test(pass))
       this.passwordErrorReactive = 'Falta un número.';
-    else if (pass.length > 0 && !/.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*/.test(pass))
-      this.passwordErrorReactive = 'Falta un caràcter especial.';
     else this.passwordErrorReactive = null;
   }
 
@@ -239,13 +237,16 @@ export class UsersComponent implements OnInit {
       return;
     }
 
-    const request: UserRequestDTO = {
+    const request: any = {
       name: this.selectedUser.name,
       email: this.selectedUser.email,
       phone: this.selectedUser.phone || '',
-      password: this.selectedUser.password,
       role: this.selectedUser.role,
     };
+
+    if (this.selectedUser.password && this.selectedUser.password.trim() !== '') {
+      request.password = this.selectedUser.password;
+    }
 
     this.userService.updateUser(this.selectedUser.id, request).subscribe({
       next: () => {

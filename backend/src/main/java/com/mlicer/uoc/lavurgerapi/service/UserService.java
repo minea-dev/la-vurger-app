@@ -11,6 +11,7 @@ import com.mlicer.uoc.lavurgerapi.mapper.UserMapper;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +28,10 @@ public class UserService {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -50,7 +55,9 @@ public class UserService {
         User user = new User();
         user.setName(dto.name());
         user.setEmail(dto.email());
-        user.setPassword(dto.password());
+
+        user.setPassword(passwordEncoder.encode(dto.password()));
+
         user.setRole(dto.role());
         user.setPhone(dto.phone());
         user.setActive(true);
@@ -62,9 +69,15 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
 
         user.setName(dto.name());
+        user.setEmail(dto.email());
         user.setPhone(dto.phone());
+
         if (dto.role() != null) {
             user.setRole(dto.role());
+        }
+
+        if (dto.password() != null && !dto.password().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(dto.password()));
         }
 
         return UserMapper.toDTO(userRepository.save(user));
