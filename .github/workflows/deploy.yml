@@ -6,12 +6,14 @@ on:
       - main
 
 jobs:
-  test:
-    name: 🧪 Run Tests (Blocking)
+  test_and_quality:
+    name: 🧪 Run Tests & SonarQube Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -20,9 +22,17 @@ jobs:
           distribution: 'temurin'
           cache: maven
           
-      - name: Build Backend (Check Compilation)
-        working-directory: ./backend
-        run: mvn clean package -DskipTests
+      - name: 🛡️ SonarQube Analysis (Backend)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          cd backend
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=minea-dev_la-vurger-app \
+            -Dsonar.organization=minea-dev \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -DskipTests
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,9 +45,26 @@ jobs:
         working-directory: ./frontend
         run: npm install
 
+      - name: Install Playwright Browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps
+
+      - name: 🐳 Start Test Environment in Actions
+        run: |
+          docker compose up -d --build
+          sleep 15
+
+      - name: 🎭 Run Playwright E2E Tests
+        working-directory: ./frontend
+        run: npx playwright test --workers=1
+
+      - name: 🧹 Clean Test Environment
+        if: always()
+        run: docker compose down
+
   deploy:
     name: 🚀 Deploy to AWS EC2
-    needs: test
+    needs: test_and_quality 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
