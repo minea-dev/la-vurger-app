@@ -62,15 +62,11 @@ jobs:
       - name: 🌐 Serve Frontend Dev Ports for Playwright
         working-directory: ./frontend
         run: |
+          npm install -g serve
           CLIENT_DIR=$([ -d "dist/lavurger-client/browser" ] && echo "dist/lavurger-client/browser" || echo "dist/lavurger-client")
           ADMIN_DIR=$([ -d "dist/lavurger-admin/browser" ] && echo "dist/lavurger-admin/browser" || echo "dist/lavurger-admin")
-          
-          echo "Serving Client from $CLIENT_DIR on port 4200"
-          npx serve -s $CLIENT_DIR -l 4200 &
-          
-          echo "Serving Admin from $ADMIN_DIR on port 4201"
-          npx serve -s $ADMIN_DIR -l 4201 &
-          
+          nohup serve -s $CLIENT_DIR -l 4200 > client.log 2>&1 &
+          nohup serve -s $ADMIN_DIR -l 4201 > admin.log 2>&1 &
           sleep 5
 
       - name: 🎭 Run Playwright E2E Tests
