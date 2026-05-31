@@ -1,4 +1,4 @@
-package com.mlicer.uoc.lavurgerapi;
+package com.mlicer.uoc.lavurgerapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mlicer.uoc.lavurgerapi.dto.OrderDTO;
@@ -31,12 +31,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "aws.s3.bucket-name=lavurger-test-bucket",
+                "aws.s3.region=eu-west-3",
+                "aws.s3.access-key=mock-access-key",
+                "aws.s3.secret-key=mock-secret-key"
+        }
+)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc(addFilters = false)
 public class OrderControllerIT {
@@ -89,7 +96,7 @@ public class OrderControllerIT {
         user.setName("Test User");
         user.setEmail("test@lavurger.com");
         user.setPassword("password");
-        user.setRole(Role.valueOf("CASHIER"));
+        user.setRole(Role.CASHIER);
         user.setActive(true);
         this.savedUserId = userRepository.save(user).getId();
 
@@ -104,19 +111,8 @@ public class OrderControllerIT {
     @Test
     @DisplayName("Should create order successfully with 201 Created")
     void shouldCreateOrderSuccessfully() throws Exception {
-
         OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 2, "No onions");
-
-        OrderRequestDTO validOrder = new OrderRequestDTO(
-                this.savedTableId,
-                OrderType.DINE_IN,
-                PaymentMethod.COUNTER,
-                "No onions",
-                null,
-                null,
-                null,
-                List.of(mockItem)
-        );
+        OrderRequestDTO validOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, "No onions", null, null, null, List.of(mockItem));
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,19 +124,8 @@ public class OrderControllerIT {
     @Test
     @DisplayName("Should filter orders by status RECEIVED")
     void shouldFilterOrdersByStatus() throws Exception {
-
         OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 1, null);
-
-        OrderRequestDTO newOrder = new OrderRequestDTO(
-                this.savedTableId,
-                OrderType.DINE_IN,
-                PaymentMethod.COUNTER,
-                null,
-                null,
-                null,
-                null,
-                List.of(mockItem)
-        );
+        OrderRequestDTO newOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of(mockItem));
 
         String responseBody = mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -160,17 +145,7 @@ public class OrderControllerIT {
     @Test
     @DisplayName("Should return 400 when order items list is empty")
     void shouldReturn400WhenItemsListIsEmpty() throws Exception {
-
-        OrderRequestDTO badOrder = new OrderRequestDTO(
-                this.savedTableId,
-                OrderType.DINE_IN,
-                PaymentMethod.COUNTER,
-                "Empty Items Test",
-                null,
-                null,
-                null,
-                List.of()
-        );
+        OrderRequestDTO badOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, "Empty Items Test", null, null, null, List.of());
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,19 +183,8 @@ public class OrderControllerIT {
     @Test
     @DisplayName("Should return order by ID successfully with 200 OK")
     void shouldReturnOrderByIdSuccessfully() throws Exception {
-
         OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 2, null);
-
-        OrderRequestDTO newOrder = new OrderRequestDTO(
-                this.savedTableId,
-                OrderType.DINE_IN,
-                PaymentMethod.COUNTER,
-                null,
-                null,
-                null,
-                null,
-                List.of(mockItem)
-        );
+        OrderRequestDTO newOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of(mockItem));
 
         String responseBody = mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -236,5 +200,71 @@ public class OrderControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(createdId.intValue()))
                 .andExpect(jsonPath("$.orderNumber").value(generatedOrderNumber));
+    }
+
+    @Test
+    @DisplayName("Should return orders history associated with active principal name email")
+    void shouldGetMyOrdersHistoryWithPrincipal() throws Exception {
+        mockMvc.perform(get("/api/orders/my-orders")
+                        .principal(() -> "test@lavurger.com"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should update status payload and push update notification stream")
+    void shouldUpdateOrderStatusSuccessfully() throws Exception {
+        OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 1, null);
+        OrderRequestDTO newOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of(mockItem));
+
+        String responseBody = mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newOrder)))
+                .andReturn().getResponse().getContentAsString();
+
+        OrderDTO savedOrder = objectMapper.readValue(responseBody, OrderDTO.class);
+
+        mockMvc.perform(patch("/api/orders/" + savedOrder.id() + "/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"PREPARING\""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PREPARING"));
+    }
+
+    @Test
+    @DisplayName("Should update payment status code string value")
+    void shouldUpdateOrderPaymentStatusSuccessfully() throws Exception {
+        OrderItemRequestDTO mockItem = new OrderItemRequestDTO(this.savedProductId, 1, null);
+        OrderRequestDTO newOrder = new OrderRequestDTO(this.savedTableId, OrderType.DINE_IN, PaymentMethod.COUNTER, null, null, null, null, List.of(mockItem));
+
+        String responseBody = mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newOrder)))
+                .andReturn().getResponse().getContentAsString();
+
+        OrderDTO savedOrder = objectMapper.readValue(responseBody, OrderDTO.class);
+
+        mockMvc.perform(patch("/api/orders/" + savedOrder.id() + "/payment-status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"PAID\""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentStatus").value("PAID"));
+    }
+
+    @Test
+    @DisplayName("Should collect recent timeline windows filtering criteria matching thresholds")
+    void shouldFetchRecentOrders() throws Exception {
+        mockMvc.perform(get("/api/orders/recent")
+                        .param("status", "RECEIVED")
+                        .param("hours", "12"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should accept parameterized historical query parameters logs bounds")
+    void shouldFetchHistoryAdminLogs() throws Exception {
+        mockMvc.perform(get("/api/orders/history-admin")
+                        .param("startDate", "2026-05-01")
+                        .param("endDate", "2026-05-31"))
+                .andExpect(status().isOk());
     }
 }

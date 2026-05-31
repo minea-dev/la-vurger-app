@@ -67,7 +67,7 @@ public class ImageStorageService {
 
             s3Client.deleteObject(deleteObjectRequest);
         } catch (Exception e) {
-            System.err.println("⚠️ Could not delete old image from S3: " + e.getMessage());
+            System.err.println("Could not delete old image from S3: " + e.getMessage());
         }
     }
 }
