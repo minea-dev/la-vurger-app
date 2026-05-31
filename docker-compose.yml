@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
     container_name: lavurger-front
     ports:
-      - "8081:80"
+      - "80:80"
     depends_on:
       - api
     restart: always
