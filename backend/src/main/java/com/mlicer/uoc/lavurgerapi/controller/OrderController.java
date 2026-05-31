@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -40,6 +41,12 @@ public class OrderController {
         messagingTemplate.convertAndSend("/topic/orders", savedOrder);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
+    }
+
+    @Operation(summary = "Get logged-in user orders history")
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderDTO>> getMyOrders(Principal principal) {
+        return ResponseEntity.ok(orderService.getOrdersByCustomerEmail(principal.getName()));
     }
 
     @Operation(summary = "Get orders", description = "Retrieves a list of orders. Optionally filterable by status (for admin/kitchen use).")
@@ -100,5 +107,22 @@ public class OrderController {
             @Parameter(description = "ID of the order") @PathVariable Long id) {
         OrderDTO order = orderService.getOrderById(id);
         return ResponseEntity.ok(order);
+    }
+
+    @Operation(summary = "Get recent orders", description = "Retrieves a list of orders filtered by status from the last X hours.")
+    @GetMapping("/recent")
+    public ResponseEntity<List<OrderDTO>> getRecentOrders(
+            @RequestParam String status,
+            @RequestParam(defaultValue = "24") int hours) {
+        return ResponseEntity.ok(orderService.getRecentOrdersByStatus(status, hours));
+    }
+
+    @Operation(summary = "Get historical orders with optional date range filters")
+    @GetMapping("/history-admin")
+    public ResponseEntity<List<OrderDTO>> getHistoryAdmin(
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(orderService.getHistoryOrders(date, startDate, endDate));
     }
 }

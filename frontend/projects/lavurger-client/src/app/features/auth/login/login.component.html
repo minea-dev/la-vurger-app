@@ -1,0 +1,87 @@
+<div class="min-h-[100dvh] w-full bg-vurger-bg font-sans text-vurger-dark flex flex-col items-center justify-center p-6 relative">
+
+  @if (errorMessage) {
+    <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[calc(100%-2rem)] p-4 bg-red-50 border-2 border-red-200 text-red-700 text-sm rounded-2xl shadow-xl flex items-center gap-3 transition-all duration-300">
+      <svg class="w-5 h-5 shrink-0 stroke-red-600 fill-none" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span class="font-semibold text-[13px]">{{ errorMessage }}</span>
+    </div>
+  }
+
+  <div class="w-full max-w-md flex items-center gap-4 mb-6">
+    <button
+      (click)="backToMenu()"
+      aria-label="Tornar al menú principal"
+      class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors shrink-0"
+    >
+      <svg class="w-5 h-5 stroke-vurger-dark fill-none" stroke-width="2" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </button>
+    <div>
+      <h1 class="font-serif text-3xl font-black tracking-tight text-vurger-primary leading-none">
+        La <span class="text-vurger-muted">Vurger</span>
+      </h1>
+      <p class="text-[11px] font-semibold text-vurger-muted tracking-[1.5px] uppercase mt-1.5">Inicia sessió</p>
+    </div>
+  </div>
+
+  <div class="w-full max-w-md">
+    <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-6 md:p-8 shadow-sm">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-2.5">
+
+        <div>
+          <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-1.5">Correu electrònic</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="exemple@vurger.com"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
+            [class.border-red-400]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+          />
+          <div class="h-4 mt-0.5 flex items-center">
+            @if (loginForm.controls.email.touched && loginForm.controls.email.errors?.['required']) {
+              <span class="text-[11px] text-red-600 block leading-none">El correu és obligatori.</span>
+            }
+            @if (loginForm.controls.email.touched && loginForm.controls.email.errors?.['email']) {
+              <span class="text-[11px] text-red-600 block leading-none">Introdueix un correu vàlid.</span>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-vurger-primary mb-1.5">Contrasenya</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border rounded-xl text-[15px] outline-none focus:border-vurger-muted transition-colors"
+            [class.border-red-400]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+          />
+          <div class="h-4 mt-0.5 flex items-center">
+            @if (loginForm.controls.password.touched && loginForm.controls.password.errors?.['required']) {
+              <span class="text-[11px] text-red-600 block leading-none">La contrasenya és obligatòria.</span>
+            }
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full h-14 !mt-3 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg rounded-xl font-medium text-[15px] tracking-wide transition-colors shadow-md"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <p class="mt-5 text-center text-[13px] text-vurger-muted">
+        No tens compte?
+        <a routerLink="/register" class="font-semibold text-vurger-primary hover:underline ml-1">Registra't ací</a>
+      </p>
+    </div>
+  </div>
+</div>

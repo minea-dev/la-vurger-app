@@ -29,7 +29,6 @@ Content-Type: application/json
 }
 
 > {%
-    // Capture the created order ID for subsequent update tests
     client.global.set("created_order_id", response.body.id);
 %}
 

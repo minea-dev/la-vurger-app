@@ -8,6 +8,7 @@ import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +21,9 @@ public class ProductService {
 
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private ImageStorageService imageStorageService;
 
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll().stream()
@@ -46,10 +50,14 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Cannot delete: Product not found with id: " + id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
+            imageStorageService.deleteImage(product.getImageUrl());
         }
-        productRepository.deleteById(id);
+
+        productRepository.delete(product);
     }
 
     @Transactional
@@ -60,5 +68,19 @@ public class ProductService {
         product.setAvailable(isAvailable);
         Product savedProduct = productRepository.save(product);
         return productMapper.toDTO(savedProduct);
+    }
+
+    public ProductDTO updateProductImage(Long productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
+            imageStorageService.deleteImage(product.getImageUrl());
+        }
+
+        String newImageUrl = imageStorageService.uploadImage(file);
+
+        product.setImageUrl(newImageUrl);
+        return productMapper.toDTO(productRepository.save(product));
     }
 }

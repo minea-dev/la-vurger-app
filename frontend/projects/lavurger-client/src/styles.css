@@ -24,3 +24,28 @@ app-order-status {
   display: block;
   width: 100%;
 }
+
+app-login {
+  display: block;
+  width: 100%;
+}
+
+app-register {
+  display: block;
+  width: 100%;
+}
+
+app-orders {
+  display: block;
+  width: 100%;
+}
+
+app-favorites {
+  display: block;
+  width: 100%;
+}
+
+app-order-detail {
+  display: block;
+  width: 100%;
+}

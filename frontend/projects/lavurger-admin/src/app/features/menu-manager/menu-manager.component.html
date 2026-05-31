@@ -109,12 +109,43 @@
           </div>
         </div>
 
-        <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">URL de la imatge</label>
-          <input type="text" [(ngModel)]="selectedProduct.imageUrl" placeholder="https://exemple.com/imatge.jpg" class="w-full h-[36px] px-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue">
+        <div class="space-y-1.5 text-sm">
+          <label class="block text-[12px] font-semibold text-admin-text2">Imatge del Producte (AWS S3)</label>
+          <div class="flex items-center gap-3 p-2.5 border border-admin-border rounded-[5px] bg-slate-50/50">
+            <div class="w-14 h-14 rounded bg-slate-100 border border-admin-border overflow-hidden flex items-center justify-center shrink-0 relative">
+              <img *ngIf="imagePreviewUrl || selectedProduct.imageUrl"
+                   [src]="imagePreviewUrl || selectedProduct.imageUrl"
+                   class="w-full h-full object-cover">
+              <span *ngIf="!imagePreviewUrl && !selectedProduct.imageUrl" class="text-lg">🍔</span>
+              <div *ngIf="isImageUploading" class="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
+            <div class="flex-1">
+              <label class="inline-flex h-[30px] px-2.5 items-center gap-1.5 border border-admin-border rounded bg-white text-admin-text2 hover:text-admin-blue hover:border-admin-blue transition-colors text-[11px] font-bold cursor-pointer select-none shadow-sm active:scale-95">
+                <svg class="w-3.5 h-3.5 stroke-current fill-none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
+                Seleccionar imatge
+                <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event)">
+              </label>
+              <p class="text-[10px] text-admin-text3 mt-1">S'enviarà automàticament al cloud en desar.</p>
+            </div>
+          </div>
         </div>
 
-        <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">Descripció</label>
-          <textarea [(ngModel)]="selectedProduct.description" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="3"></textarea>
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <label class="block text-[12px] font-semibold text-admin-text2">Descripció curta (Targeta)</label>
+            <span class="text-[10px] text-admin-text3">{{ selectedProduct.description?.length || 0 }}/150</span>
+          </div>
+          <textarea [(ngModel)]="selectedProduct.description" maxlength="150" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="2" placeholder="Descripció breu per a la llista..."></textarea>
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1.5">
+            <label class="block text-[12px] font-semibold text-admin-text2">Ingredients i detalls (Només al fer clic)</label>
+            <span class="text-[10px] text-admin-text3">{{ selectedProduct.longDescription?.length || 0 }}/1000</span>
+          </div>
+          <textarea [(ngModel)]="selectedProduct.longDescription" maxlength="1000" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] text-admin-text bg-admin-white outline-none focus:border-admin-blue" rows="3" placeholder="Ex: Proteïna de soja, jalapeños, formatge vegà fos..."></textarea>
         </div>
       </div>
       <div class="px-5 py-3.5 border-t border-admin-border flex justify-end gap-2 bg-admin-bg shrink-0">
@@ -156,17 +187,74 @@
         </div>
       </div>
 
-      <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">URL de la imatge</label>
-        <input type="text" [(ngModel)]="selectedProduct.imageUrl" placeholder="https://exemple.com/imatge.jpg" class="w-full h-[36px] px-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue">
+      <div class="space-y-1.5 text-sm">
+        <label class="block text-[12px] font-semibold text-admin-text2">Imatge del Producte (AWS S3)</label>
+        <div class="flex items-center gap-3 p-2.5 border border-admin-border rounded-[5px] bg-slate-50/50">
+          <div class="w-14 h-14 rounded bg-slate-100 border border-admin-border overflow-hidden flex items-center justify-center shrink-0 relative">
+            <img *ngIf="imagePreviewUrl || selectedProduct.imageUrl"
+                 [src]="imagePreviewUrl || selectedProduct.imageUrl"
+                 class="w-full h-full object-cover">
+            <span *ngIf="!imagePreviewUrl && !selectedProduct.imageUrl" class="text-lg">🍔</span>
+            <div *ngIf="isImageUploading" class="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+          <div class="flex-1">
+            <label class="inline-flex h-[30px] px-2.5 items-center gap-1.5 border border-admin-border rounded bg-white text-admin-text2 hover:text-admin-blue hover:border-admin-blue transition-colors text-[11px] font-bold cursor-pointer select-none shadow-sm active:scale-95">
+              <svg class="w-3.5 h-3.5 stroke-current fill-none" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
+              {{ isImageUploading ? 'Pujant...' : 'Actualitzar imatge' }}
+              <input type="file" class="hidden" accept="image/*" (change)="onFileSelected($event, selectedProduct.id)">
+            </label>
+            <p class="text-[10px] text-admin-text3 mt-1">La pujada és immediata en triar l'arxiu.</p>
+          </div>
+        </div>
       </div>
 
-      <div><label class="block text-[12px] font-semibold text-admin-text2 mb-1.5">Descripció</label>
-        <textarea [(ngModel)]="selectedProduct.description" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="3"></textarea>
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="block text-[12px] font-semibold text-admin-text2">Descripció curta (Targeta)</label>
+          <span class="text-[10px] text-admin-text3">{{ selectedProduct.description?.length || 0 }}/150</span>
+        </div>
+        <textarea [(ngModel)]="selectedProduct.description" maxlength="150" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="2" placeholder="Descripció breu per a la llista..."></textarea>
+      </div>
+
+      <div>
+        <div class="flex justify-between mb-1.5">
+          <label class="block text-[12px] font-semibold text-admin-text2">Ingredients i detalls (Només al fer clic)</label>
+          <span class="text-[10px] text-admin-text3">{{ selectedProduct.longDescription?.length || 0 }}/1000</span>
+        </div>
+        <textarea [(ngModel)]="selectedProduct.longDescription" maxlength="1000" class="w-full p-3 border border-admin-border rounded-[5px] text-[13px] outline-none focus:border-admin-blue" rows="3" placeholder="Ex: Proteïna de soja, jalapeños, formatge vegà fos..."></textarea>
       </div>
     </div>
     <div class="p-3 border-t border-admin-border flex gap-2 bg-admin-bg shrink-0">
       <button (click)="closeEditDrawer()" class="flex-1 h-[34px] border border-admin-border rounded-[5px] bg-admin-white text-[12px] font-semibold text-admin-text2 hover:bg-admin-bg transition-colors">Descartar</button>
       <button (click)="updateProduct()" class="flex-[2] h-[34px] rounded-[5px] bg-admin-blue text-white text-[12px] font-semibold hover:bg-[#084f9a] transition-colors">Desar canvis</button>
+    </div>
+  </div>
+
+  <div *ngIf="isConfirmModalOpen" class="fixed inset-0 z-50 bg-black/35 flex items-center justify-center">
+    <div class="w-[380px] bg-admin-white rounded-[10px] shadow-2xl overflow-hidden flex flex-col p-5 gap-4">
+      <div class="flex gap-3">
+        <div class="w-9 h-9 rounded-full bg-admin-red-lt flex items-center justify-center text-admin-red shrink-0">
+          <svg class="w-5 h-5 stroke-current fill-none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-[14px] font-bold text-admin-text">Eliminar del catàleg</h3>
+          <p class="text-[12px] text-admin-text3 mt-1 leading-relaxed">
+            Estàs segur que vols eliminar <span class="font-semibold text-admin-text">"{{ productToDelete?.name }}"</span> del catàleg de productes actius?
+          </p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 shrink-0">
+        <button (click)="closeConfirmModal()" class="h-[32px] px-3.5 border border-admin-border rounded-[5px] bg-admin-white text-[11px] font-bold text-admin-text2 hover:bg-admin-bg transition-colors">
+          Cancel·lar
+        </button>
+        <button (click)="confirmDeactivate()" class="h-[32px] px-4 rounded-[5px] bg-admin-red text-white text-[11px] font-bold hover:bg-red-700 transition-colors shadow-sm">
+          Eliminar producte
+        </button>
+      </div>
     </div>
   </div>
 

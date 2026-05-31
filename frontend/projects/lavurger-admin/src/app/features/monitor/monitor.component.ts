@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { OrderService, StompService, OrderDTO, OrderStatus, PaymentStatus } from '@shared';
 
 @Component({
@@ -8,18 +8,35 @@ import { OrderService, StompService, OrderDTO, OrderStatus, PaymentStatus } from
   standalone: true,
   imports: [CommonModule],
   templateUrl: './monitor.component.html',
+  styles: [`
+    @keyframes cardFlash {
+      0%, 100% { border-color: #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+      50% { border-color: #2563eb; box-shadow: 0 0 14px rgba(37, 99, 235, 0.35); }
+    }
+    .animate-new-card {
+      animation: cardFlash 1.2s infinite ease-in-out;
+    }
+  `]
 })
 export class MonitorComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
   private stompService = inject(StompService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   orders: OrderDTO[] = [];
-  currentFilter: 'PENDING_PAY' | 'COMPLETED' = 'PENDING_PAY';
+  currentFilter: 'ACTIVE' | 'COMPLETED' = 'ACTIVE';
+
+  isHistoryLoading = false;
+  private historyLoaded = false;
+
   private wsSubscription?: Subscription;
 
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
+
+  private alertSound = new Audio('/assets/sounds/new-order.mp3');
+  recentlyAddedOrderIds: Set<number> = new Set();
 
   ngOnInit() {
     this.loadOrders();
@@ -27,76 +44,132 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   loadOrders() {
-    this.orderService.getOrders().subscribe({
-      next: (data) => {
-        this.orders = data || [];
+    forkJoin({
+      received: this.orderService.getOrders(OrderStatus.RECEIVED),
+      preparing: this.orderService.getOrders(OrderStatus.PREPARING),
+      ready: this.orderService.getOrders(OrderStatus.READY),
+      dispatched: this.orderService.getOrders(OrderStatus.DISPATCHED)
+    }).subscribe({
+      next: (res) => {
+        this.orders = [...res.received, ...res.preparing, ...res.ready, ...res.dispatched];
         this.orders.sort((a, b) => b.id - a.id);
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('❌ Error carregant comandes:', err),
+      error: (err) => console.error('❌ Error carregant comandes actives:', err),
+    });
+  }
+
+  loadHistoryLazy() {
+    if (this.historyLoaded) return;
+
+    this.isHistoryLoading = true;
+    this.cdr.detectChanges();
+
+    forkJoin({
+      completed: this.orderService.getRecentOrders(OrderStatus.COMPLETED, 24),
+      cancelled: this.orderService.getRecentOrders(OrderStatus.CANCELLED, 24)
+    }).subscribe({
+      next: (res) => {
+        const activeOrders = this.orders.filter(o =>
+          o.status !== OrderStatus.COMPLETED && o.status !== OrderStatus.CANCELLED
+        );
+
+        this.orders = [...activeOrders, ...res.completed, ...res.cancelled];
+        this.orders.sort((a, b) => b.id - a.id);
+
+        this.historyLoaded = true;
+        this.isHistoryLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('❌ Error carregant historial passat:', err);
+        this.isHistoryLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
   connectToWebSockets() {
     this.wsSubscription = this.stompService.watch('/topic/orders').subscribe((message) => {
-      const updatedOrder: OrderDTO = JSON.parse(message.body);
-      const index = this.orders.findIndex((o) => o.id === updatedOrder.id);
-      if (index !== -1) {
-        this.orders[index] = updatedOrder;
-      } else {
-        this.orders.unshift(updatedOrder);
-      }
-      this.orders.sort((a, b) => b.id - a.id);
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        const updatedOrder: OrderDTO = JSON.parse(message.body);
+        const oldOrder = this.orders.find((o) => o.id === updatedOrder.id);
+        const index = this.orders.findIndex((o) => o.id === updatedOrder.id);
+
+        const isNewDineIn = !oldOrder && updatedOrder.orderType === 'DINE_IN' && updatedOrder.status === OrderStatus.RECEIVED;
+        const isTakeawayInBarra = updatedOrder.orderType === 'TAKEAWAY' && updatedOrder.status === OrderStatus.DISPATCHED && (!oldOrder || oldOrder.status !== OrderStatus.DISPATCHED);
+
+        if (isNewDineIn || isTakeawayInBarra) {
+          this.playAlert();
+          this.recentlyAddedOrderIds.add(updatedOrder.id);
+          setTimeout(() => {
+            this.recentlyAddedOrderIds.delete(updatedOrder.id);
+            this.cdr.detectChanges();
+          }, 5000);
+        }
+
+        if (index !== -1) {
+          const updatedList = [...this.orders];
+          updatedList[index] = updatedOrder;
+          this.orders = updatedList;
+        } else {
+          this.orders = [updatedOrder, ...this.orders];
+        }
+        this.orders.sort((a, b) => b.id - a.id);
+        this.cdr.detectChanges();
+      });
     });
   }
 
-  ngOnDestroy() {
-    this.wsSubscription?.unsubscribe();
+  private playAlert() {
+    this.alertSound.currentTime = 0;
+    this.alertSound.play().catch((err) => console.warn('⚠️ Audio bloquejat:', err));
   }
 
-  // 🚨 EL MÉTODO QUE FALTABA
-  setFilter(filter: 'PENDING_PAY' | 'COMPLETED') {
-    this.currentFilter = filter;
+  get dineInPendingOrders() {
+    return this.orders.filter(order =>
+      order.orderType === 'DINE_IN' &&
+      order.paymentStatus === PaymentStatus.PENDING &&
+      (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED)
+    );
   }
 
-  get filteredOrders() {
-    const now = new Date().getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
+  get takeawayReadyOrders() {
+    return this.orders.filter(order =>
+      order.orderType === 'TAKEAWAY' &&
+      order.status === OrderStatus.DISPATCHED
+    );
+  }
 
+  get completedOrdersHistory() {
     return this.orders.filter((order) => {
-      if (order.status === OrderStatus.RECEIVED || order.status === OrderStatus.PREPARING)
-        return false;
-
-      const isPending =
-        order.paymentStatus === PaymentStatus.PENDING && order.status !== OrderStatus.CANCELLED;
-
-      if (this.currentFilter === 'PENDING_PAY') {
-        return isPending;
-      }
-
-      if (this.currentFilter === 'COMPLETED') {
-        const orderDate = order.createdAt ? new Date(order.createdAt).getTime() : 0;
-        return !isPending && now - orderDate <= twentyFourHours;
-      }
-      return false;
+      return order.status === OrderStatus.CANCELLED ||
+        (order.status === OrderStatus.COMPLETED && order.paymentStatus === PaymentStatus.PAID);
     });
   }
 
-  get pendingPaymentCount() {
-    return this.orders.filter(
-      (o) =>
-        o.paymentStatus === PaymentStatus.PENDING &&
-        o.status !== OrderStatus.CANCELLED &&
-        (o.status === OrderStatus.READY || o.status === OrderStatus.COMPLETED),
-    ).length;
+  get totalActiveCount() {
+    return this.dineInPendingOrders.length + this.takeawayReadyOrders.length;
   }
 
-  markAsPaid(id: number) {
-    this.orderService.updatePaymentStatus(id, PaymentStatus.PAID).subscribe();
+  handleOrderAction(order: OrderDTO) {
+    if (order.paymentStatus === PaymentStatus.PENDING) {
+      this.orderService.updatePaymentStatus(order.id, PaymentStatus.PAID).subscribe();
+    } else {
+      this.orderService.updateOrderStatus(order.id, OrderStatus.COMPLETED).subscribe();
+    }
   }
 
-  deliverOrder(id: number) {
-    this.orderService.updateOrderStatus(id, OrderStatus.COMPLETED).subscribe();
+  hasCustomerInfo(order: any): boolean { return !!(order.guestName || order.customerName || order.user?.name || order.guestPhone || order.customerPhone || order.user?.phone); }
+  getCustomerName(order: any): string { return order.guestName || order.customerName || order.user?.name || 'Client'; }
+  getCustomerPhone(order: any): string { return order.guestPhone || order.customerPhone || order.user?.phone || ''; }
+
+  setFilter(filter: 'ACTIVE' | 'COMPLETED') {
+    this.currentFilter = filter;
+    if (filter === 'COMPLETED') {
+      this.loadHistoryLazy();
+    }
   }
+
+  ngOnDestroy() { this.wsSubscription?.unsubscribe(); }
 }

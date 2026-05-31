@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { APP_CONFIG } from '@shared';
 import { UserDTO, UserRequestDTO } from '../../models/dtos/user.dto';
@@ -12,9 +12,14 @@ export class UserService {
 
   private apiUrl = `${this.config.apiUrl}/users`;
 
-  getUsers(): Observable<UserDTO[]> {
-    // Añadimos el timestamp para evitar problemas de caché al activar/desactivar
-    return this.http.get<UserDTO[]>(`${this.apiUrl}?t=${new Date().getTime()}`);
+  getUsers(role?: string): Observable<UserDTO[]> {
+    let params = new HttpParams();
+    if (role) {
+      params = params.set('role', role);
+    }
+    params = params.set('t', new Date().getTime().toString());
+
+    return this.http.get<UserDTO[]>(this.apiUrl, { params });
   }
 
   getUserById(id: number): Observable<UserDTO> {

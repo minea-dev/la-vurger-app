@@ -28,5 +28,13 @@ public record OrderDTO(
         Long customerId,
         Long tableId,
         List<OrderItemDTO> items,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        String guestName,
+        String guestEmail,
+        String guestPhone,
+        String customerName,
+        String customerEmail,
+        String customerPhone,
+        Integer estimatedTime
 ) {}

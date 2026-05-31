@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ProductDTO } from '@shared/models/dtos/product.dto';
 import { API_URL, APP_CONFIG } from '../config/api.tokens';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -24,5 +25,11 @@ export class ProductService {
 
   updateProduct(id: number, product: Partial<ProductDTO>) {
     return this.http.put<ProductDTO>(`${this.apiUrl}/${id}`, product);
+  }
+
+  uploadProductImage(productId: number, file: File): Observable<ProductDTO> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.patch<ProductDTO>(`${this.apiUrl}/${productId}/image`, formData);
   }
 }

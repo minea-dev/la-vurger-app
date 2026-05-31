@@ -57,8 +57,14 @@ public class Order {
     @Column(name = "transaction_id")
     private String transactionId;
 
-    @Column(name = "customer_email")
-    private String customerEmail;
+    @Column(name = "guest_name", length = 50)
+    private String guestName;
+
+    @Column(name = "guest_email", length = 100)
+    private String guestEmail;
+
+    @Column(name = "guest_phone", length = 15)
+    private String guestPhone;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
@@ -66,6 +72,9 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    @Transient
+    private Integer estimatedTime;
 
     @PreUpdate
     protected void onUpdate() {

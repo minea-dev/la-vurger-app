@@ -5,6 +5,7 @@ import { KitchenDashboardComponent } from './features/kitchen-dashboard/kitchen-
 import { MonitorComponent } from './features/monitor/monitor.component';
 import { HistoryComponent } from './features/history/history.component';
 import { UsersComponent } from './features/users/users.component';
+import { CustomersManagementComponent } from './features/customers-management/customers-management.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { LoginComponent } from './features/login/login.component';
@@ -39,6 +40,12 @@ export const routes: Routes = [
       {
         path: 'menu',
         component: MenuManagerComponent,
+        canActivate: [roleGuard],
+        data: { roles: [Role.ADMIN, Role.MANAGER] },
+      },
+      {
+        path: 'customers',
+        component: CustomersManagementComponent,
         canActivate: [roleGuard],
         data: { roles: [Role.ADMIN, Role.MANAGER] },
       },

@@ -4,6 +4,7 @@ export interface UserDTO {
   id: number;
   name: string;
   email: string;
+  phone: string;
   role: Role;
   isActive: boolean;
 }
@@ -11,6 +12,7 @@ export interface UserDTO {
 export interface UserRequestDTO {
   name: string;
   email: string;
+  phone: string;
   password?: string;
   role: Role;
 }

@@ -3,7 +3,11 @@
   <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
 
     <header class="flex items-center gap-4 mb-8">
-      <button routerLink="/menu" queryParamsHandling="preserve" class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors shrink-0">
+      <button
+        (click)="backToMenu()"
+        aria-label="Tornar al menú principal"
+        class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors shrink-0"
+      >
         <svg class="w-5 h-5 stroke-vurger-dark fill-none" stroke-width="2" viewBox="0 0 24 24">
           <path d="m15 18-6-6 6-6"/>
         </svg>
@@ -15,6 +19,31 @@
         <p class="text-[11px] font-semibold text-vurger-muted tracking-[1.5px] uppercase mt-2">Finalitzar comanda</p>
       </div>
     </header>
+
+    @if (authService.isLoggedIn()) {
+      <div class="bg-vurger-surface border-2 border-vurger-border rounded-3xl p-5 mb-8 shadow-sm animate-fade-in flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-vurger-pale flex items-center justify-center shrink-0 text-vurger-primary border border-vurger-border/30">
+            <svg class="w-5 h-5" stroke="currentColor" stroke-width="2.5" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <div class="text-left">
+            <p class="text-[10px] font-bold text-vurger-muted uppercase tracking-widest">Titular de la comanda</p>
+            <h3 class="font-serif text-xl font-black text-vurger-dark mt-0.5 leading-tight">{{ userName }}</h3>
+          </div>
+        </div>
+        <div class="text-left sm:text-right pl-16 sm:pl-0">
+          <p class="text-[10px] font-bold text-vurger-muted uppercase tracking-widest">Telèfon de contacte</p>
+          <div class="inline-flex items-center gap-1.5 text-xs font-bold text-vurger-primary mt-1.5 bg-vurger-pale px-3 py-1.5 rounded-xl border border-vurger-border/40 tracking-wide">
+            <svg class="w-3.5 h-3.5 stroke-current fill-none shrink-0" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-2.824-1.157-5.114-3.447-6.273-6.273l1.293-.97a1.25 1.25 0 00.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.75z" />
+            </svg>
+            <span>{{ userPhone }}</span>
+          </div>
+        </div>
+      </div>
+    }
 
     @if (cartStore.tableId()) {
       <div class="inline-flex items-center gap-3 px-4 py-3 bg-vurger-pale rounded-2xl mb-8">
@@ -38,6 +67,91 @@
         <div>
           <p class="text-[10px] font-bold text-[#856404] tracking-widest uppercase">Take Away</p>
           <p class="font-serif text-xl font-black text-vurger-dark leading-none mt-0.5">Per recollir</p>
+        </div>
+      </div>
+    }
+
+    @if (!authService.isLoggedIn()) {
+      <div class="flex flex-col gap-4 p-6 bg-vurger-surface border-2 border-vurger-border rounded-2xl mb-8 shadow-sm animate-fade-in">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <span class="text-3xl select-none mt-0.5">✨</span>
+            <div class="flex flex-col">
+              <span class="text-base font-black text-vurger-dark">Tens un cuenta d'usuari?</span>
+              <span class="text-xs font-medium text-vurger-muted mt-1 leading-relaxed">Inicia sessió o registra't per facilitar futures comandes.</span>
+            </div>
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto shrink-0">
+            <button
+              routerLink="/register"
+              [queryParams]="{ returnUrl: '/checkout' }"
+              queryParamsHandling="merge"
+              class="flex-1 sm:flex-none h-10 px-5 bg-transparent border-2 border-vurger-border hover:bg-vurger-surface rounded-xl text-xs font-bold text-vurger-primary transition-colors whitespace-nowrap"
+            >
+              Registrar-se
+            </button>
+            <button
+              routerLink="/login"
+              [queryParams]="{ returnUrl: '/checkout' }"
+              queryParamsHandling="merge"
+              class="flex-1 sm:flex-none h-10 px-5 bg-vurger-primary hover:bg-vurger-primaryHover rounded-xl text-xs font-bold text-vurger-bg transition-colors whitespace-nowrap"
+            >
+              Entrar
+            </button>
+          </div>
+        </div>
+
+        @if (!cartStore.tableId()) {
+          <div class="h-px bg-vurger-border mt-1"></div>
+          <div class="pt-1">
+            <button
+              (click)="showGuestForm.set(!showGuestForm())"
+              class="w-full h-12 bg-vurger-bg border-2 border-vurger-border hover:bg-vurger-surface rounded-xl text-xs font-bold text-vurger-primary transition-colors tracking-wide shadow-sm flex items-center justify-center gap-2"
+            >
+              <span>{{ showGuestForm() ? '✨ Ocultar dades de contacte' : '🍔 Continuar i demanar sense compte' }}</span>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (!authService.isLoggedIn() && !cartStore.tableId() && showGuestForm()) {
+      <h2 class="text-xs font-semibold text-vurger-muted tracking-[1.5px] uppercase mb-4 animate-fade-in">Dades de contacte <span class="text-red-500 font-bold">*</span></h2>
+      <div class="flex flex-col gap-2.5 bg-vurger-surface border-2 border-vurger-border rounded-2xl p-5 mb-8 shadow-sm animate-fade-in">
+        <div>
+          <label class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider block mb-1.5">Nom complet</label>
+          <input
+            type="text"
+            placeholder="Ex: María Pérez"
+            [value]="guestName()"
+            (input)="guestName.set($any($event.target).value)"
+            (blur)="guestNameTouched.set(true)"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border focus:border-vurger-muted rounded-xl text-[15px] text-vurger-dark outline-none transition-colors"
+            [class.border-red-400]="(guestNameTouched() || guestName().length > 0) && isGuestNameInvalid()"
+          />
+          <div class="h-4 mt-0.5 flex items-center">
+            @if ((guestNameTouched() || guestName().length > 0) && isGuestNameInvalid()) {
+              <span class="text-[11px] text-red-600 block leading-none">El nom ha de tindre almenys 3 caràcters (només lletres).</span>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider block mb-1.5">Telèfon mòbil</label>
+          <input
+            type="tel"
+            placeholder="Ex: 612345678"
+            [value]="guestPhone()"
+            (input)="guestPhone.set($any($event.target).value)"
+            (blur)="guestPhoneTouched.set(true)"
+            class="w-full h-14 px-4 bg-vurger-bg border-2 border-vurger-border focus:border-vurger-muted rounded-xl text-[15px] text-vurger-dark outline-none transition-colors"
+            [class.border-red-400]="(guestPhoneTouched() || guestPhone().length > 0) && isGuestPhoneInvalid()"
+          />
+          <div class="h-4 mt-0.5 flex items-center">
+            @if ((guestPhoneTouched() || guestPhone().length > 0) && isGuestPhoneInvalid()) {
+              <span class="text-[11px] text-red-600 block leading-none">Introdueix un número de telèfon vàlid (9 dígits).</span>
+            }
+          </div>
         </div>
       </div>
     }
@@ -66,12 +180,10 @@
       </div>
     </div>
 
-
     <h2 class="text-xs font-semibold text-vurger-muted tracking-[1.5px] uppercase mb-4">Mètode de pagament</h2>
 
     @if (cartStore.tableId()) {
-      <div class="flex flex-col gap-3 mb-8">
-
+      <div class="flex flex-col gap-3 mb-6">
         <label
           (click)="paymentMethod.set(PaymentMethod.APP)"
           class="flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-colors"
@@ -89,7 +201,7 @@
               <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
             </svg>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 text-left">
             <div class="text-sm font-bold transition-colors"
                  [class.text-vurger-primary]="paymentMethod() === PaymentMethod.APP"
                  [class.text-vurger-dark]="paymentMethod() !== PaymentMethod.APP">Pagar per l'app</div>
@@ -120,7 +232,7 @@
               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             </svg>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 text-left">
             <div class="text-sm font-bold transition-colors"
                  [class.text-vurger-primary]="paymentMethod() === PaymentMethod.COUNTER"
                  [class.text-vurger-dark]="paymentMethod() !== PaymentMethod.COUNTER">Pagar a la barra</div>
@@ -133,16 +245,15 @@
                  [class.hidden]="paymentMethod() !== PaymentMethod.COUNTER"></div>
           </div>
         </label>
-
       </div>
     } @else {
-      <div class="flex items-center gap-4 p-4 rounded-2xl border-2 border-vurger-primary bg-vurger-pale mb-8">
+      <div class="flex items-center gap-4 p-4 rounded-2xl border-2 border-vurger-primary bg-vurger-pale mb-6">
         <div class="w-12 h-12 rounded-xl bg-vurger-primary flex items-center justify-center shrink-0">
           <svg class="w-6 h-6 stroke-vurger-bg fill-none" stroke-width="2" viewBox="0 0 24 24">
             <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>
           </svg>
         </div>
-        <div class="flex-1">
+        <div class="flex-1 text-left">
           <div class="text-sm font-bold text-vurger-primary">Pagar per l'app</div>
           <div class="text-xs text-vurger-muted mt-1">Única opció per a take away · Targeta, Bizum...</div>
         </div>
@@ -151,6 +262,59 @@
             <path d="M5 13l4 4L19 7"/>
           </svg>
         </div>
+      </div>
+    }
+
+    @if (paymentMethod() === PaymentMethod.APP) {
+      <div class="bg-vurger-surface border-2 border-vurger-border rounded-2xl p-5 mb-6 shadow-inner animate-fade-in text-left">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-[10px] font-bold text-vurger-muted uppercase tracking-wider">Pasarel·la de pagament segura (Stripe Test)</span>
+          <div class="flex gap-1">
+            <span class="text-xs bg-vurger-bg px-2 py-0.5 rounded border border-vurger-border font-mono text-vurger-muted select-none">Visa</span>
+            <span class="text-xs bg-vurger-bg px-2 py-0.5 rounded border border-vurger-border font-mono text-vurger-muted select-none">MC</span>
+          </div>
+        </div>
+
+        <div class="bg-vurger-bg border-2 border-vurger-border rounded-xl p-3.5 flex flex-col gap-3 focus-within:border-vurger-muted transition-colors">
+          <div>
+            <label class="text-[9px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">Número de targeta</label>
+            <input
+              type="text"
+              placeholder="4242 4242 4242 4242"
+              [value]="cardNumber()"
+              (input)="cardNumber.set($any($event.target).value)"
+              class="w-full bg-transparent outline-none text-sm font-mono tracking-widest text-vurger-dark placeholder:text-vurger-muted/60"
+              maxlength="19"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t border-vurger-border/60 pt-2.5">
+            <div>
+              <label class="text-[9px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">Caducitat</label>
+              <input
+                type="text"
+                placeholder="MM / YY"
+                [value]="cardExpiry()"
+                (input)="cardExpiry.set($any($event.target).value)"
+                class="w-full bg-transparent outline-none text-sm font-mono text-vurger-dark placeholder:text-vurger-muted/60"
+                maxlength="5"
+              />
+            </div>
+            <div>
+              <label class="text-[9px] font-bold text-vurger-muted uppercase tracking-wider block mb-1">CVC</label>
+              <input
+                type="password"
+                placeholder="•••"
+                [value]="cardCvc()"
+                (input)="cardCvc.set($any($event.target).value)"
+                class="w-full bg-transparent outline-none text-sm font-mono tracking-widest text-vurger-dark placeholder:text-vurger-muted/60"
+                maxlength="3"
+              />
+            </div>
+          </div>
+        </div>
+        <p class="text-[11px] text-vurger-muted mt-2.5 leading-normal">
+          🔒 Les teues dades s'encripten utilitzant una connexió SSL emulada amb testimonis RSA asimètrics.
+        </p>
       </div>
     }
 
@@ -171,26 +335,51 @@
       </textarea>
     </div>
 
-  </div>
+  </div> <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm lg:max-w-md z-10">
+  <button
+    (click)="submitOrder()"
+    [disabled]="checkoutStore.isLoading() || isStripeProcessing() || cartStore.cart().length === 0 || isFormInvalid() || isStripeFormInvalid()"
+    class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl flex items-center justify-between px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
 
-  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm lg:max-w-md z-10">
-    <button
-      (click)="submitOrder()"
-      [disabled]="checkoutStore.isLoading() || cartStore.cart().length === 0"
-      class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover disabled:opacity-70 disabled:cursor-not-allowed rounded-2xl flex items-center justify-between px-5 shadow-[0_8px_32px_rgba(42,74,53,0.4)] transition-colors">
       <span class="text-sm font-medium text-vurger-bg tracking-wide">
-        {{ checkoutStore.isLoading() ? 'Enviant...' : 'Enviar comanda' }}
+        {{ isStripeProcessing() ? 'Processant pagament Stripe...' : checkoutStore.isLoading() ? 'Enviant...' : 'Enviar comanda' }}
       </span>
 
-      <div class="flex items-center gap-3">
-        <span class="text-sm font-medium text-vurger-pale">{{ cartStore.cartTotal() | currency:'EUR' }}</span>
-        <div class="w-8 h-8 bg-vurger-bg/10 rounded-xl flex items-center justify-center shrink-0">
+    <div class="flex items-center gap-3">
+      <span class="text-sm font-medium text-vurger-pale">{{ cartStore.cartTotal() | currency:'EUR' }}</span>
+      <div class="w-8 h-8 bg-vurger-bg/10 rounded-xl flex items-center justify-center shrink-0">
+        @if (isStripeProcessing()) {
+          <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        } @else {
           <svg class="w-4 h-4 stroke-vurger-bg fill-none" stroke-width="2.5" viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
+            <path d="M5 13l4 4L19 7"/>
+          </svg>
+        }
+      </div>
+    </div>
+  </button>
+</div>
+
+  @if (showErrorModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl border border-red-200">
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4 mx-auto">
+          <svg class="w-6 h-6 stroke-red-600 fill-none" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
           </svg>
         </div>
+        <h3 class="text-lg font-bold text-slate-800 text-center mb-2">Error en l'enviament</h3>
+        <p class="text-sm text-slate-600 text-center mb-6 leading-relaxed">
+          {{ errorMessage() }}
+        </p>
+        <button (click)="showErrorModal.set(false)" class="w-full h-11 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-sm transition-colors">
+          Tancar i corregir
+        </button>
       </div>
-    </button>
-  </div>
+    </div>
+  }
 
-</div>
+</div> ```

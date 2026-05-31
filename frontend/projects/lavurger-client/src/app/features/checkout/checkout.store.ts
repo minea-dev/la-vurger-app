@@ -4,6 +4,7 @@ import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { OrderService } from '@shared';
 import { CartStore } from '@shared';
 import { OrderRequest } from '@shared';
+import { firstValueFrom } from 'rxjs';
 
 type CheckoutState = {
   isLoading: boolean;
@@ -20,13 +21,18 @@ export const CheckoutStore = signalStore(
       cartStore = inject(CartStore),
       router = inject(Router),
     ) => ({
-      sendOrder(checkoutData: { paymentMethod: string; customerComment: string }) {
+      async sendOrder(checkoutData: {
+        paymentMethod: string;
+        customerComment: string;
+        guestName?: string;
+        guestEmail?: string;
+        guestPhone?: string;
+      }) {
         const currentTableId = cartStore.tableId();
         const currentCart = cartStore.cart();
 
         if (currentCart.length === 0) {
-          alert('⚠️ La cistella està buida!');
-          return;
+          throw new Error('La cistella està buida');
         }
 
         patchState(store, { isLoading: true });
@@ -35,6 +41,9 @@ export const CheckoutStore = signalStore(
           orderType: currentTableId ? 'DINE_IN' : 'TAKEAWAY',
           paymentMethod: checkoutData.paymentMethod,
           customerComment: checkoutData.customerComment || '',
+          guestName: checkoutData.guestName,
+          guestEmail: checkoutData.guestEmail,
+          guestPhone: checkoutData.guestPhone,
           items: currentCart.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
@@ -46,23 +55,20 @@ export const CheckoutStore = signalStore(
           orderRequest.tableId = currentTableId;
         }
 
-        orderService.createOrder(orderRequest).subscribe({
-          next: (response) => {
-            console.log('✅ Order created in Back:', response);
-            patchState(store, { isLoading: false });
-            cartStore.clearCart();
+        try {
+          const response = await firstValueFrom(orderService.createOrder(orderRequest));
 
-            router.navigate(['/order-status', response.id], {
-              queryParamsHandling: 'preserve',
-              replaceUrl: true,
-            });
-          },
-          error: (err) => {
-            console.error('❌ Error enviando la comanda:', err);
-            alert("Ha fallat l'enviament de la comanda. Revisa la consola o avisa a un cambrer.");
-            patchState(store, { isLoading: false });
-          },
-        });
+          patchState(store, { isLoading: false });
+          cartStore.clearCart();
+
+          router.navigate(['/order-status', response.id], {
+            queryParamsHandling: 'preserve',
+            replaceUrl: true,
+          });
+        } catch (error) {
+          patchState(store, { isLoading: false });
+          throw error;
+        }
       },
     }),
   ),

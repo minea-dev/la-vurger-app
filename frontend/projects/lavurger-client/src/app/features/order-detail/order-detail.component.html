@@ -1,0 +1,95 @@
+<div class="min-h-screen bg-vurger-bg font-sans text-vurger-dark pb-12">
+  <div class="max-w-md mx-auto px-4 pt-8">
+
+    <header class="flex items-center gap-4 mb-8">
+      <button
+        (click)="backToOrders()"
+        aria-label="Tornar al llistat de comandes"
+        class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-vurger-border hover:bg-vurger-surface transition-colors"
+      >
+        <svg class="w-5 h-5 stroke-vurger-dark fill-none" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div>
+        <h1 class="font-serif text-2xl font-black tracking-tight text-vurger-primary">
+          Detall de la comanda
+        </h1>
+        <p class="text-xs text-vurger-muted tracking-wide uppercase mt-0.5">
+          Resum del tiquet
+        </p>
+      </div>
+    </header>
+
+    @if (isLoading) {
+      <div class="flex justify-center py-12">
+        <div class="w-8 h-8 border-4 border-vurger-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else if (order) {
+      <div class="bg-vurger-surface border-2 border-vurger-border rounded-2xl p-5 flex flex-col gap-5">
+
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-xs text-vurger-muted uppercase tracking-wider font-semibold">Número de comanda</span>
+            <h2 class="text-base font-bold text-vurger-dark mt-0.5">#{{ order.orderNumber }}</h2>
+          </div>
+          <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-vurger-pale text-vurger-primary">
+            {{ statusLabels[order.status || 'RECEIVED'] || order.status }}
+          </span>
+        </div>
+
+        <div class="h-0.5 bg-vurger-border/60 w-full"></div>
+
+        <div>
+          <span class="text-xs text-vurger-muted uppercase tracking-wider font-semibold block">Tipus de servei</span>
+          <span class="text-sm font-bold text-vurger-dark mt-0.5 block">
+            {{ typeLabels[order.orderType || 'DINE_IN'] || order.orderType }}
+          </span>
+        </div>
+
+        <div class="h-0.5 bg-vurger-border/60 w-full"></div>
+
+        <div class="flex flex-col gap-3">
+          <span class="text-xs text-vurger-muted uppercase tracking-wider font-semibold">Resum de plats</span>
+
+          @for (item of order.items; track item.id) {
+            @if (item.product) {
+              <div class="flex justify-between text-sm">
+                <span class="text-vurger-dark font-medium">
+                  <span class="text-vurger-muted font-bold mr-1">{{ item.quantity }}x</span>
+                  {{ item.product.name }}
+                </span>
+                <span class="font-bold text-vurger-primary">{{ item.subtotal | currency:'EUR' }}</span>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="h-0.5 bg-vurger-border/60 w-full"></div>
+
+        <div class="flex justify-between items-center text-vurger-muted text-xs">
+          <span>{{ order.createdAt | date:'dd/MM/yyyy &middot; HH:mm' }}</span>
+          <div class="text-right">
+            <span class="text-xs font-semibold text-vurger-dark block">Total pagat</span>
+            <span class="text-xl font-black text-vurger-primary block mt-0.5">{{ order.totalAmount | currency:'EUR' }}</span>
+          </div>
+        </div>
+
+        <button
+          (click)="repeatOrder()"
+          class="w-full h-14 bg-vurger-primary hover:bg-vurger-primaryHover text-vurger-bg rounded-xl font-medium text-[15px] tracking-wide transition-colors shadow-md flex items-center justify-center gap-2 mt-2"
+        >
+          <svg class="w-5 h-5 stroke-current fill-none shrink-0" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m17 2 4 4-4 4"/>
+            <path d="M3 11v-1a7 7 0 0 1 14-3.5L21 6"/>
+            <path d="m7 22-4-4 4-4"/>
+            <path d="M21 13v1a7 7 0 0 1-14 3.5L3 18"/>
+          </svg>
+          Tornar a demanar
+        </button>
+
+      </div>
+    }
+
+  </div>
+</div>

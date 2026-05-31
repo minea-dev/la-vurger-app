@@ -51,17 +51,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
                         .requestMatchers("/ws-la-vurger/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER")
 
-                        .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/api/users/favorites", "/api/users/favorites/**").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
 
                         .anyRequest().authenticated()
                 )

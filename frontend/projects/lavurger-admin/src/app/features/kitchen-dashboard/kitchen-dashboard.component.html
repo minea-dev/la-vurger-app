@@ -19,19 +19,37 @@
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
-
         <div *ngFor="let order of pendingOrders"
+             [class.animate-new-card]="recentlyAddedOrderIds.has(order.id)"
              class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
 
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-1.5">
-                {{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
+
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
               </div>
             </div>
-            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-600">
-              {{ order.createdAt | date:'HH:mm' }}
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-600 text-white">
+                {{ order.createdAt | date:'HH:mm' }}
+              </div>
+              <button *ngIf="hasCustomerInfo(order)" (click)="openInfoModal(order)"
+                      class="flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-[11px] font-bold transition-colors shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <span>Client</span>
+              </button>
             </div>
           </div>
 
@@ -51,7 +69,7 @@
           </div>
 
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
-            <button (click)="cancelOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
+            <button (click)="triggerCancelConfirmation(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
               Cancel·lar
             </button>
             <button (click)="startOrder(order.id)" class="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
@@ -59,7 +77,6 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -73,21 +90,36 @@
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
-
         <div *ngFor="let order of inProgressOrders" class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
+
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-1.5">{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</div>
-            </div>
-            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-orange-50 text-orange-600">
-              {{ order.createdAt | date:'HH:mm' }}
-            </div>
-          </div>
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
 
-          <div *ngIf="order.customerComment" class="bg-orange-50/50 border border-orange-100 rounded-lg p-2.5 mb-3 flex gap-2 items-start">
-            <span class="text-[10px]">💬</span>
-            <span class="text-xs text-orange-700 italic font-medium">"{{ order.customerComment }}"</span>
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-600 text-white">
+                {{ order.createdAt | date:'HH:mm' }}
+              </div>
+              <button *ngIf="hasCustomerInfo(order)" (click)="openInfoModal(order)"
+                      class="flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-[11px] font-bold transition-colors shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <span>Client</span>
+              </button>
+            </div>
           </div>
 
           <div class="space-y-2.5 mb-4">
@@ -101,7 +133,7 @@
           </div>
 
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
-            <button (click)="cancelOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
+            <button (click)="triggerCancelConfirmation(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
               Cancel·lar
             </button>
             <button (click)="finishOrder(order.id)" class="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm">
@@ -109,7 +141,6 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -124,7 +155,7 @@
 
       <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 opacity-80">
         <div *ngIf="readyOrders.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
-          <svg class="w-10 h-10 mb-3 stroke-current opacity-30" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <svg class="w-10 h-10 mb-3 stroke-current opacity-30" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0118 0z" /></svg>
           <p class="text-[13px] font-medium">No hi ha comandes pendents d'entrega</p>
         </div>
 
@@ -132,9 +163,31 @@
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-1.5">{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</div>
+              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+                <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
+
+                <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
+                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
+                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  {{ order.estimatedTime }} min
+                </span>
+              </div>
             </div>
-            <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600">—</div>
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-600 text-white">
+                {{ order.createdAt | date:'HH:mm' }}
+              </div>
+              <button *ngIf="hasCustomerInfo(order)" (click)="openInfoModal(order)"
+                      class="flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-[11px] font-bold transition-colors shadow-sm">
+                <svg class="w-3.5 h-3.5 fill-none stroke-current" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <span>Client</span>
+              </button>
+            </div>
           </div>
 
           <div class="space-y-2.5 mb-4">
@@ -151,13 +204,65 @@
             <button (click)="returnOrder(order.id)" class="flex-1 py-1.5 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors">
               Retornar
             </button>
-            <button (click)="deliverOrder(order.id)" class="flex-1 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
-              ✓ Entregat
+            <button (click)="dispatchOrder(order.id)" class="flex-1 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors shadow-sm">
+              ✓ Despatxar
             </button>
           </div>
         </div>
       </div>
     </div>
 
+  </div>
+</div>
+
+<div *ngIf="selectedOrderForModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl border border-slate-200 animate-fade-in">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-bold text-slate-800">Dades de Contacte</h3>
+      <button (click)="closeInfoModal()" class="text-slate-400 hover:text-slate-600 p-1 transition-colors rounded-lg hover:bg-slate-50">
+        <svg class="w-6 h-6 stroke-current fill-none" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Nom del Client</span>
+        <span class="text-sm font-semibold text-slate-700 block mt-0.5">{{ getCustomerName(selectedOrderForModal) }}</span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Telèfon Mòbil</span>
+        <span class="text-sm font-semibold text-slate-700 block mt-0.5">{{ getCustomerPhone(selectedOrderForModal) }}</span>
+      </div>
+      <div *ngIf="getCustomerEmail(selectedOrderForModal)">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Correu Electrònic</span>
+        <a [href]="'mailto:' + getCustomerEmail(selectedOrderForModal)" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline block mt-0.5 break-all">
+          {{ getCustomerEmail(selectedOrderForModal) }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="orderIdForCancelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl border border-red-100 animate-fade-in text-center">
+    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4 mx-auto">
+      <svg class="w-6 h-6 stroke-red-600 fill-none" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+    </div>
+    <h3 class="text-lg font-bold text-slate-800 mb-2">Cancel·lar Comanda</h3>
+    <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+      Estàs segur que vols cancel·lar aquesta comanda? Aquesta acció no es pot desfer i es perdrà l'històric.
+    </p>
+    <div class="flex gap-3">
+      <button (click)="closeCancelModal()" class="flex-1 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors">
+        No, tornar
+      </button>
+      <button (click)="confirmCancelOrder()" class="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-sm transition-colors shadow-sm">
+        Sí, cancel·lar
+      </button>
+    </div>
   </div>
 </div>

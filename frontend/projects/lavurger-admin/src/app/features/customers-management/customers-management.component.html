@@ -1,0 +1,146 @@
+<div class="absolute inset-0 flex flex-col bg-admin-bg overflow-hidden">
+
+  <div class="px-5 py-3.5 bg-admin-white border-b border-admin-border flex items-center gap-3 shrink-0 z-10">
+    <div>
+      <div class="text-[15px] font-bold text-admin-text">Gestió de Clients Externs</div>
+      <div class="text-[11px] text-admin-text3">Llistat operatiu i control d'accés a l'aplicació</div>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <input type="text" placeholder="Cercar per nom, email o mòbil..."
+           [(ngModel)]="searchTerm"
+           class="h-[34px] px-3 border border-admin-border rounded-md bg-admin-bg text-[13px] text-admin-text outline-none w-[240px] transition-colors focus:border-admin-blue focus:bg-admin-white">
+  </div>
+
+  <div class="flex-1 overflow-y-auto scrollbar-thin bg-admin-white relative z-0">
+
+    <div *ngIf="isLoading" class="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+      <div class="w-8 h-8 border-4 border-slate-200 border-t-admin-blue rounded-full animate-spin"></div>
+      <span class="text-xs font-semibold text-slate-500 mt-2">Sincronitzant clients...</span>
+    </div>
+
+    <table class="w-full border-collapse text-left">
+      <thead class="sticky top-0 z-10">
+      <tr>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[35%]">Client</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[30%]">Correu Electrònic</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[20%]">Telèfon Mòbil</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white w-[15%]">Estat Accés</th>
+        <th class="px-5 py-3 text-[11px] font-bold text-admin-text3 uppercase tracking-[0.8px] border-b-2 border-admin-border bg-admin-white text-right w-[10%]">Accions</th>
+      </tr>
+      </thead>
+      <tbody>
+
+      <tr *ngIf="filteredCustomers.length === 0">
+        <td colspan="5" class="px-5 py-10 text-center text-[13px] font-medium text-admin-text3">
+          No s'ha trobat cap client extern registrat amb aquests criteris.
+        </td>
+      </tr>
+
+      <tr *ngFor="let customer of filteredCustomers" class="border-b border-admin-border hover:bg-[#F8FAFB] transition-colors" [class.opacity-60]="!customer.isActive">
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-admin-bg border border-admin-border flex items-center justify-center shrink-0 text-base select-none">
+              👤
+            </div>
+            <div class="font-bold text-[14px] text-admin-text">{{ customer.name }}</div>
+          </div>
+        </td>
+
+        <td class="px-5 py-3 align-middle text-[13px] text-admin-text2 font-medium">
+          {{ customer.email }}
+        </td>
+
+        <td class="px-5 py-3 align-middle text-[13px] text-admin-text3 font-mono">
+          {{ customer.phone || '— No especificat' }}
+        </td>
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full border w-fit"
+               [ngClass]="customer.isActive ? 'bg-admin-green-lt border-admin-green/20 text-admin-green' : 'bg-admin-red-lt border-admin-red/20 text-admin-red'">
+            <div class="w-1.5 h-1.5 rounded-full" [ngClass]="customer.isActive ? 'bg-admin-green' : 'bg-admin-red'"></div>
+            <span class="text-[11px] font-bold">{{ customer.isActive ? 'Actiu' : 'Banejat' }}</span>
+          </div>
+        </td>
+
+        <td class="px-5 py-3 align-middle">
+          <div class="flex gap-2 justify-end">
+            <button (click)="openEditModal(customer)" title="Editar client" class="w-[32px] h-[32px] rounded-md border border-admin-border bg-admin-white flex items-center justify-center cursor-pointer hover:bg-admin-blue-lt text-admin-text3 hover:text-admin-blue transition-colors">
+              <svg class="w-[14px] h-[14px] stroke-current pointer-events-none" stroke-width="2" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+
+            <button (click)="toggleCustomerStatus(customer)" [title]="customer.isActive ? 'Bloquejar client' : 'Desbloquejar client'"
+                    class="w-[32px] h-[32px] rounded-md border border-admin-border bg-admin-white flex items-center justify-center cursor-pointer transition-colors"
+                    [ngClass]="customer.isActive ? 'hover:bg-admin-red-lt text-admin-text3 hover:text-admin-red' : 'hover:bg-admin-green-lt text-admin-text3 hover:text-admin-green'">
+              <svg class="w-[14px] h-[14px] stroke-current pointer-events-none" stroke-width="2" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                <line x1="12" y1="2" x2="12" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="selectedCustomer" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+    <div class="w-[420px] bg-admin-white rounded-[10px] shadow-2xl overflow-hidden flex flex-col">
+      <div class="px-5 py-4 border-b border-admin-border flex items-center justify-between bg-[#F8FAFB]">
+        <div>
+          <div class="text-[15px] font-bold text-admin-text">Modificar Dades de Contacte</div>
+          <div class="text-[11px] text-admin-text3 mt-0.5">Registre de client: {{ selectedCustomer.email }}</div>
+        </div>
+        <button (click)="closeModal()" class="w-[28px] h-[28px] border border-admin-border bg-white rounded-md flex items-center justify-center hover:bg-admin-bg transition-colors">
+          <svg class="w-3.5 h-3.5 stroke-admin-text3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="onSave()" class="p-5 flex flex-col gap-3.5">
+
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Nom complet</label>
+          <input type="text" formControlName="name"
+                 class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors"
+                 [ngClass]="editForm.controls.name.touched && editForm.controls.name.invalid ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="editForm.controls.name.touched && editForm.controls.name.errors?.['required']" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              El nom és obligatori.
+            </div>
+            <div *ngIf="editForm.controls.name.touched && editForm.controls.name.errors?.['pattern']" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Només es permeten lletres.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Telèfon mòbil</label>
+          <input type="text" formControlName="phone"
+                 class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors"
+                 [ngClass]="editForm.controls.phone.touched && editForm.controls.phone.invalid ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="editForm.controls.phone.touched && editForm.controls.phone.errors?.['required']" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              El mòbil és obligatori.
+            </div>
+            <div *ngIf="editForm.controls.phone.touched && editForm.controls.phone.errors?.['pattern']" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Format incorrecte (deuen ser 9 dígits).
+            </div>
+          </div>
+        </div>
+
+        <div class="px-5 py-4 border-t border-admin-border flex justify-end gap-2 bg-[#F8FAFB] -mx-5 -mb-5 mt-2">
+          <button type="button" (click)="closeModal()" class="h-[34px] px-4 border border-admin-border rounded-md bg-white text-[12px] font-semibold text-admin-text2 hover:bg-admin-bg transition-colors">Cancel·lar</button>
+          <button type="submit" [disabled]="editForm.invalid" class="h-[34px] px-5 rounded-md bg-admin-blue text-white text-[12px] font-semibold hover:bg-[#084f9a] transition-colors disabled:opacity-50 disabled:pointer-events-none">Desar canvis</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -31,7 +31,18 @@ public class OrderMapper {
             return null;
         }
 
-        Long customerId = (entity.getCustomer() != null) ? entity.getCustomer().getId() : null;
+        Long customerId = null;
+        String customerName = null;
+        String customerEmail = null;
+        String customerPhone = null;
+
+        if (entity.getCustomer() != null) {
+            customerId = entity.getCustomer().getId();
+            customerName = entity.getCustomer().getName();
+            customerEmail = entity.getCustomer().getEmail();
+            customerPhone = entity.getCustomer().getPhone();
+        }
+
         Long tableId = (entity.getRestaurantTable() != null) ? entity.getRestaurantTable().getId() : null;
 
         List<OrderItemDTO> itemsDTO = entity.getItems() != null ?
@@ -57,7 +68,17 @@ public class OrderMapper {
                 customerId,
                 tableId,
                 itemsDTO,
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+
+                entity.getGuestName(),
+                entity.getGuestEmail(),
+                entity.getGuestPhone(),
+
+                customerName,
+                customerEmail,
+                customerPhone,
+
+                entity.getEstimatedTime()
         );
     }
 
@@ -84,6 +105,10 @@ public class OrderMapper {
         entity.setTotalAmount(dto.totalAmount());
         entity.setCustomerComment(dto.customerComment());
         entity.setCreatedAt(dto.createdAt() != null ? dto.createdAt() : LocalDateTime.now());
+
+        entity.setGuestName(dto.guestName());
+        entity.setGuestEmail(dto.guestEmail());
+        entity.setGuestPhone(dto.guestPhone());
 
         if (dto.customerId() != null) {
             User customer = new User();

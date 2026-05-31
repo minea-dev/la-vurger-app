@@ -52,7 +52,10 @@
             <app-user-avatar [name]="user.name" [role]="user.role" [isActive]="user.isActive" [size]="36"></app-user-avatar>
             <div>
               <div class="font-bold text-[14px] text-admin-text">{{ user.name }}</div>
-              <div class="text-[12px] text-admin-text3">{{ user.email }}</div>
+              <div class="text-[12px] text-admin-text3 flex flex-col">
+                <span>{{ user.email }}</span>
+                <span *ngIf="user.phone" class="text-[11px] text-admin-text3/80 font-medium">📞 {{ user.phone }}</span>
+              </div>
             </div>
           </div>
         </td>
@@ -105,9 +108,10 @@
         <div class="text-[15px] font-bold text-admin-text">Nou usuari del sistema</div>
         <button (click)="closeAddModal()" class="w-[28px] h-[28px] border border-admin-border rounded-md flex items-center justify-center hover:bg-admin-bg"><svg class="w-3.5 h-3.5 stroke-admin-text3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
       </div>
-      <div class="p-5 flex flex-col gap-4">
 
-        <div *ngIf="modalError" class="p-3 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight">
+      <div class="p-5 flex flex-col gap-3 max-h-[70dvh] overflow-y-auto scrollbar-thin">
+
+        <div *ngIf="modalError" class="p-2.5 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight mb-2">
           <svg class="w-4 h-4 stroke-current shrink-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
           {{ modalError }}
         </div>
@@ -115,27 +119,47 @@
         <div>
           <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Nom complet</label>
           <input type="text" [(ngModel)]="selectedUser.name" (ngModelChange)="checkName()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="nameErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-          <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            {{ nameErrorReactive }}
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              {{ nameErrorReactive }}
+            </div>
           </div>
         </div>
+
         <div>
           <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Correu electrònic</label>
           <input type="email" [(ngModel)]="selectedUser.email" (ngModelChange)="checkEmail()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="emailErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-          <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            {{ emailErrorReactive }}
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              {{ emailErrorReactive }}
+            </div>
           </div>
         </div>
+
+        <div>
+          <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Telèfon mòbil <span class="text-admin-text3/60 font-normal italic">(Opcional)</span></label>
+          <input type="tel" [(ngModel)]="selectedUser.phone" (ngModelChange)="checkPhone()" placeholder="Ex: 612345678" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="phoneErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="phoneErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              {{ phoneErrorReactive }}
+            </div>
+          </div>
+        </div>
+
         <div>
           <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Contrasenya segura</label>
           <input type="password" [(ngModel)]="selectedUser.password" (ngModelChange)="checkPassword(false)" placeholder="Mínim 8 caràcters, números i símbols" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] bg-white outline-none transition-colors" [ngClass]="passwordErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-          <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-            <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-            {{ passwordErrorReactive }}
+          <div class="h-3.5 mt-0.5">
+            <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+              <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              {{ passwordErrorReactive }}
+            </div>
           </div>
         </div>
+
         <div>
           <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Rol d'accés</label>
           <select [(ngModel)]="selectedUser.role" class="w-full h-[36px] px-3 border border-admin-border rounded-[6px] text-[13px] bg-white outline-none focus:border-admin-blue">
@@ -144,6 +168,7 @@
             <option [value]="Role.KITCHEN">Cuina (Cap / Ajudant)</option>
             <option [value]="Role.CASHIER">Sala / Cambrer</option>
           </select>
+          <div class="h-3.5 mt-0.5"></div>
         </div>
       </div>
       <div class="px-5 py-4 border-t border-admin-border flex justify-end gap-2 bg-[#F8FAFB]">
@@ -160,9 +185,9 @@
       <button (click)="closeEditDrawer()" class="w-[28px] h-[28px] border border-admin-border bg-white rounded-md flex items-center justify-center hover:bg-admin-bg transition-colors"><svg class="w-3.5 h-3.5 stroke-admin-text3 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+    <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-3.5">
 
-      <div class="flex items-center gap-3 pb-4 border-b border-admin-border">
+      <div class="flex items-center gap-3 pb-4 border-b border-admin-border mb-1">
         <app-user-avatar [name]="selectedUser.name || ''" [role]="selectedUser.role || ''" [isActive]="selectedUser.isActive || false" [size]="48"></app-user-avatar>
         <div>
           <div class="font-bold text-[15px] text-admin-text">{{ selectedUser.name }}</div>
@@ -170,7 +195,7 @@
         </div>
       </div>
 
-      <div *ngIf="modalError" class="p-3 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight">
+      <div *ngIf="modalError" class="p-2.5 rounded-md bg-admin-red-lt border border-admin-red/20 text-[12px] font-semibold text-admin-red flex items-center gap-2 leading-tight mb-1">
         <svg class="w-4 h-4 stroke-current shrink-0 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
         {{ modalError }}
       </div>
@@ -178,26 +203,44 @@
       <div>
         <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Nom complet</label>
         <input type="text" [(ngModel)]="selectedUser.name" (ngModelChange)="checkName()" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] outline-none transition-colors" [ngClass]="nameErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-        <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          {{ nameErrorReactive }}
+        <div class="h-3.5 mt-0.5">
+          <div *ngIf="nameErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+            <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ nameErrorReactive }}
+          </div>
         </div>
       </div>
+
       <div>
         <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Correu electrònic</label>
         <input type="email" [(ngModel)]="selectedUser.email" (ngModelChange)="checkEmail()" class="w-full h-[36px] px-3 border border-admin-border rounded-[6px] text-[13px] outline-none transition-colors" [ngClass]="emailErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-        <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          {{ emailErrorReactive }}
+        <div class="h-3.5 mt-0.5">
+          <div *ngIf="emailErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+            <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ emailErrorReactive }}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Telèfon mòbil <span class="text-admin-text3/60 font-normal italic">(Opcional)</span></label>
+        <input type="tel" [(ngModel)]="selectedUser.phone" (ngModelChange)="checkPhone()" placeholder="Ex: 612345678" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] outline-none transition-colors" [ngClass]="phoneErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
+        <div class="h-3.5 mt-0.5">
+          <div *ngIf="phoneErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+            <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ phoneErrorReactive }}
+          </div>
         </div>
       </div>
 
       <div>
         <label class="block text-[12px] font-bold text-admin-text2 mb-1.5">Canviar contrasenya</label>
         <input type="password" [(ngModel)]="selectedUser.password" (ngModelChange)="checkPassword(true)" placeholder="Deixar en blanc per no canviar" class="w-full h-[36px] px-3 border rounded-[6px] text-[13px] outline-none transition-colors placeholder:italic" [ngClass]="passwordErrorReactive ? 'border-admin-red focus:border-admin-red' : 'border-admin-border focus:border-admin-blue'">
-        <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium mt-1.5 flex items-start gap-1">
-          <svg class="w-3 h-3 stroke-current shrink-0 mt-[1px]" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          {{ passwordErrorReactive }}
+        <div class="h-3.5 mt-0.5">
+          <div *ngIf="passwordErrorReactive" class="text-admin-red text-[11px] font-medium flex items-center gap-1 leading-none">
+            <svg class="w-3 h-3 stroke-current shrink-0" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {{ passwordErrorReactive }}
+          </div>
         </div>
       </div>
 
@@ -209,6 +252,7 @@
           <option [value]="Role.KITCHEN">Cuina (Cap / Ajudant)</option>
           <option [value]="Role.CASHIER">Sala / Cambrer</option>
         </select>
+        <div class="h-3.5 mt-0.5"></div>
       </div>
     </div>
 

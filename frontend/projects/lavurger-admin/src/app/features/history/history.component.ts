@@ -14,36 +14,90 @@ export class HistoryComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   orders: OrderDTO[] = [];
+  isHistoryLoading = false;
+  selectedOrder: OrderDTO | null = null;
+  filterType: 'day' | 'range' = 'day';
   filterDate: string = '';
+  startDate: string = '';
+  endDate: string = '';
 
   OrderStatus = OrderStatus;
   PaymentStatus = PaymentStatus;
+
+  translatedStatuses: Partial<Record<OrderStatus, string>> = {
+    [OrderStatus.RECEIVED]: 'Rebuda',
+    [OrderStatus.PREPARING]: 'En preparació',
+    [OrderStatus.READY]: 'Llest',
+    [OrderStatus.COMPLETED]: 'Completada',
+    [OrderStatus.DISPATCHED]: 'Lliurat',
+    [OrderStatus.CANCELLED]: 'Cancel·lada'
+  };
 
   ngOnInit() {
     this.loadOrders();
   }
 
   loadOrders() {
-    this.orderService.getOrders().subscribe({
+    this.isHistoryLoading = true;
+    this.cdr.detectChanges();
+
+    let historyObservable$;
+
+    if (this.filterType === 'range' && this.startDate && this.endDate) {
+      historyObservable$ = this.orderService.getHistoryAdmin(undefined, this.startDate, this.endDate);
+    } else if (this.filterType === 'day' && this.filterDate) {
+      historyObservable$ = this.orderService.getHistoryAdmin(this.filterDate);
+    } else {
+      historyObservable$ = this.orderService.getHistoryAdmin();
+    }
+
+    historyObservable$.subscribe({
       next: (data) => {
-        // Guardamos y ordenamos
-        this.orders = (data || []).sort((a, b) => (b.id || 0) - (a.id || 0));
+        this.orders = data || [];
+        this.isHistoryLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Error carregant històric:', err);
+        console.error('Error loading history:', err);
+        this.isHistoryLoading = false;
         this.cdr.detectChanges();
       },
     });
   }
 
-  get filteredOrders() {
-    if (!this.filterDate) return this.orders;
+  onDateChange() {
+    if (this.filterType === 'range' && (!this.startDate || !this.endDate)) {
+      return;
+    }
+    this.loadOrders();
+  }
 
-    return this.orders.filter((order) => {
-      if (!order.createdAt) return false;
-      const orderDateStr = new Date(order.createdAt).toISOString().split('T')[0];
-      return orderDateStr === this.filterDate;
-    });
+  clearFilter() {
+    this.filterDate = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.loadOrders();
+  }
+
+  getCustomerType(order: OrderDTO): 'USER' | 'GUEST' | 'ANONYMOUS' {
+    if (order.customerName || order.customerPhone) return 'USER';
+    if (order.guestName) return 'GUEST';
+    return 'ANONYMOUS';
+  }
+
+  getCustomerName(order: OrderDTO): string {
+    if (order.customerName) return order.customerName;
+    if (order.guestName) return order.guestName;
+    return order.orderType === 'DINE_IN' ? `Taula ${order.tableId}` : 'Anònim';
+  }
+
+  openDetails(order: OrderDTO) {
+    this.selectedOrder = order;
+    this.cdr.detectChanges();
+  }
+
+  closeDetails() {
+    this.selectedOrder = null;
+    this.cdr.detectChanges();
   }
 }

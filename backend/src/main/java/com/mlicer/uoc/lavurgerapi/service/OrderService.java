@@ -6,6 +6,7 @@ import com.mlicer.uoc.lavurgerapi.entity.Order;
 import com.mlicer.uoc.lavurgerapi.entity.OrderItem;
 import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.RestaurantTable;
+import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.OrderStatus;
 import com.mlicer.uoc.lavurgerapi.entity.enums.OrderType;
 import com.mlicer.uoc.lavurgerapi.entity.enums.PaymentStatus;
@@ -15,8 +16,11 @@ import com.mlicer.uoc.lavurgerapi.mapper.OrderMapper;
 import com.mlicer.uoc.lavurgerapi.repository.OrderRepository;
 import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.RestaurantTableRepository;
+import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,9 +49,20 @@ public class OrderService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Transactional
     public OrderDTO createOrder(OrderRequestDTO orderRequest) {
         Order order = new Order();
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            String currentEmail = authentication.getName();
+            userRepository.findByEmail(currentEmail).ifPresent(user -> {
+                order.setCustomer(user);
+            });
+        }
 
         if (orderRequest.tableId() != null) {
             RestaurantTable table = tableRepository.findById(orderRequest.tableId())
@@ -61,10 +76,14 @@ public class OrderService {
         order.setPaymentMethod(orderRequest.paymentMethod() != null ? orderRequest.paymentMethod() : PaymentMethod.COUNTER);
 
         order.setCustomerComment(orderRequest.customerComment());
+        order.setGuestName(orderRequest.guestName());
+        order.setGuestEmail(orderRequest.guestEmail());
+        order.setGuestPhone(orderRequest.guestPhone());
 
         order.setStatus(OrderStatus.RECEIVED);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
+
         if (order.getPaymentMethod() == PaymentMethod.APP) {
             order.setPaymentStatus(PaymentStatus.PAID);
         } else {
@@ -87,7 +106,6 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.quantity());
-
             orderItem.setNotes(itemReq.notes());
 
             BigDecimal itemPrice = product.getPrice();
@@ -103,6 +121,8 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
         OrderDTO orderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", orderDTO);
@@ -122,13 +142,18 @@ public class OrderService {
         } else {
             orders = orderRepository.findAll();
         }
-        return orders.stream().map(orderMapper::toDTO).collect(Collectors.toList());
+
+        return orders.stream().map(order -> {
+            injectEstimatedTime(order);
+            return orderMapper.toDTO(order);
+        }).collect(Collectors.toList());
     }
 
     public OrderDTO getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
 
+        injectEstimatedTime(order);
         return orderMapper.toDTO(order);
     }
 
@@ -139,13 +164,23 @@ public class OrderService {
 
         try {
             OrderStatus statusEnum = OrderStatus.valueOf(newStatus.toUpperCase().trim());
+
+            if (statusEnum == OrderStatus.DISPATCHED &&
+                    order.getOrderType() == OrderType.DINE_IN &&
+                    order.getPaymentStatus() == PaymentStatus.PAID) {
+                statusEnum = OrderStatus.COMPLETED;
+            }
+
             order.setStatus(statusEnum);
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + newStatus);
         }
 
-        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
@@ -163,16 +198,137 @@ public class OrderService {
             PaymentStatus statusEnum = PaymentStatus.valueOf(cleanStatus);
 
             order.setPaymentStatus(statusEnum);
+
+            if (statusEnum == PaymentStatus.PAID &&
+                    order.getOrderType() == OrderType.DINE_IN &&
+                    order.getStatus() == OrderStatus.DISPATCHED) {
+                order.setStatus(OrderStatus.COMPLETED);
+            }
+
             order.setUpdatedAt(LocalDateTime.now());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid payment status value: " + newPaymentStatus);
         }
 
-        OrderDTO updatedOrderDTO = orderMapper.toDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+
+        injectEstimatedTime(savedOrder);
+        OrderDTO updatedOrderDTO = orderMapper.toDTO(savedOrder);
 
         messagingTemplate.convertAndSend("/topic/orders", updatedOrderDTO);
         messagingTemplate.convertAndSend("/topic/orders/" + id, updatedOrderDTO);
 
         return updatedOrderDTO;
+    }
+
+    public List<OrderDTO> getOrdersByCustomerEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(user.getId()).stream()
+                .map(order -> {
+                    injectEstimatedTime(order);
+                    return orderMapper.toDTO(order);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void injectEstimatedTime(Order order) {
+        if (order.getOrderType() == OrderType.TAKEAWAY &&
+                (order.getStatus() == OrderStatus.RECEIVED || order.getStatus() == OrderStatus.PREPARING)) {
+            order.setEstimatedTime(calculateEstimatedTimeInMinutes(order));
+        }
+    }
+
+    public int calculateEstimatedTimeInMinutes(Order order) {
+        double eta = 3.0;
+        double orderTime = 0.0;
+
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getProduct() != null && item.getProduct().getCategory() != null) {
+                    orderTime += getCategoryPrepTime(item.getProduct().getCategory()) * item.getQuantity();
+                }
+            }
+        }
+        eta += orderTime;
+
+        List<Order> activeOrders = new ArrayList<>();
+        activeOrders.addAll(orderRepository.findByStatus(OrderStatus.RECEIVED));
+        activeOrders.addAll(orderRepository.findByStatus(OrderStatus.PREPARING));
+
+        double queueTime = 0.0;
+        for (Order activeOrder : activeOrders) {
+            if (order.getId() == null || !activeOrder.getId().equals(order.getId())) {
+                if (activeOrder.getItems() != null) {
+                    for (OrderItem item : activeOrder.getItems()) {
+                        if (item.getProduct() != null && item.getProduct().getCategory() != null) {
+                            queueTime += getCategoryPrepTime(item.getProduct().getCategory()) * item.getQuantity();
+                        }
+                    }
+                }
+            }
+        }
+
+        eta += (queueTime * 0.5);
+
+        if (order.getOrderType() == OrderType.TAKEAWAY) {
+            eta += 8.0;
+        }
+
+        return (int) Math.ceil(eta);
+    }
+
+    private double getCategoryPrepTime(String category) {
+        if (category == null) return 1.5;
+
+        return switch (category.toUpperCase().trim()) {
+            case "BURGERS", "BURRITOS" -> 3.0;
+            case "SIDES" -> 1.5;
+            case "DESSERTS" -> 1.0;
+            case "DRINKS" -> 0.5;
+            default -> 1.5;
+        };
+    }
+
+    public List<OrderDTO> getRecentOrdersByStatus(String status, int hours) {
+        try {
+            OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase().trim());
+            LocalDateTime thresholdDate = LocalDateTime.now().minusHours(hours);
+
+            return orderRepository.findByStatusAndCreatedAtAfterOrderByIdDesc(orderStatus, thresholdDate)
+                    .stream()
+                    .map(order -> {
+                        injectEstimatedTime(order);
+                        return orderMapper.toDTO(order);
+                    }).collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            return List.of();
+        }
+    }
+
+    public List<OrderDTO> getHistoryOrders(String dateStr, String startDateStr, String endDateStr) {
+        List<Order> orders;
+
+        if (startDateStr != null && !startDateStr.isBlank() && endDateStr != null && !endDateStr.isBlank()) {
+            java.time.LocalDate start = java.time.LocalDate.parse(startDateStr);
+            java.time.LocalDate end = java.time.LocalDate.parse(endDateStr);
+            orders = orderRepository.findByCreatedAtBetweenOrderByIdDesc(
+                    start.atStartOfDay(),
+                    end.atTime(java.time.LocalTime.MAX)
+            );
+        } else if (dateStr != null && !dateStr.isBlank()) {
+            java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+            orders = orderRepository.findByCreatedAtBetweenOrderByIdDesc(
+                    date.atStartOfDay(),
+                    date.atTime(java.time.LocalTime.MAX)
+            );
+        } else {
+            orders = orderRepository.findTop150ByOrderByIdDesc();
+        }
+
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

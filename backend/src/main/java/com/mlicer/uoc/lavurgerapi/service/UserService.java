@@ -1,11 +1,14 @@
 package com.mlicer.uoc.lavurgerapi.service;
 
+import com.mlicer.uoc.lavurgerapi.dto.ProductDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserDTO;
 import com.mlicer.uoc.lavurgerapi.dto.UserRequestDTO;
+import com.mlicer.uoc.lavurgerapi.entity.Product;
 import com.mlicer.uoc.lavurgerapi.entity.User;
 import com.mlicer.uoc.lavurgerapi.entity.enums.Role;
-import com.mlicer.uoc.lavurgerapi.exception.ResourceNotFoundException;
+import com.mlicer.uoc.lavurgerapi.mapper.ProductMapper;
 import com.mlicer.uoc.lavurgerapi.mapper.UserMapper;
+import com.mlicer.uoc.lavurgerapi.repository.ProductRepository;
 import com.mlicer.uoc.lavurgerapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +24,14 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private ProductMapper productMapper;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -29,76 +39,82 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public List<UserDTO> getUsersByRole(Role role) {
+        return userRepository.findByRole(role).stream()
+                .map(UserMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
         return UserMapper.toDTO(user);
     }
 
-    public UserDTO createUser(UserRequestDTO request) {
-        if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email is already in use");
-        }
-
-        if (request.password() == null || request.password().trim().isEmpty()) {
-            throw new IllegalArgumentException("Password is required for new users");
-        }
-
-        validatePasswordStrength(request.password());
-
+    public UserDTO createUser(UserRequestDTO dto) {
         User user = new User();
-        user.setName(request.name());
-        user.setEmail(request.email());
-        user.setRole(Role.valueOf(request.role().toUpperCase()));
+        user.setName(dto.name());
+        user.setEmail(dto.email());
+
+        user.setPassword(passwordEncoder.encode(dto.password()));
+
+        user.setRole(dto.role());
+        user.setPhone(dto.phone());
         user.setActive(true);
-        user.setPassword(passwordEncoder.encode(request.password()));
-
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public UserDTO updateUser(Long id, UserRequestDTO request) {
+    public UserDTO updateUser(Long id, UserRequestDTO dto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
 
-        if (!user.getEmail().equals(request.email()) && userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email is already in use");
+        user.setName(dto.name());
+        user.setEmail(dto.email());
+        user.setPhone(dto.phone());
+
+        if (dto.role() != null) {
+            user.setRole(dto.role());
         }
 
-        user.setName(request.name());
-        user.setEmail(request.email());
-        user.setRole(Role.valueOf(request.role().toUpperCase()));
-
-        if (request.password() != null && !request.password().trim().isEmpty()) {
-            validatePasswordStrength(request.password());
-            user.setPassword(passwordEncoder.encode(request.password()));
+        if (dto.password() != null && !dto.password().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(dto.password()));
         }
 
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    public UserDTO toggleUserStatus(Long id, boolean isActive) {
+    public UserDTO toggleUserStatus(Long id, Boolean isActive) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
         user.setActive(isActive);
         return UserMapper.toDTO(userRepository.save(user));
     }
 
-    private void validatePasswordStrength(String password) {
-        if (password.length() < 8) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long");
-        }
-        if (!password.matches(".*[A-Z].*")) {
-            throw new IllegalArgumentException("Password must contain at least one uppercase letter");
-        }
-        if (!password.matches(".*[a-z].*")) {
-            throw new IllegalArgumentException("Password must contain at least one lowercase letter");
-        }
-        if (!password.matches(".*\\d.*")) {
-            throw new IllegalArgumentException("Password must contain at least one number");
-        }
-        if (!password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
-            throw new IllegalArgumentException("Password must contain at least one special character");
-        }
+    public List<ProductDTO> getUserFavorites(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
+
+        return user.getFavorites().stream()
+                .map(productMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void addFavorite(String email, Long productId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Producte no trobat"));
+
+        user.getFavorites().add(product);
+        userRepository.save(user);
+    }
+
+    public void removeFavorite(String email, Long productId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuari no trobat"));
+
+        user.getFavorites().removeIf(p -> p.getId().equals(productId));
+        userRepository.save(user);
     }
 }
