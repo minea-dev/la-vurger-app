@@ -16,12 +16,12 @@ services:
     restart: always
 
   frontend:
+    image: la-vurger-app-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: lavurger-front
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - api
     restart: always
