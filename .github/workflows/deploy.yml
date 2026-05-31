@@ -22,7 +22,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-          
       - name: 🛡️ SonarQube Analysis (Backend)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,20 +57,27 @@ jobs:
         run: |
           docker compose up -d --build
           sleep 15
+          echo "=== TRIPAS DE DOCKER (¿ESTÁN VIVOS?) ==="
+          docker compose ps
 
-      - name: 🌐 Serve Frontend Dev Ports for Playwright
+      - name: 🌐 🎭 Serve Frontend & Run Playwright Tests (CON LOGS VIVOS)
         working-directory: ./frontend
         run: |
           npm install -g serve
           CLIENT_DIR=$([ -d "dist/lavurger-client/browser" ] && echo "dist/lavurger-client/browser" || echo "dist/lavurger-client")
           ADMIN_DIR=$([ -d "dist/lavurger-admin/browser" ] && echo "dist/lavurger-admin/browser" || echo "dist/lavurger-admin")
-          nohup serve -s $CLIENT_DIR -l 4200 > client.log 2>&1 &
-          nohup serve -s $ADMIN_DIR -l 4201 > admin.log 2>&1 &
+          
+          echo "=== ARRANCANDO SERVIDORES WEB ==="
+          npx serve -s $CLIENT_DIR -l 4200 > client.log 2>&1 &
+          npx serve -s $ADMIN_DIR -l 4201 > admin.log 2>&1 &
           sleep 5
-
-      - name: 🎭 Run Playwright E2E Tests
-        working-directory: ./frontend
-        run: npx playwright test --workers=1
+          
+          echo "=== COMPROBANDO COMPONENTES VIRTUALES ==="
+          curl -sI http://localhost:4200 | head -n 1 || echo "❌ CLIENTE CAÍDO"
+          curl -sI http://localhost:4201 | head -n 1 || echo "❌ ADMIN CAÍDO"
+          
+          echo "=== ENTRANDO EN ACCIÓN: PLAYWRIGHT DEBUG ==="
+          DEBUG=pw:api npx playwright test --workers=1
 
       - name: 🧹 Clean Test Environment
         if: always()
@@ -103,16 +109,12 @@ jobs:
           script: |
             sudo systemctl stop nginx || true
             sudo systemctl disable nginx || true
-            
             cd /home/ubuntu/la-vurger-app
-            
             echo "DB_URL=${{ secrets.DB_URL }}" > .env
             echo "DB_USER=${{ secrets.DB_USER }}" >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            
             sudo docker compose down
             sudo docker system prune -f
-            
             sudo docker compose up -d --build --force-recreate
             sleep 5 && sudo docker logs lavurger-front
