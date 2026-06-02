@@ -5,7 +5,7 @@ import { Subscription, forkJoin } from 'rxjs';
 import { OrderDTO } from '@shared/models/dtos/order.dto';
 import { OrderStatus } from '@shared/models/enums/order-status.enum';
 import { OrderService, StompService } from '@shared';
-import { calculateRemainingMinutes } from '@shared/utils/date-utils';
+import { calculateRemainingMinutes, parseServerDate } from '@shared/utils/date-utils';
 
 @Component({
   selector: 'app-kitchen-dashboard',
@@ -21,7 +21,6 @@ import { calculateRemainingMinutes } from '@shared/utils/date-utils';
       animation: cardFlash 1.2s infinite ease-in-out;
     }
 
-    /* 🟢 ANIMACIÓ NOVA: Parpelleig vermell d'alerta per a comandes amb retràs */
     @keyframes delayFlash {
       0%, 100% { background-color: #dc2626; border-color: #b91c1c; transform: scale(1); }
       50% { background-color: #991b1b; border-color: #7f1d1d; transform: scale(1.03); }
@@ -43,6 +42,7 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   OrderStatus = OrderStatus;
 
   getRemainingMinutes = calculateRemainingMinutes;
+  parseServerDate = parseServerDate;
 
   selectedOrderForModal: OrderDTO | null = null;
   orderIdForCancelModal: number | null = null;
