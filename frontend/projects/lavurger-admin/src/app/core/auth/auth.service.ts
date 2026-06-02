@@ -20,29 +20,29 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response.token) {
-            localStorage.setItem('auth_token', response.token);
-            localStorage.setItem('auth_email', response.email);
-            localStorage.setItem('auth_role', response.role);
+            localStorage.setItem('admin_token', response.token);
+            localStorage.setItem('admin_email', response.email);
+            localStorage.setItem('admin_role', response.role);
           }
         }),
       );
   }
 
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_email');
-    localStorage.removeItem('auth_role');
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_email');
+    localStorage.removeItem('admin_role');
     this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('auth_token');
+    return !!localStorage.getItem('admin_token');
   }
 
   getUserProfile() {
     return {
-      email: localStorage.getItem('auth_email') || 'user@lavurger.com',
-      role: localStorage.getItem('auth_role') || 'ADMIN',
+      email: localStorage.getItem('admin_email') || 'user@lavurger.com',
+      role: localStorage.getItem('admin_role') || 'ADMIN',
     };
   }
 }

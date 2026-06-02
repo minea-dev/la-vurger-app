@@ -5,6 +5,7 @@ import { Subscription, forkJoin } from 'rxjs';
 import { OrderDTO } from '@shared/models/dtos/order.dto';
 import { OrderStatus } from '@shared/models/enums/order-status.enum';
 import { OrderService, StompService } from '@shared';
+import { calculateRemainingMinutes } from '@shared/utils/date-utils';
 
 @Component({
   selector: 'app-kitchen-dashboard',
@@ -19,6 +20,15 @@ import { OrderService, StompService } from '@shared';
     .animate-new-card {
       animation: cardFlash 1.2s infinite ease-in-out;
     }
+
+    /* 🟢 ANIMACIÓ NOVA: Parpelleig vermell d'alerta per a comandes amb retràs */
+    @keyframes delayFlash {
+      0%, 100% { background-color: #dc2626; border-color: #b91c1c; transform: scale(1); }
+      50% { background-color: #991b1b; border-color: #7f1d1d; transform: scale(1.03); }
+    }
+    .animate-delay-blink {
+      animation: delayFlash 1s infinite ease-in-out;
+    }
   `]
 })
 export class KitchenDashboardComponent implements OnInit, OnDestroy {
@@ -32,8 +42,11 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   private timerInterval?: any;
   OrderStatus = OrderStatus;
 
+  getRemainingMinutes = calculateRemainingMinutes;
+
   selectedOrderForModal: OrderDTO | null = null;
   orderIdForCancelModal: number | null = null;
+  isAudioEnabled = localStorage.getItem('lavurger_audio_enabled') === 'true';
 
   private alertSound = new Audio('/assets/sounds/new-order.mp3');
   recentlyAddedOrderIds: Set<number> = new Set();
@@ -51,16 +64,9 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadInitialOrders();
     this.connectToWebSockets();
-
     this.timerInterval = setInterval(() => {
-      this.orders = this.orders.map(o => {
-        if (o.orderType === 'TAKEAWAY' && o.estimatedTime != null && o.estimatedTime > 0) {
-          return { ...o, estimatedTime: o.estimatedTime - 1 };
-        }
-        return o;
-      });
       this.cdr.detectChanges();
-    }, 60000);
+    }, 15000);
   }
 
   loadInitialOrders() {
@@ -89,10 +95,6 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
     const index = this.orders.findIndex((o) => o.id === newOrder.id);
 
     if (index > -1) {
-      if (this.orders[index].estimatedTime != null) {
-        newOrder.estimatedTime = this.orders[index].estimatedTime;
-      }
-
       if (
         newOrder.status === OrderStatus.DISPATCHED ||
         newOrder.status === OrderStatus.COMPLETED ||
@@ -127,10 +129,29 @@ export class KitchenDashboardComponent implements OnInit, OnDestroy {
   }
 
   private playAlert() {
+    if (!this.isAudioEnabled) return;
     this.alertSound.currentTime = 0;
     this.alertSound.play().catch((err) => {
-      console.warn('⚠️ El navegador ha bloquejat l\'àudio:', err);
+      console.warn('⚠️ El navegador ha bloquejat l\'àudio automàtic:', err);
     });
+  }
+
+  toggleAudio() {
+    if (!this.isAudioEnabled) {
+      this.alertSound.play().then(() => {
+        this.alertSound.pause();
+        this.alertSound.currentTime = 0;
+        this.isAudioEnabled = true
+        localStorage.setItem('lavurger_audio_enabled', 'true');
+        this.cdr.detectChanges();
+      }).catch((err) => {
+        console.error('Error desblocant l\'àudio:', err);
+      });
+    } else {
+      this.isAudioEnabled = false;
+      localStorage.setItem('lavurger_audio_enabled', 'false');
+      this.cdr.detectChanges();
+    }
   }
 
   dispatchOrder(orderId: number) {

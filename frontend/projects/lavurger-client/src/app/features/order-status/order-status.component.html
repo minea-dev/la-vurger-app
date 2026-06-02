@@ -90,7 +90,7 @@
           @else if (isCustomerPreparing(order)) { Els nostres cuiners estan preparant la teua comanda amb molt d'amor. }
           @else if (isCustomerReady(order)) {
             @if (order.orderType === 'TAKEAWAY') { Pots passar a recollir-la al taulell. Bon profit! }
-            @else { Ara mateix un cambrer te la portarà a la taula. Bon profit! }
+            @else { Era mateix un cambrer te la portarà a la taula. Bon profit! }
           }
           @else if (order.status === OrderStatus.CANCELLED) {
             Poseu-vos en contacte amb el restaurant. Si ja heu pagat, se us retornaran els diners.
@@ -103,8 +103,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <div class="text-left">
-              <p class="text-[10px] uppercase tracking-widest font-bold opacity-80 mb-0.5">Temps estimat</p>
-              <p class="text-lg font-black leading-none">~{{ order.estimatedTime }} minuts</p>
+              <p class="text-[10px] uppercase tracking-widest font-bold opacity-80 mb-0.5">
+                {{ getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0 ? 'Estat' : 'Temps estimat' }}
+              </p>
+              <p class="text-lg font-black leading-none">
+                {{ getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0 ? 'Molt prompte! ✨' : '~' + getRemainingMinutes(order.createdAt, order.estimatedTime) + ' minuts' }}
+              </p>
             </div>
           </div>
         }

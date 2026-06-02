@@ -2,12 +2,13 @@ import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
+import { authInterceptor } from './core/interceptors/auth-interceptor';
 
-import { API_URL, APP_CONFIG, RX_STOMP_CONFIG, authInterceptor } from '@shared';
+import { API_URL, APP_CONFIG, RX_STOMP_CONFIG } from '@shared';
 import { environment } from '../environments/environment';
 
 export function rxStompConfigFactory() {
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem('admin_token');
   return {
     brokerURL: environment.wsUrl,
     connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
@@ -26,4 +27,4 @@ export const appConfig: ApplicationConfig = {
     { provide: API_URL, useValue: environment.apiUrl },
     { provide: RX_STOMP_CONFIG, useFactory: rxStompConfigFactory },
   ],
-};
+}

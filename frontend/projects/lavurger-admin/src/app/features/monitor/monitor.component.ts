@@ -37,6 +37,8 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
   private alertSound = new Audio('/assets/sounds/new-order.mp3');
   recentlyAddedOrderIds: Set<number> = new Set();
+  isAudioEnabled = localStorage.getItem('lavurger_audio_enabled') === 'true';
+  selectedOrderForModal: any = null;
 
   ngOnInit() {
     this.loadOrders();
@@ -122,15 +124,34 @@ export class MonitorComponent implements OnInit, OnDestroy {
   }
 
   private playAlert() {
+    if (!this.isAudioEnabled) return;
     this.alertSound.currentTime = 0;
     this.alertSound.play().catch((err) => console.warn('⚠️ Audio bloquejat:', err));
+  }
+
+  toggleAudio() {
+    if (!this.isAudioEnabled) {
+      this.alertSound.play().then(() => {
+        this.alertSound.pause();
+        this.alertSound.currentTime = 0;
+        this.isAudioEnabled = true;
+        localStorage.setItem('lavurger_audio_enabled', 'true');
+        this.cdr.detectChanges();
+      }).catch((err) => {
+        console.error('Error desblocant àudio al monitor:', err);
+      });
+    } else {
+      this.isAudioEnabled = false;
+      localStorage.setItem('lavurger_audio_enabled', 'false');
+      this.cdr.detectChanges();
+    }
   }
 
   get dineInPendingOrders() {
     return this.orders.filter(order =>
       order.orderType === 'DINE_IN' &&
       order.paymentStatus === PaymentStatus.PENDING &&
-      (order.status === OrderStatus.READY || order.status === OrderStatus.DISPATCHED)
+      order.status === OrderStatus.DISPATCHED
     );
   }
 

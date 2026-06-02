@@ -3,6 +3,7 @@ import { CurrencyPipe, NgClass } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FavoritesService } from '@shared/core/services/favorites.service';
 import { CartStore, ProductDTO } from '@shared';
+import { MenuStore } from '../menu/menu.store';
 
 @Component({
   selector: 'app-favorites',
@@ -14,6 +15,7 @@ export class FavoritesComponent implements OnInit {
   private favoritesService = inject(FavoritesService);
   private router = inject(Router);
   cartStore = inject(CartStore);
+  menuStore = inject(MenuStore);
 
   favorites: ProductDTO[] = [];
   isLoading = true;
@@ -38,9 +40,7 @@ export class FavoritesComponent implements OnInit {
 
   removeFavorite(productId: number) {
     this.favorites = this.favorites.filter((p) => p.id !== productId);
-    this.favoritesService.removeFavorite(productId).subscribe({
-      error: () => this.loadFavorites(),
-    });
+    this.menuStore.toggleFavorite(productId);
   }
 
   getQuantity(productId: number): number {

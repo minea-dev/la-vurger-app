@@ -1,6 +1,21 @@
 # 🍔 La Vurger
 
-A full-stack vegan burger restaurant management platform featuring a customer-facing ordering app and an admin panel — built with **Spring Boot**, **Angular 21**, and real-time communication via **WebSockets**.
+> Full-stack vegan burger restaurant management platform — live at **[lavurger.com](https://lavurger.com)**
+
+A production-ready web application featuring a customer-facing ordering experience and a real-time admin backoffice, built with **Spring Boot 3**, **Angular 21**, and **WebSockets** — deployed on AWS EC2 via a fully automated CI/CD pipeline.
+
+---
+
+## 📸 Live Demo
+
+| App | URL | Description |
+|---|---|---|
+| 🛒 Customer App (takeaway) | [lavurger.com/menu](https://lavurger.com/menu) | Place a takeaway order directly |
+| 📱 Customer App (dine-in) | [lavurger.com/menu?table=4](https://lavurger.com/menu?table=4) | Simulates scanning a QR code at table 4 |
+| 🔧 Admin Panel | [lavurger.com/admin/login](https://lavurger.com/admin/login) | Backoffice for order and menu management |
+| 📖 Swagger UI | [lavurger.com/api/swagger-ui.html](http://localhost:8080/swagger-ui.html) | REST API docs (available locally) |
+
+> The `?table=N` query parameter binds an order to a specific restaurant table — the same mechanism triggered by a physical QR code on the table.
 
 ---
 
@@ -8,14 +23,29 @@ A full-stack vegan burger restaurant management platform featuring a customer-fa
 
 ```
 la-vurger/
-├── backend/               # Spring Boot REST API
-├── frontend/              # Angular monorepo
-│   ├── projects/
-│   │   ├── lavurger-client/   # Customer-facing app (port 4200)
-│   │   ├── lavurger-admin/    # Admin panel (port 4201)
-│   │   └── shared/            # Shared library between apps
+├── backend/                    # Spring Boot REST API
+│   └── src/
+│       ├── main/java/com/mlicer/uoc/lavurgerapi/
+│       │   ├── config/         # Security, WebSocket, CORS
+│       │   ├── controller/     # REST endpoints
+│       │   ├── dto/            # Request / response DTOs
+│       │   ├── entity/         # JPA entities
+│       │   ├── exception/      # Global exception handling
+│       │   ├── mapper/         # Entity ↔ DTO mappers
+│       │   ├── repository/     # Spring Data JPA
+│       │   ├── security/       # JWT filter, UserDetailsService
+│       │   └── service/        # Business logic
+│       └── test/java/
+│           ├── service/        # Unit tests
+│           └── *ControllerIT   # Integration tests (H2)
+├── frontend/                   # Angular monorepo
+│   └── projects/
+│       ├── lavurger-client/    # Customer app (port 4200)
+│       ├── lavurger-admin/     # Admin panel (port 4201)
+│       └── shared/             # Shared components & services
+├── .github/workflows/          # GitHub Actions CI/CD
 ├── docker-compose.yml
-├── .env
+├── .env                        # Environment variables (not committed)
 └── README.md
 ```
 
@@ -24,37 +54,49 @@ la-vurger/
 ## 🛠️ Tech Stack
 
 ### Backend
+
 | Technology | Version | Purpose |
 |---|---|---|
 | Java | 21 | Runtime |
 | Spring Boot | 3.4.3 | Application framework |
 | Spring Security + JWT | — | Authentication & authorization |
-| Spring Data JPA | — | Database ORM |
-| Spring WebSocket | — | Real-time communication |
+| Spring Data JPA | — | ORM / database layer |
+| Spring WebSocket (STOMP) | — | Real-time push notifications |
 | PostgreSQL | — | Production database |
-| H2 | — | In-memory DB for tests |
-| SpringDoc OpenAPI | 2.8.5 | API documentation (Swagger UI) |
+| H2 | — | In-memory DB for integration tests |
+| SpringDoc OpenAPI | 2.8.5 | Swagger UI / API docs |
 | Lombok | — | Boilerplate reduction |
 
 ### Frontend
+
 | Technology | Version | Purpose |
 |---|---|---|
-| Angular | 21 | UI framework |
+| Angular | 21 | UI framework (standalone components) |
 | NgRx Signals | 21 | Reactive state management |
-| STOMP / RxStomp | 7.x / 2.x | WebSocket messaging |
+| STOMP / RxStomp | 7.x / 2.x | WebSocket client |
 | Tailwind CSS | 3.x | Utility-first styling |
 | TypeScript | 5.9 | Type safety |
 | Vitest | 4.x | Unit testing |
+
+### Infrastructure & DevOps
+
+| Tool | Purpose |
+|---|---|
+| Docker & Docker Compose | Containerised multi-service deployment |
+| Nginx | Reverse proxy, static file serving, WebSocket upgrade |
+| AWS EC2 | Cloud hosting |
+| AWS S3 | Product image storage |
+| GitHub Actions | CI/CD pipeline (build → test → deploy) |
 
 ---
 
 ## ⚙️ Prerequisites
 
 - **Java 21**
-- **Maven**
+- **Maven 3.x**
 - **Node.js** with **npm 11+**
-- **Docker & Docker Compose** (for containerized deployment)
-- **PostgreSQL** (if running locally without Docker)
+- **Docker & Docker Compose** *(for containerised deployment)*
+- **PostgreSQL** *(only needed for local runs without Docker)*
 
 ---
 
@@ -63,24 +105,33 @@ la-vurger/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/la-vurger.git
-cd la-vurger
+git clone https://github.com/minea-dev/la-vurger-app.git
+cd la-vurger-app
 ```
 
 ### 2. Configure environment variables
 
-Copy and fill in the `.env` file at the project root:
+Create a `.env` file at the project root:
 
 ```env
+# Database
 DB_URL=jdbc:postgresql://localhost:5432/lavurger
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
+
+# Auth
 JWT_SECRET=your_jwt_secret_key
+
+# AWS S3 (product image storage)
+AWS_S3_BUCKET=your_bucket_name
+AWS_S3_REGION=eu-west-1
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
 ```
 
 ---
 
-### 🐳 Run with Docker Compose (recommended)
+### 🐳 Run with Docker Compose *(recommended)*
 
 ```bash
 docker-compose up --build
@@ -104,7 +155,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-The API will start at `http://localhost:8080`.
+API available at `http://localhost:8080`.
 
 #### Frontend
 
@@ -114,29 +165,31 @@ npm install
 ```
 
 Start the **customer app**:
+
 ```bash
 npm run start:client
-# Available at http://localhost:4200
+# → http://localhost:4200
 ```
 
 Start the **admin panel**:
+
 ```bash
 npm run start:admin
-# Available at http://localhost:4201
+# → http://localhost:4201
 ```
 
 ---
 
-## 🏗️ Build
+## 🏗️ Build (production)
 
-### Frontend (production)
+### Frontend
 
 ```bash
 cd frontend
 npm run build:all
 ```
 
-This will build both apps:
+Outputs:
 - `lavurger-client` → standard production build
 - `lavurger-admin` → production build with `/admin/` base href
 
@@ -149,6 +202,44 @@ mvn clean package
 
 ---
 
+## 🔒 Authentication
+
+The API uses **JWT Bearer token** authentication.
+
+1. `POST /api/auth/login` with valid credentials.
+2. Copy the `token` from the response.
+3. Pass it in all subsequent requests:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## 🌐 Real-Time Features
+
+The platform uses the **STOMP protocol over WebSockets** to broadcast events instantly across both apps — for example, routing a new order to the kitchen display the moment a customer completes checkout.
+
+| Environment | Endpoint |
+|---|---|
+| Local dev | `ws://localhost:8080/ws` |
+| Production | `wss://lavurger.com/ws-la-vurger` *(proxied via Nginx with automatic protocol upgrade)* |
+
+---
+
+## 📦 Frontend Scripts Reference
+
+| Script | Description |
+|---|---|
+| `npm run start:client` | Serve customer app in dev mode (port 4200) |
+| `npm run start:admin` | Serve admin panel in dev mode (port 4201) |
+| `npm run build:client` | Build customer app for production |
+| `npm run build:admin` | Build admin panel for production |
+| `npm run build:all` | Build both apps |
+| `npm test` | Run all unit tests |
+
+---
+
 ## 🧪 Testing
 
 ### Backend
@@ -158,7 +249,7 @@ cd backend
 mvn test
 ```
 
-The test suite includes unit tests and integration tests:
+Test suite:
 
 ```
 src/test/java/
@@ -172,6 +263,8 @@ src/test/java/
 └── UserControllerIT
 ```
 
+Integration tests run against an **H2 in-memory database** — no external PostgreSQL instance required.
+
 ### Frontend
 
 ```bash
@@ -179,142 +272,100 @@ cd frontend
 npm test
 ```
 
----
-
-## 📐 Backend Architecture
-
-```
-com.mlicer.uoc.lavurgerapi/
-├── config/         # Spring Security, WebSocket, CORS configuration
-├── controller/     # REST API endpoints
-├── dto/            # Data Transfer Objects (request/response)
-├── entity/         # JPA entities
-├── exception/      # Custom exception handling
-├── mapper/         # Entity ↔ DTO mappers
-├── repository/     # Spring Data JPA repositories
-├── security/       # JWT filter, UserDetailsService, etc.
-└── service/        # Business logic
-```
-
----
-
-## 🔌 API Documentation
-
-Once the backend is running, visit:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
----
-
-## 🔒 Authentication
-
-The API uses **JWT Bearer token** authentication. To access protected endpoints:
-
-1. `POST /api/auth/login` with your credentials.
-2. Copy the returned `token`.
-3. Include it in all subsequent requests as:
-   ```
-   Authorization: Bearer <token>
-   ```
-
----
-
-## 🌐 Real-Time Features
-
-The application uses **WebSocket (STOMP protocol)** to push real-time updates — for example, notifying the kitchen or admin dashboard when a new order is placed.
-
-WebSocket endpoint: `ws://localhost:8080/ws`
-
----
-
-## 📦 Frontend Scripts Reference
-
-| Script | Description |
-|---|---|
-| `npm run start:client` | Serve customer app (dev, port 4200) |
-| `npm run start:admin` | Serve admin panel (dev, port 4201) |
-| `npm run build:client` | Build customer app for production |
-| `npm run build:admin` | Build admin panel for production |
-| `npm run build:all` | Build both apps |
-| `npm test` | Run unit tests |
-
----
-
-## 🌍 Live Demo (MVP)
-
-A working MVP is deployed on AWS EC2. You can explore both apps directly:
-
-### 🔧 Admin Panel (Backoffice)
-**URL:** http://51.92.201.144/admin/login
-
-### 🛒 Customer App — Takeaway simulation
-**URL:** http://51.92.201.144/menu
-
-Simulates a customer accessing the web directly to place a takeaway order (no table linked).
-
-### 📱 Customer App — QR code at table simulation
-**URL:** http://51.92.201.144/menu?table=4
-
-Simulates a customer who has scanned the QR code placed on table 4. The `?table=4` query parameter is automatically picked up to bind the order to that table.
+21 **Playwright E2E tests** cover the full user journey across both apps (executed locally against the live stack).
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-The project uses **GitHub Actions** for continuous integration and deployment to AWS EC2 on every push to `main`.
-
-### Workflow: `Deploy La Vurger MVP`
+Every push to `main` triggers a two-stage GitHub Actions workflow:
 
 ```
 push to main
     │
     ▼
-┌─────────────────────────┐
-│  🧪 test (blocking)     │
-│  - Checkout             │
-│  - Setup Java 21        │
-│  - mvn clean package    │
-│    (compilation check)  │
-│  - Setup Node.js 22     │
-│  - npm install          │
-└───────────┬─────────────┘
-            │ on success
-            ▼
-┌─────────────────────────┐
-│  🚀 deploy              │
-│  - Checkout             │
-│  - SCP files to EC2     │
-│    (excl. node_modules  │
-│     and target/)        │
-│  - SSH into EC2:        │
-│    · Write .env         │
-│    · docker compose     │
-│      down               │
-│    · docker system      │
-│      prune              │
-│    · docker compose     │
-│      up --build         │
-│    · docker logs        │
-└─────────────────────────┘
+┌────────────────────────┐
+│  🧪 test (blocking)    │
+│  · Setup Java 21       │
+│  · mvn clean package   │
+│  · Setup Node.js 22    │
+│  · npm install         │
+└──────────┬─────────────┘
+           │ on success
+           ▼
+┌────────────────────────┐
+│  🚀 deploy             │
+│  · SCP source to EC2   │
+│    (excl. node_modules │
+│     and target/)       │
+│  · SSH into EC2:       │
+│    · Write .env        │
+│    · docker compose    │
+│      down              │
+│    · docker system     │
+│      prune             │
+│    · docker compose    │
+│      up --build        │
+│    · docker logs       │
+└────────────────────────┘
 ```
 
 ### Required GitHub Secrets
 
-Go to **Settings → Secrets and variables → Actions** and add:
+Go to **Settings → Secrets and variables → Actions** and configure:
 
 | Secret | Description |
 |---|---|
 | `EC2_HOST` | Public IP or hostname of the EC2 instance |
-| `EC2_SSH_KEY` | Private SSH key to connect as `ubuntu` |
-| `DB_URL` | Full JDBC URL (e.g. `jdbc:postgresql://host:5432/db`) |
+| `EC2_SSH_KEY` | Private SSH key (connects as `ubuntu`) |
+| `DB_URL` | Full JDBC URL, e.g. `jdbc:postgresql://host:5432/lavurger` |
 | `DB_USER` | Database username |
 | `DB_PASSWORD` | Database password |
 | `JWT_SECRET` | Secret key used to sign JWT tokens |
+| `AWS_S3_BUCKET` | S3 bucket name for product image storage |
+| `AWS_S3_REGION` | AWS region of the bucket (e.g. `eu-west-1`) |
+| `AWS_ACCESS_KEY_ID` | AWS IAM access key ID |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret access key |
+
+---
+
+## 📊 Quality, Security & Performance
+
+### 🟢 SAST — SonarQube Cloud
+
+Backend evaluated against SonarQube's corporate Quality Gates:
+
+| Metric | Result |
+|---|---|
+| Status | ✅ PASSED |
+| Code duplication | 0.0% |
+| Lines of code | 2,000+ clean Java lines |
+| Critical vulnerabilities | 0 |
+
+### ⚡ Frontend — Google Lighthouse
+
+Audited under real mobile constraints (Moto G Power, Slow 4G throttling):
+
+| Metric | Score |
+|---|---|
+| Best Practices | 100 / 100 |
+| Accessibility | 95 / 100 |
+| SEO | 92 / 100 |
+| Total Blocking Time | 30 ms |
+
+### 📈 Backend Load Testing — ApacheBench
+
+200 requests, 10 concurrent threads against `/api/products`:
+
+| Metric | Result |
+|---|---|
+| Failed requests | 0 (0% error rate) |
+| Throughput | 114.79 req/s |
+| Mean latency | 87.11 ms |
+| p95 latency | < 120 ms |
 
 ---
 
 ## 📄 License
 
-This project is part of an academic assignment for UOC (Universitat Oberta de Catalunya). All rights reserved.
+This project was developed as an academic assignment for **UOC — Universitat Oberta de Catalunya**. All rights reserved.

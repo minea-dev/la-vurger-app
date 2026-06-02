@@ -1,15 +1,36 @@
-<div class="absolute inset-0 flex flex-col bg-slate-50 p-5 overflow-hidden">
+<div class="absolute inset-0 flex flex-col bg-slate-50 p-4 sm:p-5 overflow-hidden">
 
-  <div class="flex justify-between items-center mb-5 shrink-0">
+  <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-5 shrink-0 gap-3 sm:gap-0">
     <div>
       <h1 class="text-xl font-bold text-slate-800 tracking-tight">Taulell de Cuina</h1>
       <p class="text-sm text-slate-500 mt-0.5">Gestió de comandes</p>
     </div>
+
+    <button
+      (click)="toggleAudio()"
+      [ngClass]="{
+        'bg-blue-600 hover:bg-blue-700': !isAudioEnabled,
+        'bg-emerald-600 hover:bg-emerald-700': isAudioEnabled
+      }"
+      class="flex items-center justify-center gap-2 px-4 py-2 text-white rounded-xl text-xs font-bold transition-all shadow-sm tracking-wide active:scale-95 cursor-pointer self-start sm:self-auto"
+    >
+      @if (!isAudioEnabled) {
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+        <span>Activar So Notificacions</span>
+      } @else {
+        <svg class="w-4 h-4 fill-current animate-pulse" viewBox="0 0 24 24">
+          <path d="M13.5 4.06c0-.75-.74-1.23-1.42-.91L6.37 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h3.37l5.71 2.85c.68.32 1.42-.16 1.42-.91V4.06zM18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM16 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <span>✓ Notificacions Actives</span>
+      }
+    </button>
   </div>
 
-  <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 min-h-0 h-full">
+  <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-5 min-h-0 h-full overflow-y-auto md:overflow-hidden">
 
-    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+    <div class="flex flex-col bg-transparent overflow-hidden h-[480px] md:h-full shrink-0 md:shrink min-h-0">
       <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
         <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
           <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
@@ -18,29 +39,35 @@
         <span class="bg-blue-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-blue-600">{{ pendingOrders.length }}</span>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 scrollbar-thin">
         <div *ngFor="let order of pendingOrders"
              [class.animate-new-card]="recentlyAddedOrderIds.has(order.id)"
              class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
 
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+          <div class="flex justify-between items-start gap-2 mb-3">
+            <div class="min-w-0">
+              <div class="text-lg font-bold text-slate-900 leading-none truncate">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-2 font-medium flex flex-wrap items-center gap-2">
                 <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
 
                 <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
-                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
-                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                      class="px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm border transition-all"
+                      [ngClass]="{
+                        'bg-slate-100 text-slate-600 border-slate-200': getRemainingMinutes(order.createdAt, order.estimatedTime) > 5,
+                        'text-white bg-red-600 border-red-700': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 5 && getRemainingMinutes(order.createdAt, order.estimatedTime) > 0,
+                        'text-white animate-delay-blink font-black border-red-900': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0
+                      }">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                  {{ order.estimatedTime }} min
+                  <span>
+                    {{ getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0 ? '⚠️ RETRÀS' : getRemainingMinutes(order.createdAt, order.estimatedTime) + ' min' }}
+                  </span>
                 </span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
-              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-600 text-white">
+              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-600">
                 {{ order.createdAt | date:'HH:mm' }}
               </div>
               <button *ngIf="hasCustomerInfo(order)" (click)="openInfoModal(order)"
@@ -61,9 +88,9 @@
           <div class="space-y-2.5 mb-4">
             <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
               <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
-              <div>
-                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
-                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium text-slate-800 break-words">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic break-words">{{ item.notes }}</div>
               </div>
             </div>
           </div>
@@ -80,7 +107,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+    <div class="flex flex-col bg-transparent overflow-hidden h-[480px] md:h-full shrink-0 md:shrink min-h-0">
       <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
         <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
           <span class="w-1 h-3.5 bg-orange-500 rounded-full"></span>
@@ -89,27 +116,33 @@
         <span class="bg-orange-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-orange-600">{{ inProgressOrders.length }}</span>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4">
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 scrollbar-thin">
         <div *ngFor="let order of inProgressOrders" class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col transition-all hover:shadow-md">
 
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+          <div class="flex justify-between items-start gap-2 mb-3">
+            <div class="min-w-0">
+              <div class="text-lg font-bold text-slate-900 leading-none truncate">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-2 font-medium flex flex-wrap items-center gap-2">
                 <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
 
                 <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
-                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
-                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                      class="px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm border transition-all"
+                      [ngClass]="{
+                        'bg-slate-100 text-slate-600 border-slate-200': getRemainingMinutes(order.createdAt, order.estimatedTime) > 5,
+                        'text-white bg-red-600 border-red-700': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 5 && getRemainingMinutes(order.createdAt, order.estimatedTime) > 0,
+                        'text-white animate-delay-blink font-black border-red-900': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0
+                      }">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                  {{ order.estimatedTime }} min
+                  <span>
+                    {{ getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0 ? '⚠️ RETRÀS' : getRemainingMinutes(order.createdAt, order.estimatedTime) + ' min' }}
+                  </span>
                 </span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-2 shrink-0">
-              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-red-600 text-white">
+              <div class="text-xs font-bold px-2 py-0.5 rounded-md bg-orange-50 text-orange-600">
                 {{ order.createdAt | date:'HH:mm' }}
               </div>
               <button *ngIf="hasCustomerInfo(order)" (click)="openInfoModal(order)"
@@ -125,9 +158,9 @@
           <div class="space-y-2.5 mb-4">
             <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
               <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
-              <div>
-                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
-                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium text-slate-800 break-words">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic break-words">{{ item.notes }}</div>
               </div>
             </div>
           </div>
@@ -144,7 +177,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col bg-transparent overflow-hidden min-h-0 h-full">
+    <div class="flex flex-col bg-transparent overflow-hidden h-[480px] md:h-full shrink-0 md:shrink min-h-0">
       <div class="py-3 flex justify-between items-center shrink-0 border-b-2 border-slate-200 mb-3">
         <h2 class="text-[13px] font-bold text-slate-600 uppercase tracking-wide flex items-center gap-2">
           <span class="w-1 h-3.5 bg-emerald-500 rounded-full"></span>
@@ -153,26 +186,32 @@
         <span class="bg-emerald-50 px-2.5 py-0.5 rounded-full text-xs font-bold text-emerald-600">{{ readyOrders.length }}</span>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 opacity-80">
+      <div class="flex-1 overflow-y-auto space-y-4 pr-1 pb-4 opacity-80 scrollbar-thin">
         <div *ngIf="readyOrders.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
           <svg class="w-10 h-10 mb-3 stroke-current opacity-30" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0118 0z" /></svg>
           <p class="text-[13px] font-medium">No hi ha comandes pendents d'entrega</p>
         </div>
 
         <div *ngFor="let order of readyOrders" class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5 flex flex-col">
-          <div class="flex justify-between items-start mb-3">
-            <div>
-              <div class="text-lg font-bold text-slate-900 leading-none">{{ order.orderNumber }}</div>
-              <div class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-2">
+          <div class="flex justify-between items-start gap-2 mb-3">
+            <div class="min-w-0">
+              <div class="text-lg font-bold text-slate-900 leading-none truncate">{{ order.orderNumber }}</div>
+              <div class="text-xs text-slate-500 mt-2 font-medium flex flex-wrap items-center gap-2">
                 <span>{{ order.orderType === 'DINE_IN' ? 'Taula ' + order.tableId : 'Takeaway' }}</span>
 
                 <span *ngIf="order.orderType === 'TAKEAWAY' && order.estimatedTime != null"
-                      class="bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm"
-                      [ngClass]="{'text-white bg-red-600 border-red-700': order.estimatedTime <= 5}">
+                      class="px-1.5 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 shadow-sm border transition-all"
+                      [ngClass]="{
+                        'bg-slate-100 text-slate-600 border-slate-200': getRemainingMinutes(order.createdAt, order.estimatedTime) > 5,
+                        'text-white bg-red-600 border-red-700': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 5 && getRemainingMinutes(order.createdAt, order.estimatedTime) > 0,
+                        'text-white animate-delay-blink font-black border-red-900': getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0
+                      }">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                  {{ order.estimatedTime }} min
+                  <span>
+                    {{ getRemainingMinutes(order.createdAt, order.estimatedTime) <= 0 ? '⚠️ RETRÀS' : getRemainingMinutes(order.createdAt, order.estimatedTime) + ' min' }}
+                  </span>
                 </span>
               </div>
             </div>
@@ -193,9 +232,9 @@
           <div class="space-y-2.5 mb-4">
             <div *ngFor="let item of order.items" class="flex items-start gap-2.5">
               <div class="bg-blue-50 text-blue-700 font-bold text-xs px-1.5 py-0.5 rounded">×{{ item.quantity }}</div>
-              <div>
-                <div class="text-sm font-medium text-slate-800">{{ item.product?.name || 'Producte ' + item.productId }}</div>
-                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic">{{ item.notes }}</div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium text-slate-800 break-words">{{ item.product?.name || 'Producte ' + item.productId }}</div>
+                <div *ngIf="item.notes" class="text-xs text-slate-500 mt-0.5 font-medium italic break-words">{{ item.notes }}</div>
               </div>
             </div>
           </div>

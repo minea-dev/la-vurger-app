@@ -1,21 +1,34 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { OrderStatusStore } from './order-status.store';
-import { OrderStatus, StompService, OrderDTO } from '@shared';
+import { OrderStatus, StompService, OrderDTO, AuthService, CartStore } from '@shared';
 import { MenuStore } from '../menu/menu.store';
+import { calculateRemainingMinutes } from '@shared/utils/date-utils';
 
 @Component({
   selector: 'app-order-status',
   standalone: true,
   imports: [CurrencyPipe, NgClass, RouterLink],
   templateUrl: './order-status.component.html',
+  styles: [`
+    @keyframes delayFlash {
+      0%, 100% { background-color: #dc2626; border-color: #b91c1c; transform: scale(1); }
+      50% { background-color: #991b1b; border-color: #7f1d1d; transform: scale(1.02); }
+    }
+    .animate-delay-blink {
+      animation: delayFlash 1s infinite ease-in-out;
+    }
+  `]
 })
 export class OrderStatusComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private stompService = inject(StompService);
+  private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+  private cartStore = inject(CartStore);
 
   store = inject(OrderStatusStore);
   menuStore = inject(MenuStore);
@@ -23,9 +36,45 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
   OrderStatus = OrderStatus;
   private wsSubscription?: Subscription;
   private redirectTimeout?: any;
-
   private timerInterval?: any;
-  private lastTickTime: number = Date.now();
+
+  getRemainingMinutes = calculateRemainingMinutes;
+
+  constructor() {
+    effect(() => {
+      const order = this.store.order();
+      if (order && order.status === OrderStatus.COMPLETED) {
+        const email = this.authService.getCurrentEmail();
+        if (email) {
+          localStorage.removeItem(`vurger_cart_${email}`);
+        }
+        localStorage.removeItem('vurger_cart_guest');
+        this.cartStore.clearCart();
+        console.log('✨ Comanda completada amb èxit: LocalStorage netejat.');
+      }
+    });
+
+    effect(() => {
+      const order = this.store.order();
+      if (!order) return;
+
+      if (this.redirectTimeout) { clearTimeout(this.redirectTimeout); }
+
+      if (order.status === OrderStatus.COMPLETED) {
+        this.redirectTimeout = setTimeout(() => {
+          this.resetMenuAndNavigate();
+        }, 5000);
+      } else if (order.status === OrderStatus.CANCELLED) {
+        this.redirectTimeout = setTimeout(() => {
+          this.resetMenuAndNavigate();
+        }, 180000);
+      } else if (order.orderType === 'DINE_IN' && order.status === OrderStatus.DISPATCHED) {
+        this.redirectTimeout = setTimeout(() => {
+          this.resetMenuAndNavigate();
+        }, 8000);
+      }
+    });
+  }
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -34,25 +83,9 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
       if (!isNaN(id)) {
         this.store.loadOrder(id);
         this.connectToWebSockets(id);
-
-        this.lastTickTime = Date.now();
         this.timerInterval = setInterval(() => {
-          const now = Date.now();
-          const elapsedMs = now - this.lastTickTime;
-
-          if (elapsedMs >= 60000) {
-            const elapsedMins = Math.floor(elapsedMs / 60000);
-            this.lastTickTime += (elapsedMins * 60000);
-
-            const currentOrder = this.store.order();
-            if (currentOrder && currentOrder.estimatedTime != null && currentOrder.estimatedTime > 0) {
-              this.store.updateOrder({
-                ...currentOrder,
-                estimatedTime: Math.max(0, currentOrder.estimatedTime - elapsedMins)
-              });
-            }
-          }
-        }, 1000);
+          this.cdr.detectChanges();
+        }, 15000);
       }
     }
   }
@@ -61,23 +94,7 @@ export class OrderStatusComponent implements OnInit, OnDestroy {
     this.wsSubscription = this.stompService.watch('/topic/orders').subscribe((message) => {
       const updatedOrder: OrderDTO = JSON.parse(message.body);
       if (updatedOrder.id === orderId) {
-
-        const currentOrder = this.store.order();
-        if (currentOrder && currentOrder.estimatedTime != null) {
-          updatedOrder.estimatedTime = currentOrder.estimatedTime;
-        }
-
         this.store.updateOrder(updatedOrder);
-
-        if (updatedOrder.status === OrderStatus.COMPLETED) {
-          this.redirectTimeout = setTimeout(() => {
-            this.resetMenuAndNavigate();
-          }, 5000);
-        } else if (updatedOrder.status === OrderStatus.CANCELLED) {
-          this.redirectTimeout = setTimeout(() => {
-            this.resetMenuAndNavigate();
-          }, 180000);
-        }
       }
     });
   }
